@@ -15,7 +15,6 @@ namespace TD_Demo
         private Floor[,] _map = new Floor[12, 11];
         private Floor _goalTile;
         private Camera _camera;
-        private Floor _hoveredFloor;
 
         public void Awake()
         {

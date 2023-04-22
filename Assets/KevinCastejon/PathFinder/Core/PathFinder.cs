@@ -98,7 +98,7 @@ namespace KevinCastejon.Pathfinding
             return GetPathToTarget<T>(tile).Reverse().ToArray();
         }
     }
-    public class PathFinder
+    public static class PathFinder
     {
         private static Node GetNode(Node[,] map, int x, int y)
         {
