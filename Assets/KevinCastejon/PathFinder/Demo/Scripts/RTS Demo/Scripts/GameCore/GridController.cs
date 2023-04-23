@@ -182,7 +182,7 @@ namespace RTS_Demo
             _lineRenderer.enabled = _hoveredFloor != null && CurrentCharacter.AccessibleTiles.Contains(_hoveredFloor);
             if (_lineRenderer.enabled)
             {
-                Floor[] path = CurrentCharacter.PathMap.GetPathFromTarget<Floor>(_hoveredFloor);
+                Floor[] path = CurrentCharacter.PathMap.GetPathFromTarget(_hoveredFloor);
                 _lineRenderer.positionCount = path.Length;
                 _lineRenderer.SetPositions(path.Select(f => new Vector3(f.transform.position.x, 0.51f, f.transform.position.z)).ToArray());
             }
@@ -281,7 +281,7 @@ namespace RTS_Demo
             }
             _lineRenderer.enabled = true;
             _target = accessibleTiles[UnityEngine.Random.Range(0, accessibleTiles.Length)];
-            Floor[] path = CurrentMob.PathMap.GetPathFromTarget<Floor>(_target);
+            Floor[] path = CurrentMob.PathMap.GetPathFromTarget(_target);
             _lineRenderer.positionCount = path.Length;
             _lineRenderer.SetPositions(path.Select(f => new Vector3(f.transform.position.x, 0.51f, f.transform.position.z)).ToArray());
         }

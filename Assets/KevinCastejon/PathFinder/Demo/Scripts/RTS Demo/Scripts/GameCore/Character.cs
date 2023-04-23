@@ -15,7 +15,7 @@ namespace RTS_Demo
         [SerializeField] private int _health;
         [SerializeField] private Timer _stepTimer;
         [SerializeField] private Transform _bulletPrefab;
-        private PathMap _pathMap;
+        private PathMap<Floor> _pathMap;
         private Floor[] _accessibleTiles;
         private Floor _currentTile;
         private Floor[] _path;
@@ -41,7 +41,7 @@ namespace RTS_Demo
         public int AttackRange { get => _attackRange; }
         public int Health { get => _health; set => _health = Mathf.Max(0,value); }
         public Floor CurrentTile { get => _currentTile; set => _currentTile = value; }
-        public PathMap PathMap
+        public PathMap<Floor> PathMap
         {
             get
             {
@@ -51,7 +51,7 @@ namespace RTS_Demo
             set
             {
                 _pathMap = value;
-                _accessibleTiles = _pathMap.GetAccessibleTilesFromTarget<Floor>(_maxMovement);
+                _accessibleTiles = _pathMap.GetAccessibleTilesFromTarget(_maxMovement);
             }
         }
         public bool IsPreparingMove { get => _isPreparingMove; set => _isPreparingMove = value; }
@@ -85,7 +85,7 @@ namespace RTS_Demo
 
         public void StartMoving(Floor destination)
         {
-            _path = _pathMap.GetPathFromTarget<Floor>(destination).Skip(1).ToArray();
+            _path = _pathMap.GetPathFromTarget(destination).Skip(1).ToArray();
         }
 
         public void StartStepMove()

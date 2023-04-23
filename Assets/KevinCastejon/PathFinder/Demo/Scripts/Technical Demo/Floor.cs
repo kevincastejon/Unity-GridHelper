@@ -34,6 +34,7 @@ namespace Technical_Demo
                 SynchronizeMaterial();
             }
         }
+        public float Weight { get => 1f; }
         public bool IsTarget
         {
             get

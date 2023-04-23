@@ -15,9 +15,10 @@ namespace TD_Demo
         private int _x;
         private int _y;
         private Renderer _renderer;
-        private Transform _arrow;
-        private Floor _next;
+        //private Transform _arrow;
+        //private Floor _next;
 
+        public float Weight { get => 1f; }
         public bool IsWalkable
         {
             get
@@ -49,31 +50,31 @@ namespace TD_Demo
                 }
             }
         }
-        public Floor Next
-        {
-            get
-            {
-                return _next;
-            }
+        //public Floor Next
+        //{
+        //    get
+        //    {
+        //        return _next;
+        //    }
 
-            set
-            {
-                _next = value;
-                if (!_isWalkable || _next == null || _next == this)
-                {
-                    _arrow.GetChild(0).gameObject.SetActive(true);
-                }
-                else
-                {
-                    _arrow.GetChild(0).gameObject.SetActive(true);
-                    _arrow.rotation = Quaternion.LookRotation(_next.transform.position - transform.position);
-                }
-            }
-        }
+        //    set
+        //    {
+        //        _next = value;
+        //        if (!_isWalkable || _next == null || _next == this)
+        //        {
+        //            _arrow.GetChild(0).gameObject.SetActive(true);
+        //        }
+        //        else
+        //        {
+        //            _arrow.GetChild(0).gameObject.SetActive(true);
+        //            _arrow.rotation = Quaternion.LookRotation(_next.transform.position - transform.position);
+        //        }
+        //    }
+        //}
 
         private void Awake()
         {
-            _arrow = transform.GetChild(0);
+            //_arrow = transform.GetChild(0);
             _renderer = GetComponent<Renderer>();
         }
         private void Start()

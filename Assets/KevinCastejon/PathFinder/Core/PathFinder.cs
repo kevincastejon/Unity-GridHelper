@@ -13,94 +13,101 @@ namespace KevinCastejon.Pathfinding
             get;
         }
 
-        public int X
+        public float Weight
         {
             get;
         }
-
-        public int Y
-        {
-            get;
-        }
-
     }
-
-    public class Node
+    public class Node<T> where T : ITile
     {
-        private ITile _tile;
-
-        public Node(ITile tile, int x, int y)
+        internal Node(T tile, int x, int y)
         {
             _tile = tile;
             _x = x;
             _y = y;
         }
 
-        private bool _reached;
-        private bool _isGoal;
-        private Node _next;
-        private int _distance;
+        private T _tile;
+        private Node<T> _next;
+        private Vector2 _nextDirection;
+        private int _movementSteps;
+        private float _movementCosts;
         private int _x;
         private int _y;
 
-        public ITile Tile { get => _tile; set => _tile = value; }
-        public bool Reached { get => _reached; set => _reached = value; }
-        public bool IsGoal { get => _isGoal; set => _isGoal = value; }
-        public Node Next { get => _next; set => _next = value; }
-        public int Distance { get => _distance; set => _distance = value; }
+        public T Tile { get => _tile; internal set => _tile = value; }
+        public Node<T> Next { get => _next; internal set => _next = value; }
+        public Node<T> NextNode { get => _next; internal set => _next = value; }
+        public Vector2 NextDirection { get => _nextDirection; internal set => _nextDirection = value; }
+        public int MovementSteps { get => _movementSteps; internal set => _movementSteps = value; }
+        public float MovementCosts { get => _movementCosts; internal set => _movementCosts = value; }
+        public bool IsWalkable { get; }
+        public float Weight { get; }
         public int X { get => _x; }
         public int Y { get => _y; }
     }
-    public class PathMap
+    public class PathMap<T> where T : ITile
     {
-        private Node[,] _map;
-        private Node[] _flatMap;
-        private ITile _target;
+        private Node<T>[,] _map;
+        private Node<T>[] _flatMap;
+        private Dictionary<T, Node<T>> _dico;
+        private T _target;
 
-        public PathMap(Node[,] map, ITile target)
+        internal PathMap(Node<T>[,] map, T target)
         {
             _target = target;
             _map = map;
-            _flatMap = new Node[_map.GetLength(0) * _map.GetLength(1)];
+            _flatMap = new Node<T>[_map.GetLength(0) * _map.GetLength(1)];
+            _dico = new Dictionary<T, Node<T>>();
             int it = 0;
             for (int i = 0; i < map.GetLength(0); i++)
             {
                 for (int j = 0; j < map.GetLength(1); j++)
                 {
                     _flatMap[it] = map[i, j];
+                    _dico.Add(map[i, j].Tile, map[i, j]);
                     it++;
                 }
             }
         }
 
-        public ITile Target { get => _target; }
-        public Node[,] Map { get => _map; }
-
-        public T[] GetAccessibleTilesFromTarget<T>(int movementCount = 0) where T : ITile
+        public T Target { get => _target; }
+        public Node<T> GetNodeFromTile(T tile)
         {
-            return _flatMap.Where(n => movementCount > 0 ? n.Distance <= movementCount && n.Distance > 0 : n.Distance > 0).Select(n => (T)n.Tile).ToArray();
+            return _dico[tile];
         }
-        public T[] GetPathToTarget<T>(ITile tile) where T : ITile
+        public T[] GetAccessibleTilesFromTarget(int movementCount = 0)
         {
-            Node firstNode = _flatMap.First(n => n.Tile == tile);
-            Node node = firstNode;
-            List<ITile> tiles = new List<ITile>() { node.Tile };
-            while (node.Tile != _target)
+            return _flatMap.Where(n => movementCount > 0 ? n.MovementCosts <= movementCount && n.MovementCosts > 0 : n.MovementCosts > 0).Select(n => (T)n.Tile).ToArray();
+        }
+        public T[] GetPathToTarget(T tile)
+        {
+            Node<T> firstNode = _flatMap.First(n => EqualityComparer<T>.Default.Equals(n.Tile, tile));
+            return GetPathToTarget(firstNode.X, firstNode.Y);
+        }
+        public T[] GetPathToTarget(int tileX, int tileY)
+        {
+            Node<T> node = _map[tileY, tileX];
+            List<T> tiles = new List<T>() { node.Tile };
+            while (!EqualityComparer<T>.Default.Equals(node.Tile, _target))
             {
-
                 node = node.Next;
                 tiles.Add(node.Tile);
             }
-            return tiles.Select(x => (T)x).ToArray();
+            return tiles.Select(x => x).ToArray();
         }
-        public T[] GetPathFromTarget<T>(ITile tile) where T : ITile
+        public T[] GetPathFromTarget(T tile)
         {
-            return GetPathToTarget<T>(tile).Reverse().ToArray();
+            return GetPathToTarget(tile).Reverse().ToArray();
+        }
+        public T[] GetPathFromTarget(int tileX, int tileY)
+        {
+            return GetPathToTarget(tileX, tileY).Reverse().ToArray();
         }
     }
     public static class PathFinder
     {
-        private static Node GetNode(Node[,] map, int x, int y)
+        private static Node<T> GetNode<T>(Node<T>[,] map, int x, int y) where T : ITile
         {
             if (x > -1 && y > -1 && x < map.GetLength(1) && y < map.GetLength(0))
             {
@@ -108,10 +115,10 @@ namespace KevinCastejon.Pathfinding
             }
             return null;
         }
-        private static List<Node> GetNeighbours(Node[,] map, int x, int y, bool allowDiagonals)
+        private static List<Node<T>> GetNeighbours<T>(Node<T>[,] map, int x, int y, bool allowDiagonals) where T : ITile
         {
-            List<Node> nodes = new List<Node>();
-            Node nei;
+            List<Node<T>> nodes = new List<Node<T>>();
+            Node<T> nei;
             bool leftWalkable;
             bool rightWalkable;
             bool topWalkable;
@@ -163,19 +170,37 @@ namespace KevinCastejon.Pathfinding
 
             return nodes;
         }
-        public static T[] GetTilesIntoACircle<T>(ITile[,] map, ITile start, int radius) where T : ITile
+
+        public static T[] GetTilesIntoACircle<T>(T[,] map, T start, int radius) where T : ITile
         {
-            int top = Mathf.CeilToInt(start.Y - radius),
-                bottom = Mathf.FloorToInt(start.Y + radius),
-                left = Mathf.CeilToInt(start.X - radius),
-                right = Mathf.FloorToInt(start.X + radius);
+            int startX = 0;
+            int startY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], start))
+                    {
+                        startX = j;
+                        startY = i;
+                    }
+                }
+            }
+            return GetTilesIntoACircle(map, startX, startY, radius);
+        }
+        public static T[] GetTilesIntoACircle<T>(T[,] map, int startX, int startY, int radius) where T : ITile
+        {
+            int top = Mathf.CeilToInt(startY - radius),
+                bottom = Mathf.FloorToInt(startY + radius),
+                left = Mathf.CeilToInt(startX - radius),
+                right = Mathf.FloorToInt(startX + radius);
             List<T> list = new List<T>();
             for (int y = top; y <= bottom; y++)
             {
                 for (int x = left; x <= right; x++)
                 {
-                    float dx = start.X - x,
-                    dy = start.Y - y;
+                    float dx = startX - x,
+                    dy = startY - y;
                     float distance_squared = dx * dx + dy * dy;
                     if (distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0))
                     {
@@ -185,21 +210,45 @@ namespace KevinCastejon.Pathfinding
             }
             return list.ToArray();
         }
-        public static bool IsLineOfSightClear(ITile[,] map, ITile start, ITile stop)
+        public static bool IsLineOfSightClear<T>(T[,] map, T start, T stop) where T : ITile
         {
-            ITile[] los = GetLineOfSight<ITile>(map, start, stop);
-            return los[los.Length - 1] == stop;
+            T[] los = GetLineOfSight(map, start, stop);
+            return EqualityComparer<T>.Default.Equals(los[los.Length - 1], stop);
         }
-        public static T[] GetLineOfSight<T>(ITile[,] map, ITile start, ITile stop, int maxDistance = 0) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, T start, T stop, int maxDistance = 0) where T : ITile
         {
-            Vector2Int p0 = new Vector2Int(start.X, start.Y);
-            Vector2Int p1 = new Vector2Int(stop.X, stop.Y);
+            int startX = 0;
+            int startY = 0;
+            int stopX = 0;
+            int stopY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], start))
+                    {
+                        startX = j;
+                        startY = i;
+                    }
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], stop))
+                    {
+                        stopX = j;
+                        stopY = i;
+                    }
+                }
+            }
+            return GetLineOfSight<T>(map, startX, startY, stopX, stopY, maxDistance);
+        }
+        public static T[] GetLineOfSight<T>(T[,] map, int startX, int startY, int stopX, int stopY, int maxDistance = 0) where T : ITile
+        {
+            Vector2Int p0 = new Vector2Int(startX, startY);
+            Vector2Int p1 = new Vector2Int(stopX, stopY);
             int dx = p1.x - p0.x, dy = p1.y - p0.y;
             int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
             int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
 
             Vector2Int p = new Vector2Int(p0.x, p0.y);
-            List<T> points = new List<T> { (T)map[p.y, p.x] };
+            List<T> points = new List<T> { map[p.y, p.x] };
             for (int ix = 0, iy = 0; ix < nx || iy < ny;)
             {
                 if ((0.5 + ix) / nx < (0.5 + iy) / ny)
@@ -214,53 +263,1146 @@ namespace KevinCastejon.Pathfinding
                     p.y += sign_y;
                     iy++;
                 }
-                if (!map[p.y, p.x].IsWalkable || (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(start.X, start.Y)) > maxDistance))
+                if (!map[p.y, p.x].IsWalkable || (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startX, startY)) > maxDistance))
                 {
                     break;
                 }
 
-                points.Add((T)map[p.y, p.x]);
+                points.Add(map[p.y, p.x]);
             }
             return points.ToArray();
         }
-        public static PathMap GeneratePathMap(ITile[,] graph, ITile target, bool allowDiagonals = true)
+        public static PathMap<T> GeneratePathMap<T>(T[,] graph, T target, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
         {
             int height = graph.GetLength(0);
             int width = graph.GetLength(1);
-            Node targetNode = null;
-            Node[,] map = new Node[height, width];
+            Node<T> targetNode = null;
+            Node<T>[,] map = new Node<T>[height, width];
             for (int i = 0; i < height; i++)
             {
                 for (int j = 0; j < width; j++)
                 {
-                    map[i, j] = new Node(graph[i, j], j, i);
-                    if (graph[i, j] == target)
+                    map[i, j] = new Node<T>(graph[i, j], j, i);
+                    if (EqualityComparer<T>.Default.Equals(graph[i, j], target))
                     {
                         targetNode = map[i, j];
                     }
                 }
             }
-            List<Node> frontier = new List<Node>() { targetNode };
-            targetNode.Reached = true;
+            PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
+            frontier.Enqueue(targetNode, 0);
             targetNode.Next = targetNode;
-            targetNode.Distance = 0;
+            targetNode.MovementSteps = 0;
             while (frontier.Count > 0)
             {
-                Node current = frontier[0];
-                frontier.RemoveAt(0);
-                List<Node> neibourgs = GetNeighbours(map, current.X, current.Y, allowDiagonals);
-                foreach (Node nei in neibourgs)
+                Node<T> current = frontier.Dequeue();
+                List<Node<T>> neibourgs = GetNeighbours(map, current.X, current.Y, allowDiagonals);
+                foreach (Node<T> nei in neibourgs)
                 {
-                    if (!nei.Reached)
+                    bool isDiagonal = allowDiagonals && current.X != nei.X && current.Y != nei.Y;
+                    float newDistance = current.MovementCosts + nei.Tile.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
+                    if (nei.Next == null || newDistance < nei.MovementCosts)
                     {
-                        frontier.Add(nei);
-                        nei.Reached = true;
+                        frontier.Enqueue(nei, newDistance);
                         nei.Next = current;
-                        nei.Distance = current.Distance + 1;
+                        nei.NextDirection = new Vector2(((Node<T>)nei.Next).X > nei.X ? 1 : (((Node<T>)nei.Next).X < nei.X ? -1 : 0f), ((Node<T>)nei.Next).Y > nei.Y ? 1 : (((Node<T>)nei.Next).Y < nei.Y ? -1 : 0f));
+                        nei.MovementSteps = current.MovementSteps + 1;
+                        nei.MovementCosts = newDistance;
                     }
                 }
             }
-            return new PathMap(map, target);
+            return new PathMap<T>(map, target);
+        }
+    }
+}
+#nullable enable
+namespace PriorityQueueUnityPort
+{
+
+    // Licensed to the .NET Foundation under one or more agreements.
+    // The .NET Foundation licenses this file to you under the MIT license.
+
+    // ported from:
+    // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Collections/src/System/Collections/Generic/PriorityQueue.cs
+
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.CompilerServices;
+
+    internal sealed class PriorityQueueDebugView<TElement, TPriority>
+    {
+        private readonly PriorityQueue<TElement, TPriority> _queue;
+        private readonly bool _sort;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public (TElement Element, TPriority Priority)[] Items
+        {
+            get
+            {
+                List<(TElement Element, TPriority Priority)> list = new(_queue.UnorderedItems);
+                if (_sort)
+                {
+                    list.Sort((i1, i2) => _queue.Comparer.Compare(i1.Priority, i2.Priority));
+                }
+
+                return list.ToArray();
+            }
+        }
+
+        public PriorityQueueDebugView(PriorityQueue<TElement, TPriority> queue)
+        {
+            ArgumentNullException.ThrowIfNull(queue);
+
+            _queue = queue;
+            _sort = true;
+        }
+
+        public PriorityQueueDebugView(PriorityQueue<TElement, TPriority>.UnorderedItemsCollection collection) =>
+            _queue = collection?._queue ?? throw new System.ArgumentNullException(nameof(collection));
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    internal static class SR
+    {
+        internal const string ArgumentOutOfRange_NeedNonNegNum = "Non-negative number required.";
+        internal const string ArgumentOutOfRange_IndexMustBeLessOrEqual = "Index must be less or equal";
+        internal const string InvalidOperation_EmptyQueue = "The queue is empty.";
+        internal const string InvalidOperation_EnumFailedVersion = "Collection modified while iterating over it.";
+        internal const string Arg_NonZeroLowerBound = "Non-zero lower bound required.";
+        internal const string Arg_RankMultiDimNotSupported = "Multi-dimensional arrays not supported.";
+        internal const string Argument_InvalidArrayType = "Invalid array type.";
+        internal const string Argument_InvalidOffLen = "Invalid offset or length.";
+    }
+
+    internal static class ArgumentNullException
+    {
+        public static void ThrowIfNull(object o)
+        {
+            if (o == null)
+            {
+                throw new System.ArgumentNullException(); // hard to do it differently without C# 10's features
+            }
+        }
+    }
+
+    internal static class ArrayEx
+    {
+        internal const int MaxLength = int.MaxValue;
+    }
+
+    /// <summary>
+    ///     Internal helper functions for working with enumerables.
+    /// </summary>
+    internal static class EnumerableHelpers
+    {
+        /// <summary>Converts an enumerable to an array using the same logic as List{T}.</summary>
+        /// <param name="source">The enumerable to convert.</param>
+        /// <param name="length">The number of items stored in the resulting array, 0-indexed.</param>
+        /// <returns>
+        ///     The resulting array.  The length of the array may be greater than <paramref name="length" />,
+        ///     which is the actual number of elements in the array.
+        /// </returns>
+        internal static T[] ToArray<T>(IEnumerable<T> source, out int length)
+        {
+            if (source is ICollection<T> ic)
+            {
+                int count = ic.Count;
+                if (count != 0)
+                {
+                    // Allocate an array of the desired size, then copy the elements into it. Note that this has the same
+                    // issue regarding concurrency as other existing collections like List<T>. If the collection size
+                    // concurrently changes between the array allocation and the CopyTo, we could end up either getting an
+                    // exception from overrunning the array (if the size went up) or we could end up not filling as many
+                    // items as 'count' suggests (if the size went down).  This is only an issue for concurrent collections
+                    // that implement ICollection<T>, which as of .NET 4.6 is just ConcurrentDictionary<TKey, TValue>.
+                    T[] arr = new T[count];
+                    ic.CopyTo(arr, 0);
+                    length = count;
+                    return arr;
+                }
+            }
+            else
+            {
+                using (IEnumerator<T> en = source.GetEnumerator())
+                {
+                    if (en.MoveNext())
+                    {
+                        const int DefaultCapacity = 4;
+                        T[] arr = new T[DefaultCapacity];
+                        arr[0] = en.Current;
+                        int count = 1;
+
+                        while (en.MoveNext())
+                        {
+                            if (count == arr.Length)
+                            {
+                                // This is the same growth logic as in List<T>:
+                                // If the array is currently empty, we make it a default size.  Otherwise, we attempt to
+                                // double the size of the array.  Doubling will overflow once the size of the array reaches
+                                // 2^30, since doubling to 2^31 is 1 larger than Int32.MaxValue.  In that case, we instead
+                                // constrain the length to be Array.MaxLength (this overflow check works because of the
+                                // cast to uint).
+                                int newLength = count << 1;
+                                if ((uint)newLength > ArrayEx.MaxLength)
+                                {
+                                    newLength = ArrayEx.MaxLength <= count ? count + 1 : ArrayEx.MaxLength;
+                                }
+
+                                Array.Resize(ref arr, newLength);
+                            }
+
+                            arr[count++] = en.Current;
+                        }
+
+                        length = count;
+                        return arr;
+                    }
+                }
+            }
+
+            length = 0;
+            return Array.Empty<T>();
+        }
+    }
+
+    /// <summary>
+    ///     Represents a min priority queue.
+    /// </summary>
+    /// <typeparam name="TElement">Specifies the type of elements in the queue.</typeparam>
+    /// <typeparam name="TPriority">Specifies the type of priority associated with enqueued elements.</typeparam>
+    /// <remarks>
+    ///     Implements an array-backed quaternary min-heap. Each element is enqueued with an associated priority
+    ///     that determines the dequeue order: elements with the lowest priority get dequeued first.
+    /// </remarks>
+    [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(PriorityQueueDebugView<,>))]
+    public class PriorityQueue<TElement, TPriority>
+    {
+
+        /// <summary>
+        ///     Specifies the arity of the d-ary heap, which here is quaternary.
+        ///     It is assumed that this value is a power of 2.
+        /// </summary>
+        private const int Arity = 4;
+
+        /// <summary>
+        ///     The binary logarithm of <see cref="Arity" />.
+        /// </summary>
+        private const int Log2Arity = 2;
+
+        /// <summary>
+        ///     Represents an implicit heap-ordered complete d-ary tree, stored as an array.
+        /// </summary>
+        private (TElement Element, TPriority Priority)[] _nodes;
+
+        /// <summary>
+        ///     Custom comparer used to order the heap.
+        /// </summary>
+        private readonly IComparer<TPriority>? _comparer;
+
+        /// <summary>
+        ///     Lazily-initialized collection used to expose the contents of the queue.
+        /// </summary>
+        private UnorderedItemsCollection? _unorderedItems;
+
+        /// <summary>
+        ///     The number of nodes in the heap.
+        /// </summary>
+        private int _size;
+
+        /// <summary>
+        ///     Version updated on mutation to help validate enumerators operate on a consistent state.
+        /// </summary>
+        private int _version;
+
+        /// <summary>
+        ///     Gets the number of elements contained in the <see cref="PriorityQueue{TElement, TPriority}" />.
+        /// </summary>
+        public int Count => _size;
+
+        /// <summary>
+        ///     Gets the priority comparer used by the <see cref="PriorityQueue{TElement, TPriority}" />.
+        /// </summary>
+        public IComparer<TPriority> Comparer => _comparer ?? Comparer<TPriority>.Default;
+
+        /// <summary>
+        ///     Gets a collection that enumerates the elements of the queue in an unordered manner.
+        /// </summary>
+        /// <remarks>
+        ///     The enumeration does not order items by priority, since that would require N * log(N) time and N space.
+        ///     Items are instead enumerated following the internal array heap layout.
+        /// </remarks>
+        public UnorderedItemsCollection UnorderedItems => _unorderedItems ??= new(this);
+
+#if DEBUG
+        static PriorityQueue()
+        {
+            Debug.Assert(Log2Arity > 0 && Math.Pow(2, Log2Arity) == Arity);
+        }
+#endif
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PriorityQueue{TElement, TPriority}" /> class.
+        /// </summary>
+        public PriorityQueue()
+        {
+            _nodes = Array.Empty<(TElement, TPriority)>();
+            _comparer = InitializeComparer(null);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PriorityQueue{TElement, TPriority}" /> class
+        ///     with the specified initial capacity.
+        /// </summary>
+        /// <param name="initialCapacity">Initial capacity to allocate in the underlying heap array.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///     The specified <paramref name="initialCapacity" /> was negative.
+        /// </exception>
+        public PriorityQueue(int initialCapacity)
+            : this(initialCapacity, comparer: null)
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PriorityQueue{TElement, TPriority}" /> class
+        ///     with the specified custom priority comparer.
+        /// </summary>
+        /// <param name="comparer">
+        ///     Custom comparer dictating the ordering of elements.
+        ///     Uses <see cref="Comparer{T}.Default" /> if the argument is <see langword="null" />.
+        /// </param>
+        public PriorityQueue(IComparer<TPriority>? comparer)
+        {
+            _nodes = Array.Empty<(TElement, TPriority)>();
+            _comparer = InitializeComparer(comparer);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PriorityQueue{TElement, TPriority}" /> class
+        ///     with the specified initial capacity and custom priority comparer.
+        /// </summary>
+        /// <param name="initialCapacity">Initial capacity to allocate in the underlying heap array.</param>
+        /// <param name="comparer">
+        ///     Custom comparer dictating the ordering of elements.
+        ///     Uses <see cref="Comparer{T}.Default" /> if the argument is <see langword="null" />.
+        /// </param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///     The specified <paramref name="initialCapacity" /> was negative.
+        /// </exception>
+        public PriorityQueue(int initialCapacity, IComparer<TPriority>? comparer)
+        {
+            if (initialCapacity < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(initialCapacity), initialCapacity, SR.ArgumentOutOfRange_NeedNonNegNum);
+            }
+
+            _nodes = new (TElement, TPriority)[initialCapacity];
+            _comparer = InitializeComparer(comparer);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PriorityQueue{TElement, TPriority}" /> class
+        ///     that is populated with the specified elements and priorities.
+        /// </summary>
+        /// <param name="items">The pairs of elements and priorities with which to populate the queue.</param>
+        /// <exception cref="ArgumentNullException">
+        ///     The specified <paramref name="items" /> argument was <see langword="null" />.
+        /// </exception>
+        /// <remarks>
+        ///     Constructs the heap using a heapify operation,
+        ///     which is generally faster than enqueuing individual elements sequentially.
+        /// </remarks>
+        public PriorityQueue(IEnumerable<(TElement Element, TPriority Priority)> items)
+            : this(items, comparer: null)
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PriorityQueue{TElement, TPriority}" /> class
+        ///     that is populated with the specified elements and priorities,
+        ///     and with the specified custom priority comparer.
+        /// </summary>
+        /// <param name="items">The pairs of elements and priorities with which to populate the queue.</param>
+        /// <param name="comparer">
+        ///     Custom comparer dictating the ordering of elements.
+        ///     Uses <see cref="Comparer{T}.Default" /> if the argument is <see langword="null" />.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        ///     The specified <paramref name="items" /> argument was <see langword="null" />.
+        /// </exception>
+        /// <remarks>
+        ///     Constructs the heap using a heapify operation,
+        ///     which is generally faster than enqueuing individual elements sequentially.
+        /// </remarks>
+        public PriorityQueue(IEnumerable<(TElement Element, TPriority Priority)> items, IComparer<TPriority>? comparer)
+        {
+            ArgumentNullException.ThrowIfNull(items);
+
+            _nodes = EnumerableHelpers.ToArray(items, out _size);
+            _comparer = InitializeComparer(comparer);
+
+            if (_size > 1)
+            {
+                Heapify();
+            }
+        }
+
+        /// <summary>
+        ///     Adds the specified element with associated priority to the <see cref="PriorityQueue{TElement, TPriority}" />.
+        /// </summary>
+        /// <param name="element">The element to add to the <see cref="PriorityQueue{TElement, TPriority}" />.</param>
+        /// <param name="priority">The priority with which to associate the new element.</param>
+        public void Enqueue(TElement element, TPriority priority)
+        {
+            // Virtually add the node at the end of the underlying array.
+            // Note that the node being enqueued does not need to be physically placed
+            // there at this point, as such an assignment would be redundant.
+
+            int currentSize = _size++;
+            _version++;
+
+            if (_nodes.Length == currentSize)
+            {
+                Grow(currentSize + 1);
+            }
+
+            if (_comparer == null)
+            {
+                MoveUpDefaultComparer((element, priority), currentSize);
+            }
+            else
+            {
+                MoveUpCustomComparer((element, priority), currentSize);
+            }
+        }
+
+        /// <summary>
+        ///     Returns the minimal element from the <see cref="PriorityQueue{TElement, TPriority}" /> without removing it.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The <see cref="PriorityQueue{TElement, TPriority}" /> is empty.</exception>
+        /// <returns>The minimal element of the <see cref="PriorityQueue{TElement, TPriority}" />.</returns>
+        public TElement Peek()
+        {
+            if (_size == 0)
+            {
+                throw new InvalidOperationException(SR.InvalidOperation_EmptyQueue);
+            }
+
+            return _nodes[0].Element;
+        }
+
+        /// <summary>
+        ///     Removes and returns the minimal element from the <see cref="PriorityQueue{TElement, TPriority}" />.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The queue is empty.</exception>
+        /// <returns>The minimal element of the <see cref="PriorityQueue{TElement, TPriority}" />.</returns>
+        public TElement Dequeue()
+        {
+            if (_size == 0)
+            {
+                throw new InvalidOperationException(SR.InvalidOperation_EmptyQueue);
+            }
+
+            TElement element = _nodes[0].Element;
+            RemoveRootNode();
+            return element;
+        }
+
+        /// <summary>
+        ///     Removes the minimal element from the <see cref="PriorityQueue{TElement, TPriority}" />,
+        ///     and copies it to the <paramref name="element" /> parameter,
+        ///     and its associated priority to the <paramref name="priority" /> parameter.
+        /// </summary>
+        /// <param name="element">The removed element.</param>
+        /// <param name="priority">The priority associated with the removed element.</param>
+        /// <returns>
+        ///     <see langword="true" /> if the element is successfully removed;
+        ///     <see langword="false" /> if the <see cref="PriorityQueue{TElement, TPriority}" /> is empty.
+        /// </returns>
+        public bool TryDequeue([MaybeNullWhen(false)] out TElement element,
+                                [MaybeNullWhen(false)] out TPriority priority)
+        {
+            if (_size != 0)
+            {
+                (element, priority) = _nodes[0];
+                RemoveRootNode();
+                return true;
+            }
+
+            element = default;
+            priority = default;
+            return false;
+        }
+
+        /// <summary>
+        ///     Returns a value that indicates whether there is a minimal element in the
+        ///     <see cref="PriorityQueue{TElement, TPriority}" />,
+        ///     and if one is present, copies it to the <paramref name="element" /> parameter,
+        ///     and its associated priority to the <paramref name="priority" /> parameter.
+        ///     The element is not removed from the <see cref="PriorityQueue{TElement, TPriority}" />.
+        /// </summary>
+        /// <param name="element">The minimal element in the queue.</param>
+        /// <param name="priority">The priority associated with the minimal element.</param>
+        /// <returns>
+        ///     <see langword="true" /> if there is a minimal element;
+        ///     <see langword="false" /> if the <see cref="PriorityQueue{TElement, TPriority}" /> is empty.
+        /// </returns>
+        public bool TryPeek([MaybeNullWhen(false)] out TElement element,
+                             [MaybeNullWhen(false)] out TPriority priority)
+        {
+            if (_size != 0)
+            {
+                (element, priority) = _nodes[0];
+                return true;
+            }
+
+            element = default;
+            priority = default;
+            return false;
+        }
+
+        /// <summary>
+        ///     Adds the specified element with associated priority to the <see cref="PriorityQueue{TElement, TPriority}" />,
+        ///     and immediately removes the minimal element, returning the result.
+        /// </summary>
+        /// <param name="element">The element to add to the <see cref="PriorityQueue{TElement, TPriority}" />.</param>
+        /// <param name="priority">The priority with which to associate the new element.</param>
+        /// <returns>The minimal element removed after the enqueue operation.</returns>
+        /// <remarks>
+        ///     Implements an insert-then-extract heap operation that is generally more efficient
+        ///     than sequencing Enqueue and Dequeue operations: in the worst case scenario only one
+        ///     shift-down operation is required.
+        /// </remarks>
+        public TElement EnqueueDequeue(TElement element, TPriority priority)
+        {
+            if (_size != 0)
+            {
+                (TElement Element, TPriority Priority) root = _nodes[0];
+
+                if (_comparer == null)
+                {
+                    if (Comparer<TPriority>.Default.Compare(priority, root.Priority) > 0)
+                    {
+                        MoveDownDefaultComparer((element, priority), 0);
+                        _version++;
+                        return root.Element;
+                    }
+                }
+                else
+                {
+                    if (_comparer.Compare(priority, root.Priority) > 0)
+                    {
+                        MoveDownCustomComparer((element, priority), 0);
+                        _version++;
+                        return root.Element;
+                    }
+                }
+            }
+
+            return element;
+        }
+
+        /// <summary>
+        ///     Enqueues a sequence of element/priority pairs to the <see cref="PriorityQueue{TElement, TPriority}" />.
+        /// </summary>
+        /// <param name="items">The pairs of elements and priorities to add to the queue.</param>
+        /// <exception cref="ArgumentNullException">
+        ///     The specified <paramref name="items" /> argument was <see langword="null" />.
+        /// </exception>
+        public void EnqueueRange(IEnumerable<(TElement Element, TPriority Priority)> items)
+        {
+            ArgumentNullException.ThrowIfNull(items);
+
+            int count = 0;
+            ICollection<(TElement Element, TPriority Priority)>? collection =
+                items as ICollection<(TElement Element, TPriority Priority)>;
+            if (collection is not null && (count = collection.Count) > _nodes.Length - _size)
+            {
+                Grow(_size + count);
+            }
+
+            if (_size == 0)
+            {
+                // build using Heapify() if the queue is empty.
+
+                if (collection is not null)
+                {
+                    collection.CopyTo(_nodes, 0);
+                    _size = count;
+                }
+                else
+                {
+                    int i = 0;
+                    (TElement, TPriority)[] nodes = _nodes;
+                    foreach ((TElement element, TPriority priority) in items)
+                    {
+                        if (nodes.Length == i)
+                        {
+                            Grow(i + 1);
+                            nodes = _nodes;
+                        }
+
+                        nodes[i++] = (element, priority);
+                    }
+
+                    _size = i;
+                }
+
+                _version++;
+
+                if (_size > 1)
+                {
+                    Heapify();
+                }
+            }
+            else
+            {
+                foreach ((TElement element, TPriority priority) in items)
+                {
+                    Enqueue(element, priority);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Enqueues a sequence of elements pairs to the <see cref="PriorityQueue{TElement, TPriority}" />,
+        ///     all associated with the specified priority.
+        /// </summary>
+        /// <param name="elements">The elements to add to the queue.</param>
+        /// <param name="priority">The priority to associate with the new elements.</param>
+        /// <exception cref="ArgumentNullException">
+        ///     The specified <paramref name="elements" /> argument was <see langword="null" />.
+        /// </exception>
+        public void EnqueueRange(IEnumerable<TElement> elements, TPriority priority)
+        {
+            ArgumentNullException.ThrowIfNull(elements);
+
+            int count;
+            if (elements is ICollection<(TElement Element, TPriority Priority)> collection &&
+                (count = collection.Count) > _nodes.Length - _size)
+            {
+                Grow(_size + count);
+            }
+
+            if (_size == 0)
+            {
+                // build using Heapify() if the queue is empty.
+
+                int i = 0;
+                (TElement, TPriority)[] nodes = _nodes;
+                foreach (TElement element in elements)
+                {
+                    if (nodes.Length == i)
+                    {
+                        Grow(i + 1);
+                        nodes = _nodes;
+                    }
+
+                    nodes[i++] = (element, priority);
+                }
+
+                _size = i;
+                _version++;
+
+                if (i > 1)
+                {
+                    Heapify();
+                }
+            }
+            else
+            {
+                foreach (TElement element in elements)
+                {
+                    Enqueue(element, priority);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Removes all items from the <see cref="PriorityQueue{TElement, TPriority}" />.
+        /// </summary>
+        public void Clear()
+        {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<(TElement, TPriority)>())
+            {
+                // Clear the elements so that the gc can reclaim the references
+                Array.Clear(_nodes, 0, _size);
+            }
+
+            _size = 0;
+            _version++;
+        }
+
+        /// <summary>
+        ///     Ensures that the <see cref="PriorityQueue{TElement, TPriority}" /> can hold up to
+        ///     <paramref name="capacity" /> items without further expansion of its backing storage.
+        /// </summary>
+        /// <param name="capacity">The minimum capacity to be used.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///     The specified <paramref name="capacity" /> is negative.
+        /// </exception>
+        /// <returns>The current capacity of the <see cref="PriorityQueue{TElement, TPriority}" />.</returns>
+        public int EnsureCapacity(int capacity)
+        {
+            if (capacity < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(capacity), capacity, SR.ArgumentOutOfRange_NeedNonNegNum);
+            }
+
+            if (_nodes.Length < capacity)
+            {
+                Grow(capacity);
+                _version++;
+            }
+
+            return _nodes.Length;
+        }
+
+        /// <summary>
+        ///     Sets the capacity to the actual number of items in the <see cref="PriorityQueue{TElement, TPriority}" />,
+        ///     if that is less than 90 percent of current capacity.
+        /// </summary>
+        /// <remarks>
+        ///     This method can be used to minimize a collection's memory overhead
+        ///     if no new elements will be added to the collection.
+        /// </remarks>
+        public void TrimExcess()
+        {
+            int threshold = (int)(_nodes.Length * 0.9);
+            if (_size < threshold)
+            {
+                Array.Resize(ref _nodes, _size);
+                _version++;
+            }
+        }
+
+        /// <summary>
+        ///     Grows the priority queue to match the specified min capacity.
+        /// </summary>
+        private void Grow(int minCapacity)
+        {
+            Debug.Assert(_nodes.Length < minCapacity);
+
+            const int GrowFactor = 2;
+            const int MinimumGrow = 4;
+
+            int newcapacity = GrowFactor * _nodes.Length;
+
+            // Allow the queue to grow to maximum possible capacity (~2G elements) before encountering overflow.
+            // Note that this check works even when _nodes.Length overflowed thanks to the (uint) cast
+            if ((uint)newcapacity > ArrayEx.MaxLength)
+            {
+                newcapacity = ArrayEx.MaxLength;
+            }
+
+            // Ensure minimum growth is respected.
+            newcapacity = Math.Max(newcapacity, _nodes.Length + MinimumGrow);
+
+            // If the computed capacity is still less than specified, set to the original argument.
+            // Capacities exceeding Array.MaxLength will be surfaced as OutOfMemoryException by Array.Resize.
+            if (newcapacity < minCapacity)
+            {
+                newcapacity = minCapacity;
+            }
+
+            Array.Resize(ref _nodes, newcapacity);
+        }
+
+        /// <summary>
+        ///     Removes the node from the root of the heap
+        /// </summary>
+        private void RemoveRootNode()
+        {
+            int lastNodeIndex = --_size;
+            _version++;
+
+            if (lastNodeIndex > 0)
+            {
+                (TElement Element, TPriority Priority) lastNode = _nodes[lastNodeIndex];
+                if (_comparer == null)
+                {
+                    MoveDownDefaultComparer(lastNode, 0);
+                }
+                else
+                {
+                    MoveDownCustomComparer(lastNode, 0);
+                }
+            }
+
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<(TElement, TPriority)>())
+            {
+                _nodes[lastNodeIndex] = default;
+            }
+        }
+
+        /// <summary>
+        ///     Gets the index of an element's parent.
+        /// </summary>
+        private static int GetParentIndex(int index) => (index - 1) >> Log2Arity;
+
+        /// <summary>
+        ///     Gets the index of the first child of an element.
+        /// </summary>
+        private static int GetFirstChildIndex(int index) => (index << Log2Arity) + 1;
+
+        /// <summary>
+        ///     Converts an unordered list into a heap.
+        /// </summary>
+        private void Heapify()
+        {
+            // Leaves of the tree are in fact 1-element heaps, for which there
+            // is no need to correct them. The heap property needs to be restored
+            // only for higher nodes, starting from the first node that has children.
+            // It is the parent of the very last element in the array.
+
+            (TElement Element, TPriority Priority)[] nodes = _nodes;
+            int lastParentWithChildren = GetParentIndex(_size - 1);
+
+            if (_comparer == null)
+            {
+                for (int index = lastParentWithChildren; index >= 0; --index)
+                {
+                    MoveDownDefaultComparer(nodes[index], index);
+                }
+            }
+            else
+            {
+                for (int index = lastParentWithChildren; index >= 0; --index)
+                {
+                    MoveDownCustomComparer(nodes[index], index);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Moves a node up in the tree to restore heap order.
+        /// </summary>
+        private void MoveUpDefaultComparer((TElement Element, TPriority Priority) node, int nodeIndex)
+        {
+            // Instead of swapping items all the way to the root, we will perform
+            // a similar optimization as in the insertion sort.
+
+            Debug.Assert(_comparer is null);
+            Debug.Assert(0 <= nodeIndex && nodeIndex < _size);
+
+            (TElement Element, TPriority Priority)[] nodes = _nodes;
+
+            while (nodeIndex > 0)
+            {
+                int parentIndex = GetParentIndex(nodeIndex);
+                (TElement Element, TPriority Priority) parent = nodes[parentIndex];
+
+                if (Comparer<TPriority>.Default.Compare(node.Priority, parent.Priority) < 0)
+                {
+                    nodes[nodeIndex] = parent;
+                    nodeIndex = parentIndex;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            nodes[nodeIndex] = node;
+        }
+
+        /// <summary>
+        ///     Moves a node up in the tree to restore heap order.
+        /// </summary>
+        private void MoveUpCustomComparer((TElement Element, TPriority Priority) node, int nodeIndex)
+        {
+            // Instead of swapping items all the way to the root, we will perform
+            // a similar optimization as in the insertion sort.
+
+            Debug.Assert(_comparer is not null);
+            Debug.Assert(0 <= nodeIndex && nodeIndex < _size);
+
+            IComparer<TPriority> comparer = _comparer;
+            (TElement Element, TPriority Priority)[] nodes = _nodes;
+
+            while (nodeIndex > 0)
+            {
+                int parentIndex = GetParentIndex(nodeIndex);
+                (TElement Element, TPriority Priority) parent = nodes[parentIndex];
+
+                if (comparer.Compare(node.Priority, parent.Priority) < 0)
+                {
+                    nodes[nodeIndex] = parent;
+                    nodeIndex = parentIndex;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            nodes[nodeIndex] = node;
+        }
+
+        /// <summary>
+        ///     Moves a node down in the tree to restore heap order.
+        /// </summary>
+        private void MoveDownDefaultComparer((TElement Element, TPriority Priority) node, int nodeIndex)
+        {
+            // The node to move down will not actually be swapped every time.
+            // Rather, values on the affected path will be moved up, thus leaving a free spot
+            // for this value to drop in. Similar optimization as in the insertion sort.
+
+            Debug.Assert(_comparer is null);
+            Debug.Assert(0 <= nodeIndex && nodeIndex < _size);
+
+            (TElement Element, TPriority Priority)[] nodes = _nodes;
+            int size = _size;
+
+            int i;
+            while ((i = GetFirstChildIndex(nodeIndex)) < size)
+            {
+                // Find the child node with the minimal priority
+                (TElement Element, TPriority Priority) minChild = nodes[i];
+                int minChildIndex = i;
+
+                int childIndexUpperBound = Math.Min(i + Arity, size);
+                while (++i < childIndexUpperBound)
+                {
+                    (TElement Element, TPriority Priority) nextChild = nodes[i];
+                    if (Comparer<TPriority>.Default.Compare(nextChild.Priority, minChild.Priority) < 0)
+                    {
+                        minChild = nextChild;
+                        minChildIndex = i;
+                    }
+                }
+
+                // Heap property is satisfied; insert node in this location.
+                if (Comparer<TPriority>.Default.Compare(node.Priority, minChild.Priority) <= 0)
+                {
+                    break;
+                }
+
+                // Move the minimal child up by one node and
+                // continue recursively from its location.
+                nodes[nodeIndex] = minChild;
+                nodeIndex = minChildIndex;
+            }
+
+            nodes[nodeIndex] = node;
+        }
+
+        /// <summary>
+        ///     Moves a node down in the tree to restore heap order.
+        /// </summary>
+        private void MoveDownCustomComparer((TElement Element, TPriority Priority) node, int nodeIndex)
+        {
+            // The node to move down will not actually be swapped every time.
+            // Rather, values on the affected path will be moved up, thus leaving a free spot
+            // for this value to drop in. Similar optimization as in the insertion sort.
+
+            Debug.Assert(_comparer is not null);
+            Debug.Assert(0 <= nodeIndex && nodeIndex < _size);
+
+            IComparer<TPriority> comparer = _comparer;
+            (TElement Element, TPriority Priority)[] nodes = _nodes;
+            int size = _size;
+
+            int i;
+            while ((i = GetFirstChildIndex(nodeIndex)) < size)
+            {
+                // Find the child node with the minimal priority
+                (TElement Element, TPriority Priority) minChild = nodes[i];
+                int minChildIndex = i;
+
+                int childIndexUpperBound = Math.Min(i + Arity, size);
+                while (++i < childIndexUpperBound)
+                {
+                    (TElement Element, TPriority Priority) nextChild = nodes[i];
+                    if (comparer.Compare(nextChild.Priority, minChild.Priority) < 0)
+                    {
+                        minChild = nextChild;
+                        minChildIndex = i;
+                    }
+                }
+
+                // Heap property is satisfied; insert node in this location.
+                if (comparer.Compare(node.Priority, minChild.Priority) <= 0)
+                {
+                    break;
+                }
+
+                // Move the minimal child up by one node and continue recursively from its location.
+                nodes[nodeIndex] = minChild;
+                nodeIndex = minChildIndex;
+            }
+
+            nodes[nodeIndex] = node;
+        }
+
+        /// <summary>
+        ///     Initializes the custom comparer to be used internally by the heap.
+        /// </summary>
+        private static IComparer<TPriority>? InitializeComparer(IComparer<TPriority>? comparer)
+        {
+            if (typeof(TPriority).IsValueType)
+            {
+                if (comparer == Comparer<TPriority>.Default)
+                {
+                    // if the user manually specifies the default comparer,
+                    // revert to using the optimized path.
+                    return null;
+                }
+
+                return comparer;
+            }
+            else
+            {
+                // Currently the JIT doesn't optimize direct Comparer<T>.Default.Compare
+                // calls for reference types, so we want to cache the comparer instance instead.
+                // TODO https://github.com/dotnet/runtime/issues/10050: Update if this changes in the future.
+                return comparer ?? Comparer<TPriority>.Default;
+            }
+        }
+
+        /// <summary>
+        ///     Enumerates the contents of a <see cref="PriorityQueue{TElement, TPriority}" />, without any ordering guarantees.
+        /// </summary>
+        [DebuggerDisplay("Count = {Count}")]
+        [DebuggerTypeProxy(typeof(PriorityQueueDebugView<,>))]
+        public sealed class UnorderedItemsCollection : IReadOnlyCollection<(TElement Element, TPriority Priority)>,
+                                                       ICollection
+        {
+            internal readonly PriorityQueue<TElement, TPriority> _queue;
+
+            internal UnorderedItemsCollection(PriorityQueue<TElement, TPriority> queue) => _queue = queue;
+
+            /// <summary>
+            ///     Returns an enumerator that iterates through the <see cref="UnorderedItems" />.
+            /// </summary>
+            /// <returns>An <see cref="Enumerator" /> for the <see cref="UnorderedItems" />.</returns>
+            public Enumerator GetEnumerator() => new(_queue);
+
+            object ICollection.SyncRoot => this;
+            bool ICollection.IsSynchronized => false;
+
+            void ICollection.CopyTo(Array array, int index)
+            {
+                ArgumentNullException.ThrowIfNull(array);
+
+                if (array.Rank != 1)
+                {
+                    throw new ArgumentException(SR.Arg_RankMultiDimNotSupported, nameof(array));
+                }
+
+                if (array.GetLowerBound(0) != 0)
+                {
+                    throw new ArgumentException(SR.Arg_NonZeroLowerBound, nameof(array));
+                }
+
+                if (index < 0 || index > array.Length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(index), index,
+                                                           SR.ArgumentOutOfRange_IndexMustBeLessOrEqual);
+                }
+
+                if (array.Length - index < _queue._size)
+                {
+                    throw new ArgumentException(SR.Argument_InvalidOffLen);
+                }
+
+                try
+                {
+                    Array.Copy(_queue._nodes, 0, array, index, _queue._size);
+                }
+                catch (ArrayTypeMismatchException)
+                {
+                    throw new ArgumentException(SR.Argument_InvalidArrayType, nameof(array));
+                }
+            }
+
+            public int Count => _queue._size;
+
+            IEnumerator<(TElement Element, TPriority Priority)> IEnumerable<(TElement Element, TPriority Priority)>.
+                GetEnumerator() => GetEnumerator();
+
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+            /// <summary>
+            ///     Enumerates the element and priority pairs of a <see cref="PriorityQueue{TElement, TPriority}" />,
+            ///     without any ordering guarantees.
+            /// </summary>
+            public struct Enumerator : IEnumerator<(TElement Element, TPriority Priority)>
+            {
+                private readonly PriorityQueue<TElement, TPriority> _queue;
+                private readonly int _version;
+                private int _index;
+
+                internal Enumerator(PriorityQueue<TElement, TPriority> queue)
+                {
+                    _queue = queue;
+                    _index = 0;
+                    _version = queue._version;
+                    Current = default;
+                }
+
+                /// <summary>
+                ///     Releases all resources used by the <see cref="Enumerator" />.
+                /// </summary>
+                public void Dispose()
+                {
+                }
+
+                /// <summary>
+                ///     Advances the enumerator to the next element of the <see cref="UnorderedItems" />.
+                /// </summary>
+                /// <returns>
+                ///     <see langword="true" /> if the enumerator was successfully advanced to the next element;
+                ///     <see langword="false" /> if the enumerator has passed the end of the collection.
+                /// </returns>
+                public bool MoveNext()
+                {
+                    PriorityQueue<TElement, TPriority> localQueue = _queue;
+
+                    if (_version == localQueue._version && ((uint)_index < (uint)localQueue._size))
+                    {
+                        Current = localQueue._nodes[_index];
+                        _index++;
+                        return true;
+                    }
+
+                    return MoveNextRare();
+                }
+
+                private bool MoveNextRare()
+                {
+                    if (_version != _queue._version)
+                    {
+                        throw new InvalidOperationException(SR.InvalidOperation_EnumFailedVersion);
+                    }
+
+                    _index = _queue._size + 1;
+                    Current = default;
+                    return false;
+                }
+
+                /// <summary>
+                ///     Gets the element at the current position of the enumerator.
+                /// </summary>
+                public (TElement Element, TPriority Priority) Current { get; private set; }
+
+                object IEnumerator.Current => Current;
+
+                void IEnumerator.Reset()
+                {
+                    if (_version != _queue._version)
+                    {
+                        throw new InvalidOperationException(SR.InvalidOperation_EnumFailedVersion);
+                    }
+
+                    _index = 0;
+                    Current = default;
+                }
+            }
         }
     }
 }

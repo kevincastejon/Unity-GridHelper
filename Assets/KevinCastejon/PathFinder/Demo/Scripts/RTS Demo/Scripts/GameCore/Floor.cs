@@ -36,6 +36,7 @@ namespace RTS_Demo
                 RefreshVisual();
             }
         }
+        public float Weight { get => 1f; }
         public bool IsPath
         {
             get

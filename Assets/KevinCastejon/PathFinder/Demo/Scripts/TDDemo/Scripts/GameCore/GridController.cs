@@ -15,6 +15,7 @@ namespace TD_Demo
         private Floor[,] _map = new Floor[12, 11];
         private Floor _goalTile;
         private Camera _camera;
+        PathMap<Floor> _pathMap;
 
         public void Awake()
         {
@@ -37,17 +38,17 @@ namespace TD_Demo
         {
             // Referencing the camera
             _camera = Camera.main;
-            PathMap pathMap = PathFinder.GeneratePathMap(_map, _goalTile, true);
-            for (int i = 0; i < pathMap.Map.GetLength(0); i++)
-            {
-                for (int j = 0; j < pathMap.Map.GetLength(1); j++)
-                {
-                    if (pathMap.Map[i, j].Tile.IsWalkable)
-                    {
-                        _map[i, j].Next = (Floor)pathMap.Map[i, j].Next.Tile;
-                    }
-                }
-            }
+            _pathMap = PathFinder.GeneratePathMap(_map, _goalTile, true);
+            //for (int i = 0; i < pathMap.Map.GetLength(0); i++)
+            //{
+            //    for (int j = 0; j < pathMap.Map.GetLength(1); j++)
+            //    {
+            //        if (pathMap.Map[i, j].Tile.IsWalkable)
+            //        {
+            //            _map[i, j].Next = (Floor)pathMap.Map[i, j].Next.Tile;
+            //        }
+            //    }
+            //}
         }
         private void Update()
         {
@@ -60,7 +61,7 @@ namespace TD_Demo
                 if (hitFloor.IsWalkable)
                 {
                     Character ch = Instantiate(_charPrefab, new Vector3(hitFloor.transform.position.x, 1.5f, hitFloor.transform.position.z), Quaternion.identity);
-                    ch.SetStartTile(hitFloor);
+                    ch.Init(hitFloor, _pathMap);
                 }
             }
         }
