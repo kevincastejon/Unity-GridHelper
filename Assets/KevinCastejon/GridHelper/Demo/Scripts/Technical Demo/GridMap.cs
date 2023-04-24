@@ -50,6 +50,7 @@ namespace Technical_Demo
         private Camera _camera;
         private DemoType _demoType;
         private bool _firstDragValue;
+        private bool _showingSteps;
         private bool _showingDistances;
         private bool _showingDirections;
 
@@ -412,6 +413,10 @@ namespace Technical_Demo
             {
                 ShowDistances();
             }
+            else if (_showingSteps)
+            {
+                ShowSteps();
+            }
             else if (_showingDirections)
             {
                 ShowDirections();
@@ -435,10 +440,32 @@ namespace Technical_Demo
                 }
             }
         }
+        // Displays the steps count on the tiles
+        public void ShowSteps()
+        {
+            _showingSteps = true;
+            _showingDistances = false;
+            _showingDirections = false;
+            for (int i = 0; i < _map.GetLength(0); i++)
+            {
+                for (int j = 0; j < _map.GetLength(1); j++)
+                {
+                    if (!_map[i, j].IsWalkable)
+                    {
+                        _map[i, j].Label.text = "";
+                        _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);
+                        continue;
+                    }
+                    _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);
+                    _map[i, j].Label.text = _pathMap.GetMovementStepsFromTile(_map[i, j]).ToString();
+                }
+            }
+        }
         // Displays the distances on the tiles
         public void ShowDistances()
         {
             _showingDistances = true;
+            _showingSteps = false;
             _showingDirections = false;
             for (int i = 0; i < _map.GetLength(0); i++)
             {
@@ -455,10 +482,12 @@ namespace Technical_Demo
                 }
             }
         }
+
         // Displays the directions on the tiles
         public void ShowDirections()
         {
             _showingDirections = true;
+            _showingSteps = false;
             _showingDistances = false;
             for (int i = 0; i < _map.GetLength(0); i++)
             {
