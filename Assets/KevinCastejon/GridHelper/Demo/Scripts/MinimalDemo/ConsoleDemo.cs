@@ -1,6 +1,6 @@
 using KevinCastejon.GridHelper;
 using UnityEngine;
-namespace MinimalDemo
+namespace ConsoleDemo
 {
     // A simple Tile object implementing the ITile interface
     public struct Tile : ITile
@@ -30,7 +30,7 @@ namespace MinimalDemo
             }
         }
     }
-    public class MinimalDemo : MonoBehaviour
+    public class ConsoleDemo : MonoBehaviour
     {
         // Declaring the grid
         private Tile[,] _grid;

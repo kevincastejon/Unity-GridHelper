@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 313969821}
   - component: {fileID: 313969822}
   m_Layer: 0
-  m_Name: MinimalDemo
+  m_Name: ConsoleDemo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
