@@ -13,6 +13,7 @@ namespace Technical_Demo
         EXTRACT_CIRCLE,
         EXTRACT_RECTANGLE,
         LINE_OF_SIGHT,
+        LINE_OF_TILES,
         PATHFINDING_ACCESSIBLE,
         PATHFINDING_PATH,
     }
@@ -193,11 +194,18 @@ namespace Technical_Demo
                     case DemoType.EXTRACT_RECTANGLE:
                         break;
                     case DemoType.LINE_OF_SIGHT:
-                        OnLineOfSightHover(clickedFloor);
+                        SetStartTile(clickedFloor);
+                        RefreshVisuals();
+                        break;
+                    case DemoType.LINE_OF_TILES:
+                        SetStartTile(clickedFloor);
+                        RefreshVisuals();
                         break;
                     case DemoType.PATHFINDING_ACCESSIBLE:
                         break;
                     case DemoType.PATHFINDING_PATH:
+                        SetStartTile(clickedFloor);
+                        RefreshVisuals();
                         break;
                     default:
                         break;
@@ -211,49 +219,34 @@ namespace Technical_Demo
                 // Or if left-click just happenned
                 else if (Input.GetMouseButtonDown(0))
                 {
-                    // Do click action for specific mode
-                    switch (_demoType)
-                    {
-                        case DemoType.EXTRACT_CIRCLE:
-                            break;
-                        case DemoType.EXTRACT_RECTANGLE:
-                            break;
-                        case DemoType.LINE_OF_SIGHT:
-                            OnLineOfSightClick(clickedFloor);
-                            break;
-                        case DemoType.PATHFINDING_ACCESSIBLE:
-                            OnPathFindingAccessibleClick(clickedFloor);
-                            break;
-                        case DemoType.PATHFINDING_PATH:
-                            OnPathFindingPathClick(clickedFloor);
-                            break;
-                        default:
-                            break;
-                    }
+                    ChangeWallStateClick(clickedFloor);
+                    RefreshVisuals();
                 }
                 // Or if left click is maintained
                 else if (Input.GetMouseButton(0))
                 {
-                    // Do drag action for specific mode
-                    switch (_demoType)
-                    {
-                        case DemoType.EXTRACT_CIRCLE:
-                            break;
-                        case DemoType.EXTRACT_RECTANGLE:
-                            break;
-                        case DemoType.LINE_OF_SIGHT:
-                            OnLineOfSightDrag(clickedFloor);
-                            break;
-                        case DemoType.PATHFINDING_ACCESSIBLE:
-                            OnPathFindingAccessibleDrag(clickedFloor);
-                            break;
-                        case DemoType.PATHFINDING_PATH:
-                            OnPathFindingPathDrag(clickedFloor);
-                            break;
-                        default:
-                            break;
-                    }
+                    ChangeWallStateDrag(clickedFloor);
+                    RefreshVisuals();
                 }
+            }
+        }
+        // Displays the line of tiles
+        private void ShowLineOfTiles()
+        {
+            // Resetting all tiles
+            ResetPaths();
+            // If there is no start tile exit immediatelly
+            if (_pathStart == null)
+            {
+                return;
+            }
+            // Retrieving the line of tiles
+            Floor[] lineOfTiles = GridHelper.GetTilesOnALine(_map, _target, _pathStart);
+            // For each tile along the line
+            foreach (Floor floor in lineOfTiles)
+            {
+                // Set it as a path
+                floor.IsPath = true;
             }
         }
         // Displays the line of sight
@@ -266,10 +259,10 @@ namespace Technical_Demo
             {
                 return;
             }
-            // Retrieving the path
-            Floor[] pathToTarget = GridHelper.GetLineOfSight(_map, _target, _pathStart);
-            // For each tile along the path
-            foreach (Floor floor in pathToTarget)
+            // Retrieving the line of sight
+            Floor[] lineOfSight = GridHelper.GetLineOfSight(_map, _target, _pathStart);
+            // For each tile along the line of sight
+            foreach (Floor floor in lineOfSight)
             {
                 // Set it as a path
                 floor.IsPath = true;
@@ -336,18 +329,8 @@ namespace Technical_Demo
                 floor.IsPath = true;
             }
         }
-        private void OnLineOfSightHover(Floor clickedFloor)
-        {
-            // If this tile is not set as start
-            if (clickedFloor != _pathStart && clickedFloor.IsWalkable)
-            {
-                // Set the tile as start
-                _pathStart = clickedFloor;
-                // Displaying the line of sight
-                ShowLineOfSight();
-            }
-        }
-        private void OnLineOfSightClick(Floor clickedFloor)
+
+        private void ChangeWallStateClick(Floor clickedFloor)
         {
             // If this tile is not the target
             if (!clickedFloor.IsTarget)
@@ -358,11 +341,10 @@ namespace Technical_Demo
                 _firstDragValue = clickedFloor.IsWalkable;
                 // Generating a path map
                 GeneratePathMap();
-                // Displaying the line of sight
-                ShowLineOfSight();
             }
         }
-        private void OnLineOfSightDrag(Floor clickedFloor)
+
+        private void ChangeWallStateDrag(Floor clickedFloor)
         {
             // If this tile is not the target and has not already the same walkable state
             if (!clickedFloor.IsTarget && clickedFloor.IsWalkable != _firstDragValue)
@@ -370,57 +352,16 @@ namespace Technical_Demo
                 clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
                 // Generating a path map
                 GeneratePathMap();
-                // Displaying the line of sight
-                ShowLineOfSight();
+                
             }
         }
-        private void OnPathFindingAccessibleClick(Floor clickedFloor)
-        {
-            // If this tile is not the target
-            if (!clickedFloor.IsTarget)
-            {
-                // Inverting the walkable state
-                clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
-                // Setting this value as the "drag value" for next tiles hovering
-                _firstDragValue = clickedFloor.IsWalkable;
-                // Generating a path map
-                GeneratePathMap();
-                // Displaying the accessible tiles
-                ShowAccessibleTiles();
-            }
-        }
-        private void OnPathFindingPathClick(Floor clickedFloor)
+        private void SetStartTile(Floor clickedFloor)
         {
             // If that tile is walkable
-            if (clickedFloor.IsWalkable)
+            if (clickedFloor != _pathStart && clickedFloor.IsWalkable)
             {
                 // Setting this tile as the start 
                 _pathStart = clickedFloor;
-                // Displaying the path to target
-                ShowPathToTarget();
-            }
-        }
-        private void OnPathFindingAccessibleDrag(Floor clickedFloor)
-        {
-            // If this tile is not the target and has not already the same walkable state
-            if (!clickedFloor.IsTarget && clickedFloor.IsWalkable != _firstDragValue)
-            {
-                clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
-                // Generating a path map
-                GeneratePathMap();
-                // Displaying the accessible tiles
-                ShowAccessibleTiles();
-            }
-        }
-        private void OnPathFindingPathDrag(Floor clickedFloor)
-        {
-            // If that tile is walkable and not the already the starting one
-            if (clickedFloor.IsWalkable && _pathStart != clickedFloor)
-            {
-                // Setting this tile as start
-                _pathStart = clickedFloor;
-                // Displaying the path to target
-                ShowPathToTarget();
             }
         }
         private void SetTargetTile(Floor clickedFloor)
@@ -454,6 +395,10 @@ namespace Technical_Demo
                 case DemoType.LINE_OF_SIGHT:
                     // Displaying the line of sight
                     ShowLineOfSight();
+                    break;
+                case DemoType.LINE_OF_TILES:
+                    // Displaying the line of tiles
+                    ShowLineOfTiles();
                     break;
                 case DemoType.PATHFINDING_ACCESSIBLE:
                     // Displaying the accessible tiles
@@ -510,7 +455,7 @@ namespace Technical_Demo
                         continue;
                     }
                     _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);
-                    _map[i, j].Label.text = _pathMap.GetNodeFromTile(_map[i, j]).MovementCosts.ToString("F1");
+                    _map[i, j].Label.text = _pathMap.GetMovementCostFromTile(_map[i, j]).ToString("F1");
                 }
             }
         }
@@ -523,13 +468,13 @@ namespace Technical_Demo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
-                    if (!_map[i, j].IsWalkable || _pathMap.GetNodeFromTile(_map[i, j]).NextNode.Tile == _map[i, j])
+                    if (!_map[i, j].IsWalkable || _pathMap.GetNextTileFromTile(_map[i, j]) == _map[i, j])
                     {
                         _map[i, j].Label.text = "";
                         _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);
                         continue;
                     }
-                    Vector3 pos = _pathMap.GetNodeFromTile(_map[i, j]).NextNode.Tile.transform.position;
+                    Vector3 pos = _pathMap.GetNextTileFromTile(_map[i, j]).transform.position;
                     Vector3 dir = pos - _map[i, j].transform.position;
                     Quaternion rot = Quaternion.LookRotation(dir);
                     _map[i, j].Label.text = '\u2192'.ToString();

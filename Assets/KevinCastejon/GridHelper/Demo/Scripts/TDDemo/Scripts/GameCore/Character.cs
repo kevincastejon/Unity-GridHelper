@@ -12,7 +12,7 @@ namespace TD_Demo
         public void Init(Floor startFloor, PathMap<Floor> pathMap)
         {
             _pathMap = pathMap;
-            _target = _pathMap.GetNodeFromTile(startFloor).NextNode.Tile;
+            _target = _pathMap.GetNextTileFromTile(startFloor);
         }
 
         private void Update()
@@ -20,7 +20,7 @@ namespace TD_Demo
             transform.position = Vector3.MoveTowards(transform.position, new Vector3(_target.transform.position.x, 1.5f, _target.transform.position.z), 2.5f * Time.deltaTime);
             if (Vector3.Distance(transform.position, new Vector3(_target.transform.position.x, 1.5f, _target.transform.position.z)) < 0.1f)
             {
-                Floor nextTile = _pathMap.GetNodeFromTile(_target).NextNode.Tile;
+                Floor nextTile = _pathMap.GetNextTileFromTile(_target);
                 if (_target == nextTile)
                 {
                     Destroy(gameObject);
