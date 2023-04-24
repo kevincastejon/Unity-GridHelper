@@ -94,7 +94,7 @@ You can know if the line of sight between two tiles is clear (has not encountere
 GridHelper.IsLineOfSightClear(grid, startTile, stopTile);
 ```
 
-### Pathfinding
+### - Pathfinding
 
 The pathfinding part of this library uses **Dijkstra** algorithms for generating a **PathMap** object that holds all the calculated paths data for the entire grid. This way of doing pathfinding is usefull for some usages because it calculates once all the paths between one tile and all the others.
 
