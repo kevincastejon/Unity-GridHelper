@@ -16,86 +16,152 @@ Comes with several demo examples.
 
 ## Usages
 
-### Minimal pathfinding usage
-Here is a very basic example of pathfinding
-- **MinimalDemo.cs**
+This library is using a generic type for the user defined tile type that has to implement the **ITile** interface. This interface requires a boolean **IsWalkable** property, a float **Weight** property and two int **X** and **Y** properties.
+
+### - Extractions
+
+You can extract tiles into a radius, or into a rectangle, around a tile.
+
+- **GetTilesIntoARectangle**
 ```cs
-using KevinCastejon.GridHelper;
-using UnityEngine;
-namespace MinimalDemo
-{
-    // A simple Tile object implementing the ITile interface
-    public struct Tile : ITile
-    {
-        private string _name;
-        public Tile(string name, bool isWalkable, float weight = 1f)
-        {
-            _name = name;
-            IsWalkable = isWalkable;
-            Weight = weight;
-        }
-        public bool IsWalkable { get; set; }
-        public float Weight { get; set; }
-        public override string ToString()
-        {
-            if (IsWalkable)
-            {
-                return _name;
-            }
-            else
-            {
-                return '\u25A1'.ToString();
-            }
-        }
-    }
-    public class MinimalDemo : MonoBehaviour
-    {
-        // Declaring the grid
-        private Tile[,] _grid;
-        private void Awake()
-        {
-            // Any tile on the map
-            Tile anyTile = new Tile("S", true);
-            // The target tile
-            Tile target = new Tile("T", true);
-            // Feeding the grid
-            _grid = new Tile[6, 5] {
-                { new Tile("0", true), new Tile("1", true), new Tile("2", true),  new Tile("3", true), new Tile("4", true) },
-                { new Tile("5", true), new Tile("6", true), new Tile("7", false), new Tile("8", true), new Tile("9", true) },
-                { new Tile("10", true),new Tile("11", true),new Tile("12", false),new Tile("13", true),new Tile("14", true) },
-                { new Tile("15", true),new Tile("16", true),new Tile("17", false),new Tile("18", true),new Tile("19", true) },
-                { new Tile("20", true),new Tile("21", true),new Tile("22", false),new Tile("23", true),new Tile("24", true) },
-                { anyTile             ,new Tile("25", true),new Tile("26", false),new Tile("27", true),target }
-            };
-            // Generating the path map (costly)
-            PathMap<Tile> pathMap = GridHelper.GeneratePathMap(_grid, target);
-            // Getting the path between the target and any tile on the map ("free" cost)
-            Tile[] path = pathMap.GetPathToTarget(anyTile);
-            // Displaying grid into console
-            Debug.Log("Grid");
-            for (int i = 0; i < _grid.GetLength(0); i++)
-            {
-                string lineStr = "";
-                for (int j = 0; j < _grid.GetLength(1); j++)
-                {
-                    lineStr += "[" + _grid[i, j] + "] ";
-                }
-                Debug.Log(lineStr);
-            }
-            Debug.Log("");
-            string pathStr = "";
-            // Displaying path into console
-            Debug.Log("Path from [S] to [T]");
-            for (int i = 0; i < path.Length; i++)
-            {
-                pathStr += "[" + path[i] + "] ";
-                if (i < path.Length - 1)
-                {
-                    pathStr += "-> ";
-                }
-            }
-            Debug.Log(pathStr);
-        }
-    }
-}
+GridHelper.GetTilesIntoARectangle(grid, centerTile, rectangleSize);
+```
+- **GetTilesIntoARadius**
+```cs
+GridHelper.GetTilesIntoARadius(grid, centerTile, radius);
+```
+
+You can also get only the walkable tiles.
+
+- **GetWalkableTilesIntoARectangle**
+```cs
+GridHelper.GetWalkableTilesIntoARectangle(grid, centerTile, rectangleSize);
+```
+- **GetWalkableTilesIntoARadius**
+```cs
+GridHelper.GetWalkableTilesIntoARadius(grid, centerTile, radius);
+```
+
+You can also get only the tiles on the radius/rectangle outline.
+
+- **GetTilesIntoARectangleOutline**
+```cs
+GridHelper.GetTilesIntoARectangleOutline(grid, centerTile, rectangleSize);
+```
+- **GetTilesIntoARadiusOutline**
+```cs
+GridHelper.GetTilesIntoARadiusOutline(grid, centerTile, radius);
+```
+
+Finally, you can also get only the walkable tiles on the radius/rectangle outline.
+
+- **GetWalkableTilesIntoARectangleOutline**
+```cs
+GridHelper.GetWalkableTilesIntoARectangleOutline(grid, centerTile, rectangleSize);
+```
+- **GetWalkableTilesIntoARadiusOutline**
+```cs
+GridHelper.GetWalkableTilesIntoARadiusOutline(grid, centerTile, radius);
+```
+
+### - Line
+
+You can get all the tiles on a line between two tiles
+
+- **GetTilesOnALine**
+```cs
+GridHelper.GetTilesOnALine(grid, startTile, stopTile);
+```
+
+You can also get only the walkable tiles...
+
+- **GetWalkableTilesOnALine**
+```cs
+GridHelper.GetWalkableTilesOnALine(grid, startTile, stopTile);
+```
+
+You can get the line of sight between two tiles (a line that "stops" at the first encountered unwalkable tile)
+
+- **GetLineOfSight**
+```cs
+GridHelper.GetLineOfSight(grid, startTile, stopTile);
+```
+
+You can know if the line of sight between two tiles is clear (has not encountered any unwalkable tile)
+
+- **IsLineOfSightClear**
+```cs
+GridHelper.IsLineOfSightClear(grid, startTile, stopTile);
+```
+
+### Pathfinding
+
+The pathfinding part of this library uses **Dijkstra** algorithms for generating a **PathMap** object that holds all the calculated paths data for the entire grid. This way of doing pathfinding is usefull for some usages because it calculates once all the paths between one tile and all the others.
+
+To generate the **PathMap** object, use the **GeneratePathMap** method. The **PathMap** class is using a generic type for the user defined tile type so you have to explicit that type on declaration.
+
+```cs
+PathMap<Tile> pathMap = GridHelper.GeneratePathMap(_grid, targetTile);
+```
+
+Once the **PathMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
+
+You can retrieve the tile that has been used as the target to generate this **PathMap**
+
+- **Target**
+```cs
+pathMap.Target;
+```
+
+You can get all the accessible tiles from the target tile. You can use a int maximum movement steps count (number of tiles), a float maximum movement cost ("distance" of the path taking account of the tiles weights) or no maximum at all (pass 0 as parameter or just do not pass any parameter).
+
+- **GetAccessibleTilesFromTarget**
+```cs
+pathMap.GetAccessibleTilesFromTarget(maximumMovement);
+```
+
+You can get all the tiles on the path from a tile to the target.
+
+- **GetPathToTarget**
+```cs
+pathMap.GetPathToTarget(startTile);
+```
+
+Or you can get all the tiles on the path from the target to a tile.
+
+- **GetPathFromTarget**
+```cs
+pathMap.GetPathFromTarget(destinationTile);
+```
+
+### Pathfinding - other PathMap features
+
+You can get info a specific tile through some **PathMap** methods.
+
+You can get the number of steps on the path between the target and a tile.
+
+- **GetMovementStepsFromTile**
+```cs
+pathMap.GetMovementStepsFromTile(tile);
+```
+
+You can get the movement cost on the path between the target and a tile.
+
+- **GetMovementCostFromTile**
+```cs
+pathMap.GetMovementCostFromTile(tile);
+```
+
+You can get the next tile on the path between the target and a tile.
+
+- **GetNextTileFromTile**
+```cs
+pathMap.GetNextTileFromTile(tile);
+```
+
+You can get the next tile direction on the path between the target and a tile.
+
+- **GetNextTileDirectionFromTile**
+```cs
+pathMap.GetNextTileDirectionFromTile(tile);
 ```
