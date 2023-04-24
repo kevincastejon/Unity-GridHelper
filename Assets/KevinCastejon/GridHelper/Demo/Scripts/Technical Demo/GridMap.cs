@@ -44,7 +44,6 @@ namespace Technical_Demo
         [SerializeField] private Slider _extractSizeYSlider;
         [SerializeField] private TextMeshProUGUI _extractSizeYLabel;
 
-
         private Floor[,] _map = new Floor[12, 10];
         private Floor _pathStart;
         private PathMap<Floor> _pathMap;
@@ -302,7 +301,7 @@ namespace Technical_Demo
             // Reseting all tiles visuals
             ResetPaths();
             // Retrieving the accessible tiles from the pathMap
-            Floor[] accessibleTiles = _pathMap.GetAccessibleTilesFromTarget(_maxMovement);
+            Floor[] accessibleTiles = _pathMap.GetAccessibleTilesFromTarget((float)_maxMovement);
             // For each accessible tile
             foreach (Floor floor in accessibleTiles)
             {
@@ -329,7 +328,6 @@ namespace Technical_Demo
                 floor.IsPath = true;
             }
         }
-
         private void ChangeWallStateClick(Floor clickedFloor)
         {
             // If this tile is not the target
@@ -343,7 +341,6 @@ namespace Technical_Demo
                 GeneratePathMap();
             }
         }
-
         private void ChangeWallStateDrag(Floor clickedFloor)
         {
             // If this tile is not the target and has not already the same walkable state
@@ -420,7 +417,6 @@ namespace Technical_Demo
                 ShowDirections();
             }
         }
-
         public void SetMode(int demoType)
         {
             DemoType = (DemoType)demoType;

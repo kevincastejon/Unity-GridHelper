@@ -7,19 +7,19 @@ using UnityEngine;
 namespace KevinCastejon.GridHelper
 {
     /// <summary>
-    /// An interface that the user defined tile class has to implement in order to work with this library
+    /// An interface that the user-defined tile class has to implement in order to work with most of this library's methods
     /// </summary>
     public interface ITile
     {
         /// <summary>
-        /// Is the tile walkable
+        /// Is the tile walkable (or "transparent" for line of sight)
         /// </summary>
         public bool IsWalkable
         {
             get;
         }
         /// <summary>
-        /// The tile movement weight (minimum 1f)
+        /// The tile movement cost (minimum 1f)
         /// </summary>
         public float Weight
         {
@@ -60,9 +60,9 @@ namespace KevinCastejon.GridHelper
         internal float MovementCosts { get => _movementCosts; set => _movementCosts = value; }
     }
     /// <summary>
-    /// An object containing all the precalculated paths data of a tile grid
+    /// An object containing all the calculated paths data of a tile grid
     /// </summary>
-    /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+    /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
     public class PathMap<T> where T : ITile
     {
         private readonly Node<T>[,] _map;
@@ -89,29 +89,48 @@ namespace KevinCastejon.GridHelper
         }
 
         /// <summary>
-        /// The target tile for this PathMap
+        /// The tile that has been used as the target to generate this PathMap
         /// </summary>
         public T Target { get => _target; }
         /// <summary>
-        /// Get the next tile along the path for a tile
+        /// Get the next tile on the path between the target and a tile.
         /// </summary>
-        /// <param name="tile">A tile object</param>
+        /// <param name="tile">A tile</param>
         /// <returns>A tile object</returns>
         public T GetNextTileFromTile(T tile)
         {
             return _dico[tile].NextNode.Tile;
         }
         /// <summary>
-        /// Get the direction of the next tile along the path for a tile
+        /// Get the next tile on the path between the target and a tile.
         /// </summary>
-        /// <param name="tile">A tile object</param>
+        /// <param name="tile">A tile</param>
+        /// <returns>A tile object</returns>
+        public T GetNextTileFromTile(int tileX, int tileY)
+        {
+            return _map[tileY, tileX].NextNode.Tile;
+        }
+        /// <summary>
+        /// Get the next tile on the path between the target and a tile.
+        /// </summary>
+        /// <param name="tile">The tile</param>
         /// <returns>A Vector2 direction</returns>
         public Vector2 GetNextTileDirectionFromTile(T tile)
         {
             return _dico[tile].NextDirection;
         }
         /// <summary>
-        /// Get the tile movement steps count along the path between the target and a tile
+        /// Get the next tile on the path between the target and a tile.
+        /// </summary>
+        /// <param name="tileX">The tile X coordinate</param>
+        /// <param name="tileY">The tile Y coordinate</param>
+        /// <returns>A Vector2 direction</returns>
+        public Vector2 GetNextTileDirectionFromTile(int tileX, int tileY)
+        {
+            return _map[tileY, tileX].NextDirection;
+        }
+        /// <summary>
+        /// Get the number of steps on the path between the target and a tile.
         /// </summary>
         /// <param name="tile">A tile object</param>
         /// <returns>The movement steps count</returns>
@@ -120,7 +139,16 @@ namespace KevinCastejon.GridHelper
             return _dico[tile].MovementSteps;
         }
         /// <summary>
-        /// Get the tile movement cost count along the path between the target and a tile
+        /// Get the number of steps on the path between the target and a tile.
+        /// </summary>
+        /// <param name="tile">A tile object</param>
+        /// <returns>The movement steps count</returns>
+        public int GetMovementStepsFromTile(int tileX, int tileY)
+        {
+            return _map[tileX, tileY].MovementSteps;
+        }
+        /// <summary>
+        /// Get the movement cost on the path between the target and a tile.
         /// </summary>
         /// <param name="tile">A tile object</param>
         /// <returns>The movement cost</returns>
@@ -129,7 +157,16 @@ namespace KevinCastejon.GridHelper
             return _dico[tile].MovementCosts;
         }
         /// <summary>
-        /// Get all accessible tiles from target within maximum movement step
+        /// Get the movement cost on the path between the target and a tile.
+        /// </summary>
+        /// <param name="tile">A tile object</param>
+        /// <returns>The movement cost</returns>
+        public float GetMovementCostFromTile(int tileX, int tileY)
+        {
+            return _map[tileX, tileY].MovementCosts;
+        }
+        /// <summary>
+        /// Get all the accessible tiles from the target tile. You can use a int maximum movement steps count (number of tiles), a float maximum movement cost ("distance" of the path taking account of the tiles weights) or no maximum at all (pass 0 as parameter or just do not pass any parameter).
         /// </summary>
         /// <param name="movementStep"></param>
         /// <returns>An array of tiles</returns>
@@ -138,7 +175,7 @@ namespace KevinCastejon.GridHelper
             return _flatMap.Where(n => movementStep > 0 ? n.MovementSteps <= movementStep && n.MovementSteps > 0 : n.MovementSteps > 0).Select(n => (T)n.Tile).ToArray();
         }
         /// <summary>
-        /// Get all accessible tiles from target within maximum movement cost
+        /// Get all the accessible tiles from the target tile. You can use a int maximum movement steps count (number of tiles), a float maximum movement cost ("distance" of the path taking account of the tiles weights) or no maximum at all (pass 0 as parameter or just do not pass any parameter).
         /// </summary>
         /// <param name="movementCost"></param>
         /// <returns>An array of tiles</returns>
@@ -147,7 +184,7 @@ namespace KevinCastejon.GridHelper
             return _flatMap.Where(n => movementCost > 0 ? n.MovementCosts <= movementCost && n.MovementCosts > 0 : n.MovementCosts > 0).Select(n => (T)n.Tile).ToArray();
         }
         /// <summary>
-        /// Get all tiles along the path between a tile and the target
+        /// Get all the tiles on the path from a tile to the target.
         /// </summary>
         /// <param name="tile">The start tile</param>
         /// <returns>An array of tiles</returns>
@@ -156,7 +193,7 @@ namespace KevinCastejon.GridHelper
             return GetPathToTarget(tile.X, tile.Y);
         }
         /// <summary>
-        /// Get all tiles along the path between a tile and the target
+        /// Get all the tiles on the path from a tile to the target.
         /// </summary>
         /// <param name="tileX">The start tile x coordinate</param>
         /// <param name="tileY">The start tile y coordinate</param>
@@ -177,7 +214,7 @@ namespace KevinCastejon.GridHelper
             return tiles.Select(x => x).ToArray();
         }
         /// <summary>
-        /// Get all tiles along the path between the target and a tile
+        /// Get all the tiles on the path from the target to a tile.
         /// </summary>
         /// <param name="tile">The destination tile</param>
         /// <returns>An array of tiles</returns>
@@ -186,7 +223,7 @@ namespace KevinCastejon.GridHelper
             return GetPathToTarget(tile).Reverse().ToArray();
         }
         /// <summary>
-        /// Get all tiles along the path between the target and a tile
+        /// Get all the tiles on the path from the target to a tile.
         /// </summary>
         /// <param name="tileX">The destination tile x coordinate</param>
         /// <param name="tileY">The destination tile y coordinate</param>
@@ -317,9 +354,9 @@ namespace KevinCastejon.GridHelper
             return list.ToArray();
         }
         /// <summary>
-        /// Get all tiles contained into a rectangle around a tile
+        /// Get all walkable tiles contained into a rectangle around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
@@ -329,9 +366,9 @@ namespace KevinCastejon.GridHelper
             return GetWalkableTilesIntoARectangle(map, center.X, center.Y, rectangleSize.x, rectangleSize.y);
         }
         /// <summary>
-        /// Get all tiles contained into a rectangle around a tile
+        /// Get all walkable tiles contained into a rectangle around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="rectangleSizeX">The rectangle horizontal size</param>
@@ -344,7 +381,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles contained into a rectangle around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="centerX">The center tile x coordinate</param>
         /// <param name="centerY">The center tile y coordinate</param>
@@ -431,7 +468,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles on a rectangle outline around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
@@ -443,7 +480,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles on a rectangle outline around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="rectangleSizeX">The rectangle horizontal size</param>
@@ -456,7 +493,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles on a rectangle outline around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="centerX">The center tile x coordinate</param>
         /// <param name="centerY">The center tile y coordinate</param>
@@ -579,7 +616,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles contained into a radius around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
@@ -591,7 +628,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles contained into a radius around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="centerX">The center tile x coordinate</param>
         /// <param name="centerY">The center tile y coordinate</param>
@@ -622,7 +659,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles on a radius outline around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
@@ -634,7 +671,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles on a radius outline around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="centerX">The center tile x coordinate</param>
         /// <param name="centerY">The center tile y coordinate</param>
@@ -673,7 +710,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all tiles on a line between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="stop">The stop tile</param>
@@ -715,7 +752,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all tiles on a line between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="startX">The start tile x coordinate</param>
         /// <param name="startY">The start tile y coordinate</param>
@@ -759,7 +796,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles on a line between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="stop">The stop tile</param>
@@ -805,7 +842,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all walkable tiles on a line between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="startX">The start tile x coordinate</param>
         /// <param name="startY">The start tile y coordinate</param>
@@ -853,7 +890,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="stop">The stop tile</param>
@@ -865,7 +902,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="startX">The start tile X coordinate</param>
         /// <param name="startY">The start tile X coordinate</param>
@@ -910,7 +947,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all tiles on a line between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="stop">The stop tile</param>
@@ -923,7 +960,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all tiles on a line between two tiles
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="startX">The start tile x coordinate</param>
         /// <param name="startY">The start tile y coordinate</param>
@@ -967,7 +1004,7 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Generates a PathMap object that will contain all the precalculated paths data for the entire grid
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="target">The target tile for the paths calculation</param>
         /// <param name="allowDiagonals">Allow diagonals movements</param>
