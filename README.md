@@ -134,9 +134,11 @@ Or you can get all the tiles on the path from the target to a tile.
 pathMap.GetPathFromTarget(destinationTile);
 ```
 
-### Pathfinding - other PathMap features
+### - Pathfinding - other PathMap features
 
-You can get info a specific tile through some **PathMap** methods.
+You can get info on a specific tile through some **PathMap** methods.
+
+
 
 You can get the number of steps on the path between the target and a tile.
 
