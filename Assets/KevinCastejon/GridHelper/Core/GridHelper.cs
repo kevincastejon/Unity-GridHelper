@@ -299,14 +299,171 @@ namespace KevinCastejon.GridHelper
         }
 
         /// <summary>
-        /// Get all tiles contained into a radius around a tile
+        /// Get all tiles contained into a rectangle around a tile
+        /// </summary>
+        /// <typeparam name="T">Any object type</typeparam>
+        /// <param name="map">A two-dimensional array of any objects</param>
+        /// <param name="center">The center tile</param>
+        /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetTilesIntoARectangle<T>(T[,] map, T center, Vector2Int rectangleSize)
+        {
+            int startX = 0;
+            int startY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], center))
+                    {
+                        startX = j;
+                        startY = i;
+                    }
+                }
+            }
+            return GetTilesIntoARectangle(map, startX, startY, rectangleSize.x, rectangleSize.y);
+        }
+        /// <summary>
+        /// Get all tiles contained into a rectangle around a tile
+        /// </summary>
+        /// <typeparam name="T">Any object type</typeparam>
+        /// <param name="map">A two-dimensional array of any objects</param>
+        /// <param name="center">The center tile</param>
+        /// <param name="rectangleSizeX">The rectangle horizontal size</param>
+        /// <param name="rectangleSizeY">The rectangle vertical size</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetTilesIntoARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY)
+        {
+            int startX = 0;
+            int startY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], center))
+                    {
+                        startX = j;
+                        startY = i;
+                    }
+                }
+            }
+            return GetTilesIntoARectangle(map, startX, startY, rectangleSizeX, rectangleSizeY);
+        }
+        /// <summary>
+        /// Get all tiles contained into a rectangle around a tile
+        /// </summary>
+        /// <typeparam name="T">Any object type</typeparam>
+        /// <param name="map">A two-dimensional array of any objects</param>
+        /// <param name="centerX">The center tile x coordinate</param>
+        /// <param name="centerY">The center tile y coordinate</param>
+        /// <param name="rectangleSizeX">The rectangle horizontal size</param>
+        /// <param name="rectangleSizeY">The rectangle vertical size</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetTilesIntoARectangle<T>(T[,] map, int centerX, int centerY, int rectangleSizeX, int rectangleSizeY)
+        {
+            int top = Mathf.Max(centerY - rectangleSizeY, 0),
+                bottom = Mathf.Min(centerY + rectangleSizeY + 1, map.GetLength(0)),
+                left = Mathf.Max(centerX - rectangleSizeX, 0),
+                right = Mathf.Min(centerX + rectangleSizeX + 1, map.GetLength(1));
+            List<T> list = new List<T>();
+            for (int i = top; i < bottom; i++)
+            {
+                for (int j = left; j < right; j++)
+                {
+                    list.Add(map[i, j]);
+                }
+            }
+            return list.ToArray();
+        }
+        /// <summary>
+        /// Get all tiles contained into a rectangle around a tile
         /// </summary>
         /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tile</param>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="center">The center tile</param>
+        /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetWalkableTilesIntoARectangle<T>(T[,] map, T center, Vector2Int rectangleSize) where T : ITile
+        {
+            int startX = 0;
+            int startY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], center))
+                    {
+                        startX = j;
+                        startY = i;
+                    }
+                }
+            }
+            return GetWalkableTilesIntoARectangle(map, startX, startY, rectangleSize.x, rectangleSize.y);
+        }
+        /// <summary>
+        /// Get all tiles contained into a rectangle around a tile
+        /// </summary>
+        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="center">The center tile</param>
+        /// <param name="rectangleSizeX">The rectangle horizontal size</param>
+        /// <param name="rectangleSizeY">The rectangle vertical size</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetWalkableTilesIntoARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
+        {
+            int startX = 0;
+            int startY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], center))
+                    {
+                        startX = j;
+                        startY = i;
+                    }
+                }
+            }
+            return GetWalkableTilesIntoARectangle(map, startX, startY, rectangleSizeX, rectangleSizeY);
+        }
+        /// <summary>
+        /// Get all walkable tiles contained into a rectangle around a tile
+        /// </summary>
+        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="centerX">The center tile x coordinate</param>
+        /// <param name="centerY">The center tile y coordinate</param>
+        /// <param name="rectangleSizeX">The rectangle horizontal size</param>
+        /// <param name="rectangleSizeY">The rectangle vertical size</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetWalkableTilesIntoARectangle<T>(T[,] map, int centerX, int centerY, int rectangleSizeX, int rectangleSizeY) where T : ITile
+        {
+            int top = Mathf.Max(centerY - rectangleSizeY, 0),
+                bottom = Mathf.Min(centerY + rectangleSizeY + 1, map.GetLength(0)),
+                left = Mathf.Max(centerX - rectangleSizeX, 0),
+                right = Mathf.Min(centerX + rectangleSizeX + 1, map.GetLength(1));
+            List<T> list = new List<T>();
+            for (int i = top; i < bottom; i++)
+            {
+                for (int j = left; j < right; j++)
+                {
+                    if (map[i, j].IsWalkable)
+                    {
+                        list.Add(map[i, j]);
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+        /// <summary>
+        /// Get all tiles contained into a radius around a tile
+        /// </summary>
+        /// <typeparam name="T">Any object type</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesIntoARadius<T>(T[,] map, T center, int radius) where T : ITile
+        public static T[] GetTilesIntoARadius<T>(T[,] map, T center, int radius)
         {
             int startX = 0;
             int startY = 0;
@@ -326,13 +483,13 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all tiles contained into a radius around a tile
         /// </summary>
-        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tile</param>
+        /// <typeparam name="T">Any object type</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="centerX">The center tile x coordinate</param>
         /// <param name="centerY">The center tile y coordinate</param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesIntoARadius<T>(T[,] map, int centerX, int centerY, int radius) where T : ITile
+        public static T[] GetTilesIntoARadius<T>(T[,] map, int centerX, int centerY, int radius)
         {
             int top = Mathf.CeilToInt(centerY - radius),
                 bottom = Mathf.FloorToInt(centerY + radius),
@@ -348,7 +505,63 @@ namespace KevinCastejon.GridHelper
                     float distance_squared = dx * dx + dy * dy;
                     if (distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0))
                     {
-                        list.Add((T)map[y, x]);
+                        list.Add(map[y, x]);
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+        /// <summary>
+        /// Get all walkable tiles contained into a radius around a tile
+        /// </summary>
+        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="center">The center tile</param>
+        /// <param name="radius">The radius</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetWalkableTilesIntoARadius<T>(T[,] map, T center, int radius) where T : ITile
+        {
+            int startX = 0;
+            int startY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], center))
+                    {
+                        startX = j;
+                        startY = i;
+                    }
+                }
+            }
+            return GetWalkableTilesIntoARadius(map, startX, startY, radius);
+        }
+        /// <summary>
+        /// Get all walkable tiles contained into a radius around a tile
+        /// </summary>
+        /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="centerX">The center tile x coordinate</param>
+        /// <param name="centerY">The center tile y coordinate</param>
+        /// <param name="radius">The radius</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetWalkableTilesIntoARadius<T>(T[,] map, int centerX, int centerY, int radius) where T : ITile
+        {
+            int top = Mathf.CeilToInt(centerY - radius),
+                bottom = Mathf.FloorToInt(centerY + radius),
+                left = Mathf.CeilToInt(centerX - radius),
+                right = Mathf.FloorToInt(centerX + radius);
+            List<T> list = new List<T>();
+            for (int y = top; y <= bottom; y++)
+            {
+                for (int x = left; x <= right; x++)
+                {
+                    float dx = centerX - x,
+                    dy = centerY - y;
+                    float distance_squared = dx * dx + dy * dy;
+                    if (map[y, x].IsWalkable && distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0))
+                    {
+                        list.Add(map[y, x]);
                     }
                 }
             }
@@ -358,7 +571,7 @@ namespace KevinCastejon.GridHelper
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tile</param>
+        /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="stop">The stop tile</param>
         /// <returns>An array of tiles</returns>
@@ -371,7 +584,7 @@ namespace KevinCastejon.GridHelper
         /// Get all tiles on a line between two tiles
         /// </summary>
         /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tile</param>
+        /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="stop">The stop tile</param>
         /// <param name="maxDistance">The maximum number of returned tiles along the line</param>
@@ -404,7 +617,7 @@ namespace KevinCastejon.GridHelper
         /// Get all tiles on a line between two tiles
         /// </summary>
         /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tile</param>
+        /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="startX">The start tile x coordinate</param>
         /// <param name="startY">The start tile y coordinate</param>
         /// <param name="stopX">The stop tile x coordinate</param>
@@ -448,7 +661,7 @@ namespace KevinCastejon.GridHelper
         /// Generates a PathMap object that will contain all the precalculated paths data for the entire grid
         /// </summary>
         /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tile</param>
+        /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="target">The target tile for the paths calculation</param>
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
@@ -494,5 +707,6 @@ namespace KevinCastejon.GridHelper
             }
             return new PathMap<T>(nodeMap, target);
         }
+
     }
 }

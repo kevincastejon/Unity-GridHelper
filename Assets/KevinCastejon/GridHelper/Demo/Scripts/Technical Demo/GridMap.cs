@@ -1,4 +1,5 @@
 using KevinCastejon.GridHelper;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -7,10 +8,21 @@ using UnityEngine.UI;
 
 namespace Technical_Demo
 {
+    public enum DemoType
+    {
+        EXTRACT_CIRCLE,
+        EXTRACT_SQUARE,
+        LINE_OF_SIGHT,
+        PATHFINDING_ACCESSIBLE,
+        PATHFINDING_PATH,
+    }
     public class GridMap : MonoBehaviour
     {
         [SerializeField] private bool _allowDiagonals;
-        [SerializeField] [Range(0, 99)] private int _maxMovement;
+        [SerializeField] [Range(0, 99)] private int _maxMovement = 2;
+        [SerializeField] [Range(1, 99)] private int _circleSize = 2;
+        [SerializeField] [Range(1, 99)] private int _rectangleSizeX = 2;
+        [SerializeField] [Range(1, 99)] private int _rectangleSizeY = 2;
         [SerializeField] [Range(1f, 2f)] private float _diagonalsWeight = 1.5f;
         [SerializeField] private Material _targetMat;
         [SerializeField] private Material _floorMat;
@@ -22,34 +34,34 @@ namespace Technical_Demo
         [SerializeField] private Toggle _allowDiagonalsToggle;
         [SerializeField] private Slider _diagonalsWeightSlider;
         [SerializeField] private TextMeshProUGUI _diagonalsWeightLabel;
+        [SerializeField] private Slider _extractRadiusSlider;
+        [SerializeField] private TextMeshProUGUI _extractRadiusLabel;
+        [SerializeField] private Slider _extractSizeXSlider;
+        [SerializeField] private TextMeshProUGUI _extractSizeXLabel;
+        [SerializeField] private Slider _extractSizeYSlider;
+        [SerializeField] private TextMeshProUGUI _extractSizeYLabel;
+
 
         private Floor[,] _map = new Floor[12, 10];
         private Floor _pathStart;
         private PathMap<Floor> _pathMap;
         private Camera _camera;
-        private bool _isPathfindingMode;
+        private DemoType _demoType;
         private bool _firstDragValue;
         private bool _showingDistances;
         private bool _showingDirections;
 
         public Floor[,] Map { get => _map; }
-        public bool IsPathfindingMode
+        public DemoType DemoType
         {
             get
             {
-                return _isPathfindingMode;
+                return _demoType;
             }
             set
             {
-                _isPathfindingMode = value;
-                if (_isPathfindingMode)
-                {
-                    ShowPathToTarget();
-                }
-                else
-                {
-                    ShowAccessibleTiles();
-                }
+                _demoType = value;
+                RefreshVisuals();
             }
         }
         public int MaxMovement
@@ -59,6 +71,33 @@ namespace Technical_Demo
             {
                 _maxMovement = value;
                 ShowAccessibleTiles();
+            }
+        }
+        public int CircleSize
+        {
+            get => _circleSize;
+            set
+            {
+                _circleSize = value;
+                ShowTilesIntoRadius();
+            }
+        }
+        public int RectangleSizeX
+        {
+            get => _rectangleSizeX;
+            set
+            {
+                _rectangleSizeX = value;
+                ShowTilesIntoRectangle();
+            }
+        }
+        public int RectangleSizeY
+        {
+            get => _rectangleSizeY;
+            set
+            {
+                _rectangleSizeY = value;
+                ShowTilesIntoRectangle();
             }
         }
         public bool AllowDiagonals
@@ -72,22 +111,7 @@ namespace Technical_Demo
             {
                 _allowDiagonals = value;
                 GeneratePathMap();
-                if (_isPathfindingMode)
-                {
-                    ShowPathToTarget();
-                }
-                else
-                {
-                    ShowAccessibleTiles();
-                }
-                if (_showingDistances)
-                {
-                    ShowDistances();
-                }
-                else if (_showingDirections)
-                {
-                    ShowDirections();
-                }
+                RefreshVisuals();
             }
         }
         public float DiagonalsWeight
@@ -97,22 +121,7 @@ namespace Technical_Demo
             {
                 _diagonalsWeight = value;
                 GeneratePathMap();
-                if (_isPathfindingMode)
-                {
-                    ShowPathToTarget();
-                }
-                else
-                {
-                    ShowAccessibleTiles();
-                }
-                if (_showingDistances)
-                {
-                    ShowDistances();
-                }
-                else if (_showingDirections)
-                {
-                    ShowDirections();
-                }
+                RefreshVisuals();
             }
         }
 
@@ -134,6 +143,12 @@ namespace Technical_Demo
             _diagonalsWeightSlider.interactable = _allowDiagonals;
             _diagonalsWeightSlider.value = _diagonalsWeight;
             _diagonalsWeightLabel.text = _diagonalsWeight.ToString("F1");
+            _extractRadiusSlider.value = _circleSize;
+            _extractRadiusLabel.text = _circleSize.ToString();
+            _extractSizeXSlider.value = _rectangleSizeX;
+            _extractSizeXLabel.text = _rectangleSizeX.ToString();
+            _extractSizeYSlider.value = _rectangleSizeY;
+            _extractSizeYLabel.text = _rectangleSizeY.ToString();
         }
         private void Start()
         {
@@ -142,7 +157,7 @@ namespace Technical_Demo
             // Generating a path map
             GeneratePathMap();
             // Displaying the accessible tiles
-            ShowAccessibleTiles();
+            ShowTilesIntoRadius();
         }
         private void Update()
         {
@@ -152,102 +167,299 @@ namespace Technical_Demo
             {
                 // Retrieving the Floor component
                 Floor clickedFloor = hit.collider.GetComponent<Floor>();
-                // If middle-click (setting the target)
+                switch (_demoType)
+                {
+                    case DemoType.EXTRACT_CIRCLE:
+                        break;
+                    case DemoType.EXTRACT_SQUARE:
+                        break;
+                    case DemoType.LINE_OF_SIGHT:
+                        OnLineOfSightHover(clickedFloor);
+                        break;
+                    case DemoType.PATHFINDING_ACCESSIBLE:
+                        break;
+                    case DemoType.PATHFINDING_PATH:
+                        break;
+                    default:
+                        break;
+                }
+                // If middle-click
                 if (Input.GetMouseButton(2))
                 {
-                    // Checking that this floor is not already the target one
-                    if (clickedFloor != _target && clickedFloor.IsWalkable)
-                    {
-                        // Unsetting the actual target
-                        _target.IsTarget = false;
-                        // Setting the new target
-                        _target = clickedFloor;
-                        _target.IsTarget = true;
-                        // Generating a path map
-                        GeneratePathMap();
-                        // Checking the current mode
-                        if (_isPathfindingMode)
-                        {
-                            // Displaying the path to target
-                            ShowPathToTarget();
-                        }
-                        else
-                        {
-                            // Displaying the accessible tiles
-                            ShowAccessibleTiles();
-                        }
-                        if (_showingDistances)
-                        {
-                            ShowDistances();
-                        }
-                        else if (_showingDirections)
-                        {
-                            ShowDirections();
-                        }
-                    }
+                    // Set the target
+                    SetTargetTile(clickedFloor);
                 }
-                // If left-click just happenned
+                // Or if left-click just happenned
                 else if (Input.GetMouseButtonDown(0))
                 {
-                    // If Pathfinding mode
-                    if (_isPathfindingMode)
+                    // Do click action for specific mode
+                    switch (_demoType)
                     {
-                        // If that tile is walkable
-                        if (clickedFloor.IsWalkable)
-                        {
-                            // Setting this tile as the start 
-                            _pathStart = clickedFloor;
-                            // Displaying the path to target
-                            ShowPathToTarget();
-                        }
-                    }
-                    // If Accessible Tiles mode
-                    else
-                    {
-                        // If this tile is not the target
-                        if (!clickedFloor.IsTarget)
-                        {
-                            // Inverting the walkable state
-                            clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
-                            // Setting this value as the "drag value" for next tiles hovering
-                            _firstDragValue = clickedFloor.IsWalkable;
-                            // Generating a path map
-                            GeneratePathMap();
-                            // Displaying the accessible tiles
-                            ShowAccessibleTiles();
-                        }
+                        case DemoType.EXTRACT_CIRCLE:
+                            break;
+                        case DemoType.EXTRACT_SQUARE:
+                            break;
+                        case DemoType.LINE_OF_SIGHT:
+                            OnLineOfSightClick(clickedFloor);
+                            break;
+                        case DemoType.PATHFINDING_ACCESSIBLE:
+                            OnPathFindingAccessibleClick(clickedFloor);
+                            break;
+                        case DemoType.PATHFINDING_PATH:
+                            OnPathFindingPathClick(clickedFloor);
+                            break;
+                        default:
+                            break;
                     }
                 }
-                //If left click is maintained
+                // Or if left click is maintained
                 else if (Input.GetMouseButton(0))
                 {
-                    // If Pathfinding mode
-                    if (_isPathfindingMode)
+                    // Do drag action for specific mode
+                    switch (_demoType)
                     {
-                        // If that tile is walkable and not the already the starting one
-                        if (clickedFloor.IsWalkable && _pathStart != clickedFloor)
-                        {
-                            // Setting this tile as start
-                            _pathStart = clickedFloor;
-                            // Displaying the path to target
-                            ShowPathToTarget();
-                        }
-                    }
-                    // If Accessible Tiles mode
-                    else
-                    {
-                        // If this tile is not the target and has not already the same walkable state
-                        if (!clickedFloor.IsTarget && clickedFloor.IsWalkable != _firstDragValue)
-                        {
-                            clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
-                            // Generating a path map
-                            GeneratePathMap();
-                            // Displaying the accessible tiles
-                            ShowAccessibleTiles();
-                        }
+                        case DemoType.EXTRACT_CIRCLE:
+                            break;
+                        case DemoType.EXTRACT_SQUARE:
+                            break;
+                        case DemoType.LINE_OF_SIGHT:
+                            OnLineOfSightDrag(clickedFloor);
+                            break;
+                        case DemoType.PATHFINDING_ACCESSIBLE:
+                            OnPathFindingAccessibleDrag(clickedFloor);
+                            break;
+                        case DemoType.PATHFINDING_PATH:
+                            OnPathFindingPathDrag(clickedFloor);
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
+        }
+        // Displays the line of sight
+        private void ShowLineOfSight()
+        {
+            // Resetting all tiles
+            ResetPaths();
+            // If there is no start tile exit immediatelly
+            if (_pathStart == null)
+            {
+                return;
+            }
+            // Retrieving the path
+            Floor[] pathToTarget = GridHelper.GetLineOfSight(_map, _target, _pathStart);
+            // For each tile along the path
+            foreach (Floor floor in pathToTarget)
+            {
+                // Set it as a path
+                floor.IsPath = true;
+            }
+        }
+        // Displays the tiles into a square
+        private void ShowTilesIntoRectangle()
+        {
+            // Resetting all tiles
+            ResetPaths();
+            // Retrieving the path
+            Floor[] tilesIntoSquare = GridHelper.GetTilesIntoARectangle(_map, _target, _rectangleSizeX, _rectangleSizeY);
+            // For each tile along the path
+            foreach (Floor floor in tilesIntoSquare)
+            {
+                // Set it as a path
+                floor.IsPath = true;
+            }
+        }
+        // Displays the tiles into a radius
+        private void ShowTilesIntoRadius()
+        {
+            // Resetting all tiles
+            ResetPaths();
+            // Retrieving the path
+            Floor[] tilesIntoRadius = GridHelper.GetTilesIntoARadius(_map, _target, _circleSize);
+            // For each tile along the path
+            foreach (Floor floor in tilesIntoRadius)
+            {
+                // Set it as a path
+                floor.IsPath = true;
+            }
+        }
+        // Displays the accessible tiles from target
+        private void ShowAccessibleTiles()
+        {
+            // Reseting all tiles visuals
+            ResetPaths();
+            // Retrieving the accessible tiles from the pathMap
+            Floor[] accessibleTiles = _pathMap.GetAccessibleTilesFromTarget(_maxMovement);
+            // For each accessible tile
+            foreach (Floor floor in accessibleTiles)
+            {
+                // Set it as a path (visual)
+                floor.IsPath = true;
+            }
+        }
+        // Displays the path between start and target
+        private void ShowPathToTarget()
+        {
+            // Reseting all tiles
+            ResetPaths();
+            // If there is no start tile exit immediatelly
+            if (_pathStart == null)
+            {
+                return;
+            }
+            // Retrieving the path
+            Floor[] pathToTarget = _pathMap.GetPathToTarget(_pathStart);
+            // For each tile along the path
+            foreach (Floor floor in pathToTarget)
+            {
+                // Set it as a path
+                floor.IsPath = true;
+            }
+        }
+        private void OnLineOfSightHover(Floor clickedFloor)
+        {
+            // If this tile is not set as start
+            if (clickedFloor != _pathStart && clickedFloor.IsWalkable)
+            {
+                // Set the tile as start
+                _pathStart = clickedFloor;
+                // Displaying the line of sight
+                ShowLineOfSight();
+            }
+        }
+        private void OnLineOfSightClick(Floor clickedFloor)
+        {
+            // If this tile is not the target
+            if (!clickedFloor.IsTarget)
+            {
+                // Inverting the walkable state
+                clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
+                // Setting this value as the "drag value" for next tiles hovering
+                _firstDragValue = clickedFloor.IsWalkable;
+                // Generating a path map
+                GeneratePathMap();
+                // Displaying the line of sight
+                ShowLineOfSight();
+            }
+        }
+        private void OnLineOfSightDrag(Floor clickedFloor)
+        {
+            // If this tile is not the target and has not already the same walkable state
+            if (!clickedFloor.IsTarget && clickedFloor.IsWalkable != _firstDragValue)
+            {
+                clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
+                // Generating a path map
+                GeneratePathMap();
+                // Displaying the line of sight
+                ShowLineOfSight();
+            }
+        }
+        private void OnPathFindingAccessibleClick(Floor clickedFloor)
+        {
+            // If this tile is not the target
+            if (!clickedFloor.IsTarget)
+            {
+                // Inverting the walkable state
+                clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
+                // Setting this value as the "drag value" for next tiles hovering
+                _firstDragValue = clickedFloor.IsWalkable;
+                // Generating a path map
+                GeneratePathMap();
+                // Displaying the accessible tiles
+                ShowAccessibleTiles();
+            }
+        }
+        private void OnPathFindingPathClick(Floor clickedFloor)
+        {
+            // If that tile is walkable
+            if (clickedFloor.IsWalkable)
+            {
+                // Setting this tile as the start 
+                _pathStart = clickedFloor;
+                // Displaying the path to target
+                ShowPathToTarget();
+            }
+        }
+        private void OnPathFindingAccessibleDrag(Floor clickedFloor)
+        {
+            // If this tile is not the target and has not already the same walkable state
+            if (!clickedFloor.IsTarget && clickedFloor.IsWalkable != _firstDragValue)
+            {
+                clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
+                // Generating a path map
+                GeneratePathMap();
+                // Displaying the accessible tiles
+                ShowAccessibleTiles();
+            }
+        }
+        private void OnPathFindingPathDrag(Floor clickedFloor)
+        {
+            // If that tile is walkable and not the already the starting one
+            if (clickedFloor.IsWalkable && _pathStart != clickedFloor)
+            {
+                // Setting this tile as start
+                _pathStart = clickedFloor;
+                // Displaying the path to target
+                ShowPathToTarget();
+            }
+        }
+        private void SetTargetTile(Floor clickedFloor)
+        {
+            // Checking that this floor is not already the target one
+            if (clickedFloor != _target && clickedFloor.IsWalkable)
+            {
+                // Unsetting the actual target
+                _target.IsTarget = false;
+                // Setting the new target
+                _target = clickedFloor;
+                _target.IsTarget = true;
+                // Generating a path map
+                GeneratePathMap();
+                // Refreshing visuals
+                RefreshVisuals();
+            }
+        }
+        private void RefreshVisuals()
+        {
+            switch (_demoType)
+            {
+                case DemoType.EXTRACT_CIRCLE:
+                    // Displaying the tiles into radius
+                    ShowTilesIntoRadius();
+                    break;
+                case DemoType.EXTRACT_SQUARE:
+                    // Displaying the tiles into radius
+                    ShowTilesIntoRectangle();
+                    break;
+                case DemoType.LINE_OF_SIGHT:
+                    // Displaying the line of sight
+                    ShowLineOfSight();
+                    break;
+                case DemoType.PATHFINDING_ACCESSIBLE:
+                    // Displaying the accessible tiles
+                    ShowAccessibleTiles();
+                    break;
+                case DemoType.PATHFINDING_PATH:
+                    // Displaying the path to target
+                    ShowPathToTarget();
+                    break;
+                default:
+                    break;
+            }
+            if (_showingDistances)
+            {
+                ShowDistances();
+            }
+            else if (_showingDirections)
+            {
+                ShowDirections();
+            }
+        }
+
+        public void SetMode(int demoType)
+        {
+            DemoType = (DemoType)demoType;
         }
         // Resets the Dijkstra visuals
         public void ResetDijkstraVisuals()
@@ -311,39 +523,6 @@ namespace Technical_Demo
         {
             // Generating a path map
             _pathMap = GridHelper.GeneratePathMap(_map, _target, _allowDiagonals, _diagonalsWeight);
-        }
-        // Displays the accessible tiles from target
-        private void ShowAccessibleTiles()
-        {
-            // Reseting all tiles visuals
-            ResetPaths();
-            // Retrieving the accessible tiles from the pathMap
-            Floor[] accessibleTiles = _pathMap.GetAccessibleTilesFromTarget(_maxMovement);
-            // For each accessible tile
-            foreach (Floor floor in accessibleTiles)
-            {
-                // Set it as a path (visual)
-                floor.IsPath = true;
-            }
-        }
-        // Displays the path between start and target
-        private void ShowPathToTarget()
-        {
-            // Reseting all tiles
-            ResetPaths();
-            // If there is no start tile exit immediatelly
-            if (_pathStart == null)
-            {
-                return;
-            }
-            // Retrieving the accessible tiles
-            Floor[] pathToTarget = _pathMap.GetPathToTarget(_pathStart);
-            // For each accessible tile
-            foreach (Floor floor in pathToTarget)
-            {
-                // Set it as a path
-                floor.IsPath = true;
-            }
         }
         // Resets the tiles path visuals
         private void ResetPaths()
