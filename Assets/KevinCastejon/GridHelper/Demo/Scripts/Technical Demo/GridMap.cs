@@ -11,7 +11,7 @@ namespace Technical_Demo
     public enum DemoType
     {
         EXTRACT_CIRCLE,
-        EXTRACT_SQUARE,
+        EXTRACT_RECTANGLE,
         LINE_OF_SIGHT,
         PATHFINDING_ACCESSIBLE,
         PATHFINDING_PATH,
@@ -19,6 +19,7 @@ namespace Technical_Demo
     public class GridMap : MonoBehaviour
     {
         [SerializeField] private bool _allowDiagonals;
+        [SerializeField] private bool _outline;
         [SerializeField] [Range(0, 99)] private int _maxMovement = 2;
         [SerializeField] [Range(1, 99)] private int _circleSize = 2;
         [SerializeField] [Range(1, 99)] private int _rectangleSizeX = 2;
@@ -32,6 +33,7 @@ namespace Technical_Demo
         [SerializeField] private Slider _maxMovementSlider;
         [SerializeField] private TextMeshProUGUI _maxMovementLabel;
         [SerializeField] private Toggle _allowDiagonalsToggle;
+        [SerializeField] private Toggle _outlineToggle;
         [SerializeField] private Slider _diagonalsWeightSlider;
         [SerializeField] private TextMeshProUGUI _diagonalsWeightLabel;
         [SerializeField] private Slider _extractRadiusSlider;
@@ -80,6 +82,22 @@ namespace Technical_Demo
             {
                 _circleSize = value;
                 ShowTilesIntoRadius();
+            }
+        }
+        public bool Outline
+        {
+            get => _outline;
+            set
+            {
+                _outline = value;
+                if (_demoType == DemoType.EXTRACT_CIRCLE)
+                {
+                    ShowTilesIntoRadius();
+                }
+                else if (_demoType == DemoType.EXTRACT_RECTANGLE)
+                {
+                    ShowTilesIntoRectangle();
+                }
             }
         }
         public int RectangleSizeX
@@ -140,6 +158,7 @@ namespace Technical_Demo
             _maxMovementSlider.value = _maxMovement;
             _maxMovementLabel.text = _maxMovement.ToString();
             _allowDiagonalsToggle.isOn = _allowDiagonals;
+            _outlineToggle.isOn = _outline;
             _diagonalsWeightSlider.interactable = _allowDiagonals;
             _diagonalsWeightSlider.value = _diagonalsWeight;
             _diagonalsWeightLabel.text = _diagonalsWeight.ToString("F1");
@@ -171,7 +190,7 @@ namespace Technical_Demo
                 {
                     case DemoType.EXTRACT_CIRCLE:
                         break;
-                    case DemoType.EXTRACT_SQUARE:
+                    case DemoType.EXTRACT_RECTANGLE:
                         break;
                     case DemoType.LINE_OF_SIGHT:
                         OnLineOfSightHover(clickedFloor);
@@ -197,7 +216,7 @@ namespace Technical_Demo
                     {
                         case DemoType.EXTRACT_CIRCLE:
                             break;
-                        case DemoType.EXTRACT_SQUARE:
+                        case DemoType.EXTRACT_RECTANGLE:
                             break;
                         case DemoType.LINE_OF_SIGHT:
                             OnLineOfSightClick(clickedFloor);
@@ -220,7 +239,7 @@ namespace Technical_Demo
                     {
                         case DemoType.EXTRACT_CIRCLE:
                             break;
-                        case DemoType.EXTRACT_SQUARE:
+                        case DemoType.EXTRACT_RECTANGLE:
                             break;
                         case DemoType.LINE_OF_SIGHT:
                             OnLineOfSightDrag(clickedFloor);
@@ -262,7 +281,7 @@ namespace Technical_Demo
             // Resetting all tiles
             ResetPaths();
             // Retrieving the path
-            Floor[] tilesIntoSquare = GridHelper.GetTilesIntoARectangle(_map, _target, _rectangleSizeX, _rectangleSizeY);
+            Floor[] tilesIntoSquare = _outline ? GridHelper.GetTilesOnARectangleOutline(_map, _target, _rectangleSizeX, _rectangleSizeY) : GridHelper.GetTilesIntoARectangle(_map, _target, _rectangleSizeX, _rectangleSizeY);
             // For each tile along the path
             foreach (Floor floor in tilesIntoSquare)
             {
@@ -276,7 +295,7 @@ namespace Technical_Demo
             // Resetting all tiles
             ResetPaths();
             // Retrieving the path
-            Floor[] tilesIntoRadius = GridHelper.GetTilesOnARadiusOutline(_map, _target, _circleSize);
+            Floor[] tilesIntoRadius = _outline ? GridHelper.GetTilesOnARadiusOutline(_map, _target, _circleSize) : GridHelper.GetTilesIntoARadius(_map, _target, _circleSize);
             // For each tile along the path
             foreach (Floor floor in tilesIntoRadius)
             {
@@ -428,7 +447,7 @@ namespace Technical_Demo
                     // Displaying the tiles into radius
                     ShowTilesIntoRadius();
                     break;
-                case DemoType.EXTRACT_SQUARE:
+                case DemoType.EXTRACT_RECTANGLE:
                     // Displaying the tiles into radius
                     ShowTilesIntoRectangle();
                     break;
