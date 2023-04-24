@@ -508,6 +508,78 @@ namespace KevinCastejon.GridHelper
             return list.ToArray();
         }
         /// <summary>
+        /// Get all tiles on a radius outline around a tile
+        /// </summary>
+        /// <typeparam name="T">Any object type</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="center">The center tile </param>
+        /// <param name="radius">The radius</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetTilesOnARadiusOutline<T>(T[,] map, T center, int radius)
+        {
+            int centerX = 0;
+            int centerY = 0;
+            for (int i = 0; i < map.GetLength(0); i++)
+            {
+                for (int j = 0; j < map.GetLength(1); j++)
+                {
+                    if (EqualityComparer<T>.Default.Equals(map[i, j], center))
+                    {
+                        centerX = j;
+                        centerY = i;
+                    }
+                }
+            }
+            return GetTilesOnARadiusOutline(map, centerX, centerY, radius);
+        }
+        /// <summary>
+        /// Get all tiles on a radius outline around a tile
+        /// </summary>
+        /// <typeparam name="T">Any object type</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="centerX">The center tile x coordinate</param>
+        /// <param name="centerY">The center tile y coordinate</param>
+        /// <param name="radius">The radius</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetTilesOnARadiusOutline<T>(T[,] map, int centerX, int centerY, int radius)
+        {
+            int top = Mathf.Max(centerY - radius, 0),
+                bottom = Mathf.Min(centerY + radius + 1, map.GetLength(0));
+            List<T> list = new List<T>();
+            for (int y = top; y < bottom; y++)
+            {
+                //int dy = y - centerY;
+                //int dx = Mathf.FloorToInt(Mathf.Sqrt((float)radius * radius - (float)dy * dy));
+                //int left = centerX - dx,
+                //    right = centerX + dx;
+                //if (left < 0 || right >= map.GetLength(1))
+                //{
+                //    continue;
+                //}
+                for (int r = 0; r <= Mathf.FloorToInt(radius * Mathf.Sqrt(0.5f)); r++)
+                {
+                    int d = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
+                    Vector2Int a = new Vector2Int(centerX - d, centerY + r);
+                    if (a.y >= 0 && a.y < map.GetLength(0) && a.x >= 0 && a.x < map.GetLength(1) && !list.Contains(map[a.y, a.x])) list.Add(map[a.y, a.x]);
+                    Vector2Int b = new Vector2Int(centerX + d, centerY + r);
+                    if (b.y >= 0 && b.y < map.GetLength(0) && b.x >= 0 && b.x < map.GetLength(1) && !list.Contains(map[b.y, b.x])) list.Add(map[b.y, b.x]);
+                    Vector2Int c = new Vector2Int(centerX - d, centerY - r);
+                    if (c.y >= 0 && c.y < map.GetLength(0) && c.x >= 0 && c.x < map.GetLength(1) && !list.Contains(map[c.y, c.x])) list.Add(map[c.y, c.x]);
+                    Vector2Int d2 = new Vector2Int(centerX + d, centerY - r);
+                    if (d2.y >= 0 && d2.y < map.GetLength(0) && d2.x >= 0 && d2.x < map.GetLength(1) && !list.Contains(map[d2.y, d2.x])) list.Add(map[d2.y, d2.x]);
+                    Vector2Int e = new Vector2Int(centerX + r, centerY - d);
+                    if (e.y >= 0 && e.y < map.GetLength(0) && e.x >= 0 && e.x < map.GetLength(1) && !list.Contains(map[e.y, e.x])) list.Add(map[e.y, e.x]);
+                    Vector2Int f = new Vector2Int(centerX + r, centerY + d);
+                    if (f.y >= 0 && f.y < map.GetLength(0) && f.x >= 0 && f.x < map.GetLength(1) && !list.Contains(map[f.y, f.x])) list.Add(map[f.y, f.x]);
+                    Vector2Int g = new Vector2Int(centerX - r, centerY - d);
+                    if (g.y >= 0 && g.y < map.GetLength(0) && g.x >= 0 && g.x < map.GetLength(1) && !list.Contains(map[g.y, g.x])) list.Add(map[g.y, g.x]);
+                    Vector2Int h = new Vector2Int(centerX - r, centerY + d);
+                    if (h.y >= 0 && h.y < map.GetLength(0) && h.x >= 0 && h.x < map.GetLength(1) && !list.Contains(map[h.y, h.x])) list.Add(map[h.y, h.x]);
+                }
+            }
+            return list.ToArray();
+        }
+        /// <summary>
         /// Get all walkable tiles contained into a radius around a tile
         /// </summary>
         /// <typeparam name="T">The user defined tile type that implements the ITile interface</typeparam>

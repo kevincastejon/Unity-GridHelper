@@ -276,7 +276,7 @@ namespace Technical_Demo
             // Resetting all tiles
             ResetPaths();
             // Retrieving the path
-            Floor[] tilesIntoRadius = GridHelper.GetTilesIntoARadius(_map, _target, _circleSize);
+            Floor[] tilesIntoRadius = GridHelper.GetTilesOnARadiusOutline(_map, _target, _circleSize);
             // For each tile along the path
             foreach (Floor floor in tilesIntoRadius)
             {
