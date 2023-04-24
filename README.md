@@ -16,7 +16,7 @@ Comes with several demo examples.
 
 ## Usages
 
-This library is using a generic type for the user defined tile type that has to implement the **ITile** interface. This interface requires a boolean **IsWalkable** property, a float **Weight** property and two int **X** and **Y** properties.
+This library is using a generic type for the user-defined tile type that has to implement the **ITile** interface. This interface requires a boolean **IsWalkable** property, a float **Weight** property and two int **X** and **Y** properties.
 
 ### - Extractions
 
@@ -98,7 +98,7 @@ GridHelper.IsLineOfSightClear(grid, startTile, stopTile);
 
 The pathfinding part of this library uses **Dijkstra** algorithms for generating a **PathMap** object that holds all the calculated paths data for the entire grid. This way of doing pathfinding is usefull for some usages because it calculates once all the paths between one tile and all the others.
 
-To generate the **PathMap** object, use the **GeneratePathMap** method. The **PathMap** class is using a generic type for the user defined tile type so you have to explicit that type on declaration.
+To generate the **PathMap** object, use the **GeneratePathMap** method. The **PathMap** class is using a generic type for the user-defined tile type so you have to explicit that type on declaration.
 
 ```cs
 PathMap<Tile> pathMap = GridHelper.GeneratePathMap(_grid, targetTile);
