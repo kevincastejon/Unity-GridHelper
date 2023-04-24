@@ -491,22 +491,18 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesIntoARadius<T>(T[,] map, int centerX, int centerY, int radius)
         {
-            int top = Mathf.CeilToInt(centerY - radius),
-                bottom = Mathf.FloorToInt(centerY + radius),
-                left = Mathf.CeilToInt(centerX - radius),
-                right = Mathf.FloorToInt(centerX + radius);
+            int top = Mathf.Max(centerY - radius, 0),
+                bottom = Mathf.Min(centerY + radius + 1, map.GetLength(0));
             List<T> list = new List<T>();
-            for (int y = top; y <= bottom; y++)
+            for (int y = top; y < bottom; y++)
             {
-                for (int x = left; x <= right; x++)
+                int dy = y - centerY;
+                float dx = Mathf.Sqrt((float)radius * radius - (float)dy * dy);
+                int left = Mathf.Max(Mathf.CeilToInt(centerX - dx), 0),
+                    right = Mathf.Min(Mathf.FloorToInt(centerX + dx + 1), map.GetLength(1));
+                for (int x = left; x < right; x++)
                 {
-                    float dx = centerX - x,
-                    dy = centerY - y;
-                    float distance_squared = dx * dx + dy * dy;
-                    if (distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0))
-                    {
-                        list.Add(map[y, x]);
-                    }
+                    list.Add(map[y, x]);
                 }
             }
             return list.ToArray();
