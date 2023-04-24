@@ -1,25 +1,3 @@
-# GridHelper
-
-This package offers several utilitary classes to help with operations on **grids** such as **tile extraction**, **line of sight**, **pathfinding**, etc...
-
-Keep using your own tile objects as long as they implement the very light **ITile** interface of this library.
-
-Comes with several demo examples.
-
-[See online documentation](https://kevincastejon.github.io/Unity-GridHelper/)
-
-[Get the Unity package](https://github.com/kevincastejon/Unity-GridHelper/releases/latest)
-
-[See my other Unity packages](https://assetstore.unity.com/publishers/46935)
-
-**[Complete API Documentation](https://kevincastejon.fr/demos/Documentations/Unity-GridHelper/)**
-
-## Usages
-
-### Minimal pathfinding usage
-Here is a very basic example of pathfinding
-- **MinimalDemo.cs**
-```cs
 using KevinCastejon.GridHelper;
 using UnityEngine;
 namespace MinimalDemo
@@ -98,4 +76,3 @@ namespace MinimalDemo
         }
     }
 }
-```
