@@ -21,7 +21,7 @@ namespace Technical_Demo
     {
         [SerializeField] private bool _allowDiagonals;
         [SerializeField] private bool _outline;
-        [SerializeField] [Range(0, 99)] private int _maxMovement = 2;
+        [SerializeField] [Range(0f, 99f)] private float _maxMovement = 2;
         [SerializeField] [Range(1, 99)] private int _circleSize = 2;
         [SerializeField] [Range(1, 99)] private int _rectangleSizeX = 2;
         [SerializeField] [Range(1, 99)] private int _rectangleSizeY = 2;
@@ -67,7 +67,7 @@ namespace Technical_Demo
                 RefreshVisuals();
             }
         }
-        public int MaxMovement
+        public float MaxMovement
         {
             get => _maxMovement;
             set
@@ -230,6 +230,57 @@ namespace Technical_Demo
                 }
             }
         }
+
+        // Set the current display mode
+        public void SetMode(int demoType)
+        {
+            DemoType = (DemoType)demoType;
+        }
+        // Refresh the displays
+        private void RefreshVisuals()
+        {
+            switch (_demoType)
+            {
+                case DemoType.EXTRACT_CIRCLE:
+                    // Displaying the tiles into radius
+                    ShowTilesIntoRadius();
+                    break;
+                case DemoType.EXTRACT_RECTANGLE:
+                    // Displaying the tiles into radius
+                    ShowTilesIntoRectangle();
+                    break;
+                case DemoType.LINE_OF_SIGHT:
+                    // Displaying the line of sight
+                    ShowLineOfSight();
+                    break;
+                case DemoType.LINE_OF_TILES:
+                    // Displaying the line of tiles
+                    ShowLineOfTiles();
+                    break;
+                case DemoType.PATHFINDING_ACCESSIBLE:
+                    // Displaying the accessible tiles
+                    ShowAccessibleTiles();
+                    break;
+                case DemoType.PATHFINDING_PATH:
+                    // Displaying the path to target
+                    ShowPathToTarget();
+                    break;
+                default:
+                    break;
+            }
+            if (_showingDistances)
+            {
+                ShowDistances();
+            }
+            else if (_showingSteps)
+            {
+                ShowSteps();
+            }
+            else if (_showingDirections)
+            {
+                ShowDirections();
+            }
+        }
         // Displays the line of tiles
         private void ShowLineOfTiles()
         {
@@ -329,6 +380,7 @@ namespace Technical_Demo
                 floor.IsPath = true;
             }
         }
+        // Handle wall state changing on click
         private void ChangeWallStateClick(Floor clickedFloor)
         {
             // If this tile is not the target
@@ -342,6 +394,7 @@ namespace Technical_Demo
                 GeneratePathMap();
             }
         }
+        // Handle wall state changing on drag
         private void ChangeWallStateDrag(Floor clickedFloor)
         {
             // If this tile is not the target and has not already the same walkable state
@@ -350,21 +403,23 @@ namespace Technical_Demo
                 clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
                 // Generating a path map
                 GeneratePathMap();
-                
+
             }
         }
+        // Set a tile as the start
         private void SetStartTile(Floor clickedFloor)
         {
-            // If that tile is walkable
+            // If that tile is not already the start tile and is walkable
             if (clickedFloor != _pathStart && clickedFloor.IsWalkable)
             {
                 // Setting this tile as the start 
                 _pathStart = clickedFloor;
             }
         }
+        // Set a tile as the target
         private void SetTargetTile(Floor clickedFloor)
         {
-            // Checking that this floor is not already the target one
+            // Checking that this floor is not already the target one and is walkable
             if (clickedFloor != _target && clickedFloor.IsWalkable)
             {
                 // Unsetting the actual target
@@ -377,55 +432,7 @@ namespace Technical_Demo
                 // Refreshing visuals
                 RefreshVisuals();
             }
-        }
-        private void RefreshVisuals()
-        {
-            switch (_demoType)
-            {
-                case DemoType.EXTRACT_CIRCLE:
-                    // Displaying the tiles into radius
-                    ShowTilesIntoRadius();
-                    break;
-                case DemoType.EXTRACT_RECTANGLE:
-                    // Displaying the tiles into radius
-                    ShowTilesIntoRectangle();
-                    break;
-                case DemoType.LINE_OF_SIGHT:
-                    // Displaying the line of sight
-                    ShowLineOfSight();
-                    break;
-                case DemoType.LINE_OF_TILES:
-                    // Displaying the line of tiles
-                    ShowLineOfTiles();
-                    break;
-                case DemoType.PATHFINDING_ACCESSIBLE:
-                    // Displaying the accessible tiles
-                    ShowAccessibleTiles();
-                    break;
-                case DemoType.PATHFINDING_PATH:
-                    // Displaying the path to target
-                    ShowPathToTarget();
-                    break;
-                default:
-                    break;
-            }
-            if (_showingDistances)
-            {
-                ShowDistances();
-            }
-            else if (_showingSteps)
-            {
-                ShowSteps();
-            }
-            else if (_showingDirections)
-            {
-                ShowDirections();
-            }
-        }
-        public void SetMode(int demoType)
-        {
-            DemoType = (DemoType)demoType;
-        }
+        }        
         // Resets the Dijkstra visuals
         public void ResetDijkstraVisuals()
         {
@@ -450,6 +457,10 @@ namespace Technical_Demo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
+                    if (_map[i, j] == null)
+                    {
+                        continue;
+                    }
                     if (!_map[i, j].IsWalkable)
                     {
                         _map[i, j].Label.text = "";
@@ -471,6 +482,10 @@ namespace Technical_Demo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
+                    if (_map[i, j] == null)
+                    {
+                        continue;
+                    }
                     if (!_map[i, j].IsWalkable)
                     {
                         _map[i, j].Label.text = "";
@@ -482,7 +497,6 @@ namespace Technical_Demo
                 }
             }
         }
-
         // Displays the directions on the tiles
         public void ShowDirections()
         {
@@ -493,6 +507,10 @@ namespace Technical_Demo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
+                    if (_map[i, j] == null)
+                    {
+                        continue;
+                    }
                     if (!_map[i, j].IsWalkable || _pathMap.GetNextTileFromTile(_map[i, j]) == _map[i, j])
                     {
                         _map[i, j].Label.text = "";
@@ -522,7 +540,10 @@ namespace Technical_Demo
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
                     // Setting path false (visual)
-                    _map[i, j].IsPath = false;
+                    if (_map[i, j])
+                    {
+                        _map[i, j].IsPath = false;
+                    }
                 }
             }
         }
