@@ -49,6 +49,7 @@ namespace RTS_Demo
         public Character CharacterClicked { get => (Input.GetMouseButtonDown(0) && _hoveredFloor != null && _hoveredFloor.Character != null && _hoveredFloor.Character.IsIA == false && !_hoveredFloor.Character.HasFinished && _hoveredFloor.Character != CurrentCharacter) ? _hoveredFloor.Character : null; }
         public Floor ReachableTileClicked { get => (Input.GetMouseButtonDown(0) && _hoveredFloor != null && CurrentCharacter.AccessibleTiles.Contains(_hoveredFloor)) ? _hoveredFloor : null; }
         public Floor AttackableTileClicked { get => (Input.GetMouseButtonDown(0) && _target != null && _target.Character != null && _target.Character.IsIA) ? _hoveredFloor : null; }
+        public Floor[,] Map { get => _map; }
 
         public void Awake()
         {
@@ -92,10 +93,12 @@ namespace RTS_Demo
             foreach (Character charac in _characters)
             {
                 charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
+                charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
             }
             foreach (Character charac in _characters)
             {
                 charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
+                charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
             }
         }
         private void Update()
@@ -148,6 +151,7 @@ namespace RTS_Demo
             }
             _currentCharacter = Array.IndexOf(_characters, charac);
             charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
+            charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
             _selectionCircle.gameObject.SetActive(true);
             _selectionCircle.StartMove(CurrentCharacter.transform.position);
         }
@@ -256,6 +260,7 @@ namespace RTS_Demo
         {
             Character charac = _mobs.First(x => !x.HasFinished);
             charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
+            charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
             _currentCharacter = Array.IndexOf(_mobs, charac);
             _selectionCircle.gameObject.SetActive(true);
             _selectionCircle.StartMove(CurrentMob.transform.position);

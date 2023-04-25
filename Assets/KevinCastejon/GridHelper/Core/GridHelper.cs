@@ -136,15 +136,6 @@ namespace KevinCastejon.GridHelper
             return _dico[tile].MovementCosts;
         }
         /// <summary>
-        /// Get all the accessible tiles from the target tile. You can use a int maximum movement steps count (number of tiles), a float maximum movement cost ("distance" of the path taking account of the tiles weights) or no maximum at all (pass 0 as parameter or just do not pass any parameter).
-        /// </summary>
-        /// <param name="movementCost"></param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetAccessibleTilesFromTarget(float movementCost = 0f)
-        {
-            return _flatMap.Where(n => movementCost > 0f ? n.MovementCosts <= movementCost && n.MovementCosts > 0f : n.MovementCosts > 0f).Select(n => n.Tile).ToArray();
-        }
-        /// <summary>
         /// Get all the tiles on the path from a tile to the target.
         /// </summary>
         /// <param name="tile">The start tile</param>
@@ -187,7 +178,88 @@ namespace KevinCastejon.GridHelper
             }
             return null;
         }
-        private static List<Node<T>> GetNeighbours<T>(Node<T>[,] map, int x, int y, bool allowDiagonals) where T : ITile
+        private static bool GetTile<T>(T[,] map, int x, int y, out T tile) where T : ITile
+        {
+            if (x > -1 && y > -1 && x < map.GetLength(1) && y < map.GetLength(0))
+            {
+                tile = map[y, x];
+                return true;
+            }
+            tile = default;
+            return false;
+        }
+        private static List<T> GetTileNeighbours<T>(T[,] map, int x, int y, bool allowDiagonals) where T : ITile
+        {
+            List<T> nodes = new List<T>();
+            T nei;
+            bool leftWalkable = false;
+            bool rightWalkable = false;
+            bool topWalkable = false;
+            bool bottomWalkable = false;
+            if (GetTile(map, x - 1, y, out nei))
+            {
+                leftWalkable = nei != null && nei.IsWalkable;
+                if (nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+            if (GetTile(map, x, y - 1, out nei))
+            {
+                bottomWalkable = nei != null && nei.IsWalkable;
+                if (nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+            if (GetTile(map, x, y + 1, out nei))
+            {
+                topWalkable = nei != null && nei.IsWalkable;
+                if (nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+            if (GetTile(map, x + 1, y, out nei))
+            {
+                rightWalkable = nei != null && nei.IsWalkable;
+                if (nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+            if (GetTile(map, x - 1, y - 1, out nei))
+            {
+                if (allowDiagonals && leftWalkable && bottomWalkable && nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+            if (GetTile(map, x - 1, y + 1, out nei))
+            {
+                if (allowDiagonals && leftWalkable && topWalkable && nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+            if (GetTile(map, x + 1, y + 1, out nei))
+            {
+                if (allowDiagonals && rightWalkable && topWalkable && nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+            if (GetTile(map, x + 1, y - 1, out nei))
+            {
+                if (allowDiagonals && rightWalkable && bottomWalkable && nei != null && nei.IsWalkable)
+                {
+                    nodes.Add(nei);
+                }
+            }
+
+            return nodes;
+        }
+        private static List<Node<T>> GetNodeNeighbours<T>(Node<T>[,] map, int x, int y, bool allowDiagonals) where T : ITile
         {
             List<Node<T>> nodes = new List<Node<T>>();
             Node<T> nei;
@@ -460,22 +532,22 @@ namespace KevinCastejon.GridHelper
             {
                 for (int r = 0; r <= Mathf.FloorToInt(radius * Mathf.Sqrt(0.5f)); r++)
                 {
-                    int d = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
-                    Vector2Int a = new Vector2Int(center.X - d, center.Y + r);
-                    if (a.y >= 0 && a.y < map.GetLength(0) && a.x >= 0 && a.x < map.GetLength(1) && map[a.y, a.x] != null && list.Contains(map[a.y, a.x])) list.Add(map[a.y, a.x]);
-                    Vector2Int b = new Vector2Int(center.X + d, center.Y + r);
+                    int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
+                    Vector2Int a = new Vector2Int(center.X - dd, center.Y + r);
+                    if (a.y >= 0 && a.y < map.GetLength(0) && a.x >= 0 && a.x < map.GetLength(1) && map[a.y, a.x] != null && !list.Contains(map[a.y, a.x])) list.Add(map[a.y, a.x]);
+                    Vector2Int b = new Vector2Int(center.X + dd, center.Y + r);
                     if (b.y >= 0 && b.y < map.GetLength(0) && b.x >= 0 && b.x < map.GetLength(1) && map[b.y, b.x] != null && !list.Contains(map[b.y, b.x])) list.Add(map[b.y, b.x]);
-                    Vector2Int c = new Vector2Int(center.X - d, center.Y - r);
+                    Vector2Int c = new Vector2Int(center.X - dd, center.Y - r);
                     if (c.y >= 0 && c.y < map.GetLength(0) && c.x >= 0 && c.x < map.GetLength(1) && map[c.y, c.x] != null && !list.Contains(map[c.y, c.x])) list.Add(map[c.y, c.x]);
-                    Vector2Int d2 = new Vector2Int(center.X + d, center.Y - r);
-                    if (d2.y >= 0 && d2.y < map.GetLength(0) && d2.x >= 0 && d2.x < map.GetLength(1) && map[d2.y, d2.x] != null && !list.Contains(map[d2.y, d2.x])) list.Add(map[d2.y, d2.x]);
-                    Vector2Int e = new Vector2Int(center.X + r, center.Y - d);
+                    Vector2Int d = new Vector2Int(center.X + dd, center.Y - r);
+                    if (d.y >= 0 && d.y < map.GetLength(0) && d.x >= 0 && d.x < map.GetLength(1) && map[d.y, d.x] != null && !list.Contains(map[d.y, d.x])) list.Add(map[d.y, d.x]);
+                    Vector2Int e = new Vector2Int(center.X + r, center.Y - dd);
                     if (e.y >= 0 && e.y < map.GetLength(0) && e.x >= 0 && e.x < map.GetLength(1) && map[e.y, e.x] != null && !list.Contains(map[e.y, e.x])) list.Add(map[e.y, e.x]);
-                    Vector2Int f = new Vector2Int(center.X + r, center.Y + d);
+                    Vector2Int f = new Vector2Int(center.X + r, center.Y + dd);
                     if (f.y >= 0 && f.y < map.GetLength(0) && f.x >= 0 && f.x < map.GetLength(1) && map[f.y, f.x] != null && !list.Contains(map[f.y, f.x])) list.Add(map[f.y, f.x]);
-                    Vector2Int g = new Vector2Int(center.X - r, center.Y - d);
+                    Vector2Int g = new Vector2Int(center.X - r, center.Y - dd);
                     if (g.y >= 0 && g.y < map.GetLength(0) && g.x >= 0 && g.x < map.GetLength(1) && map[g.y, g.x] != null && !list.Contains(map[g.y, g.x])) list.Add(map[g.y, g.x]);
-                    Vector2Int h = new Vector2Int(center.X - r, center.Y + d);
+                    Vector2Int h = new Vector2Int(center.X - r, center.Y + dd);
                     if (h.y >= 0 && h.y < map.GetLength(0) && h.x >= 0 && h.x < map.GetLength(1) && map[h.y, h.x] != null && !list.Contains(map[h.y, h.x])) list.Add(map[h.y, h.x]);
                 }
             }
@@ -528,22 +600,22 @@ namespace KevinCastejon.GridHelper
             {
                 for (int r = 0; r <= Mathf.FloorToInt(radius * Mathf.Sqrt(0.5f)); r++)
                 {
-                    int d = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
-                    Vector2Int a = new Vector2Int(center.X - d, center.Y + r);
+                    int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
+                    Vector2Int a = new Vector2Int(center.X - dd, center.Y + r);
                     if (a.y >= 0 && a.y < map.GetLength(0) && a.x >= 0 && a.x < map.GetLength(1) && map[a.y, a.x] != null && map[a.y, a.x].IsWalkable && !list.Contains(map[a.y, a.x])) list.Add(map[a.y, a.x]);
-                    Vector2Int b = new Vector2Int(center.X + d, center.Y + r);
+                    Vector2Int b = new Vector2Int(center.X + dd, center.Y + r);
                     if (b.y >= 0 && b.y < map.GetLength(0) && b.x >= 0 && b.x < map.GetLength(1) && map[b.y, b.x] != null && map[b.y, b.x].IsWalkable && !list.Contains(map[b.y, b.x])) list.Add(map[b.y, b.x]);
-                    Vector2Int c = new Vector2Int(center.X - d, center.Y - r);
+                    Vector2Int c = new Vector2Int(center.X - dd, center.Y - r);
                     if (c.y >= 0 && c.y < map.GetLength(0) && c.x >= 0 && c.x < map.GetLength(1) && map[c.y, c.x] != null && map[c.y, c.x].IsWalkable && !list.Contains(map[c.y, c.x])) list.Add(map[c.y, c.x]);
-                    Vector2Int d2 = new Vector2Int(center.X + d, center.Y - r);
-                    if (d2.y >= 0 && d2.y < map.GetLength(0) && d2.x >= 0 && d2.x < map.GetLength(1) && map[d2.y, d2.x] != null && map[d2.y, d2.x].IsWalkable && !list.Contains(map[d2.y, d2.x])) list.Add(map[d2.y, d2.x]);
-                    Vector2Int e = new Vector2Int(center.X + r, center.Y - d);
+                    Vector2Int d = new Vector2Int(center.X + dd, center.Y - r);
+                    if (d.y >= 0 && d.y < map.GetLength(0) && d.x >= 0 && d.x < map.GetLength(1) && map[d.y, d.x] != null && map[d.y, d.x].IsWalkable && !list.Contains(map[d.y, d.x])) list.Add(map[d.y, d.x]);
+                    Vector2Int e = new Vector2Int(center.X + r, center.Y - dd);
                     if (e.y >= 0 && e.y < map.GetLength(0) && e.x >= 0 && e.x < map.GetLength(1) && map[e.y, e.x] != null && map[e.y, e.x].IsWalkable && !list.Contains(map[e.y, e.x])) list.Add(map[e.y, e.x]);
-                    Vector2Int f = new Vector2Int(center.X + r, center.Y + d);
+                    Vector2Int f = new Vector2Int(center.X + r, center.Y + dd);
                     if (f.y >= 0 && f.y < map.GetLength(0) && f.x >= 0 && f.x < map.GetLength(1) && map[f.y, f.x] != null && map[f.y, f.x].IsWalkable && !list.Contains(map[f.y, f.x])) list.Add(map[f.y, f.x]);
-                    Vector2Int g = new Vector2Int(center.X - r, center.Y - d);
+                    Vector2Int g = new Vector2Int(center.X - r, center.Y - dd);
                     if (g.y >= 0 && g.y < map.GetLength(0) && g.x >= 0 && g.x < map.GetLength(1) && map[g.y, g.x] != null && map[g.y, g.x].IsWalkable && !list.Contains(map[g.y, g.x])) list.Add(map[g.y, g.x]);
-                    Vector2Int h = new Vector2Int(center.X - r, center.Y + d);
+                    Vector2Int h = new Vector2Int(center.X - r, center.Y + dd);
                     if (h.y >= 0 && h.y < map.GetLength(0) && h.x >= 0 && h.x < map.GetLength(1) && map[h.y, h.x] != null && map[h.y, h.x].IsWalkable && !list.Contains(map[h.y, h.x])) list.Add(map[h.y, h.x]);
                 }
             }
@@ -724,6 +796,53 @@ namespace KevinCastejon.GridHelper
             return points.ToArray();
         }
         /// <summary>
+        /// Get all the accessible tiles from a target tile. You can use a maximum movement cost or set it to 0 to have no limit.
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="target">The target tile</param>
+        /// <param name="allowDiagonals">Allow diagonals movements</param>
+        /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
+        /// <param name="maxMovementCost">The maximum movement cost. (0 means no limit)</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetAccessibleTiles<T>(T[,] map, T target, float maxMovementCost = 0f, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
+        {
+            if (!target.IsWalkable)
+            {
+                throw new System.Exception("Do not try to call GetAccessibleTiles() with an unwalkable tile as the target");
+            }
+            PriorityQueueUnityPort.PriorityQueue<T, float> frontier = new();
+            List<T> tiles = new List<T>();
+            frontier.Enqueue(target, 0);
+            Dictionary<T, T> fromDico = new Dictionary<T, T>() { { target, target } };
+            Dictionary<T, float> costSoFarDico = new Dictionary<T, float>() { { target, 0f } };
+            while (frontier.Count > 0)
+            {
+                T current = frontier.Dequeue();
+                List<T> neibourgs = GetTileNeighbours<T>(map, current.X, current.Y, allowDiagonals);
+                foreach (T nei in neibourgs)
+                {
+                    bool isDiagonal = current.X != nei.X && current.Y != nei.Y;
+                    float newDistance = costSoFarDico[current] + nei.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
+                    if (maxMovementCost > 0f && newDistance > maxMovementCost)
+                    {
+                        continue;
+                    }
+                    if (!costSoFarDico.ContainsKey(nei) || newDistance < costSoFarDico[nei])
+                    {
+                        frontier.Enqueue(nei, newDistance);
+                        fromDico[nei] = current;
+                        costSoFarDico[nei] = newDistance;
+                        if (!tiles.Contains(nei))
+                        {
+                            tiles.Add(nei);
+                        }
+                    }
+                }
+            }
+            return tiles.ToArray();
+        }
+        /// <summary>
         /// Generates a PathMap object that will contain all the precalculated paths data for the entire grid
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
@@ -760,7 +879,7 @@ namespace KevinCastejon.GridHelper
             while (frontier.Count > 0)
             {
                 Node<T> current = frontier.Dequeue();
-                List<Node<T>> neibourgs = GetNeighbours(nodeMap, current.Tile.X, current.Tile.Y, allowDiagonals);
+                List<Node<T>> neibourgs = GetNodeNeighbours(nodeMap, current.Tile.X, current.Tile.Y, allowDiagonals);
                 foreach (Node<T> nei in neibourgs)
                 {
                     bool isDiagonal = allowDiagonals && current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;

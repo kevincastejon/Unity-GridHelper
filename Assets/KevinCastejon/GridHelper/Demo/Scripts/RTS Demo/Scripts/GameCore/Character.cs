@@ -21,6 +21,7 @@ namespace RTS_Demo
         private Floor[] _path;
         private Floor _target;
         private Transform _bullet;
+        private GridController _gridController;
         private int _currentPathIndex;
         private bool _hasMoved;
         private bool _hasAttacked;
@@ -31,7 +32,7 @@ namespace RTS_Demo
 
         public string Name { get => _name; }
         public bool IsIA { get => _isIA; }
-        public Floor[] AccessibleTiles { get => _accessibleTiles.Where(f => f.Character == null).ToArray(); }
+        public Floor[] AccessibleTiles { get => _accessibleTiles.Where(f => f.Character == null).ToArray(); set => _accessibleTiles = value; }
         public bool HasPath { get => _path != null && _path[_path.Length - 1] != CurrentTile; }
         public bool HasFinished { get => HasAttacked && HasMoved; }
         public bool HasMoved { get => _hasMoved; set => _hasMoved = value; }
@@ -39,7 +40,7 @@ namespace RTS_Demo
         public bool AllowDiagonals { get => _allowDiagonals; }
         public int MaxMovement { get => _maxMovement; }
         public int AttackRange { get => _attackRange; }
-        public int Health { get => _health; set => _health = Mathf.Max(0,value); }
+        public int Health { get => _health; set => _health = Mathf.Max(0, value); }
         public Floor CurrentTile { get => _currentTile; set => _currentTile = value; }
         public PathMap<Floor> PathMap
         {
@@ -51,7 +52,6 @@ namespace RTS_Demo
             set
             {
                 _pathMap = value;
-                _accessibleTiles = _pathMap.GetAccessibleTilesFromTarget(_maxMovement);
             }
         }
         public bool IsPreparingMove { get => _isPreparingMove; set => _isPreparingMove = value; }
@@ -61,6 +61,10 @@ namespace RTS_Demo
         public bool IsStepOver { get => _stepTimer.IsCompleted; }
         public bool AllStepsOver { get => _currentPathIndex == _path.Length - 1; }
 
+        private void Awake()
+        {
+            _gridController = FindObjectOfType<GridController>();
+        }
         public void StartAttacking(Floor target)
         {
             _target = target;

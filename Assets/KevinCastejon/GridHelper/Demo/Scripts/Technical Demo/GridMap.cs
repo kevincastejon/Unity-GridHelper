@@ -348,7 +348,7 @@ namespace Technical_Demo
             // Reseting all tiles visuals
             ResetPaths();
             // Retrieving the accessible tiles from the pathMap
-            Floor[] accessibleTiles = _pathMap.GetAccessibleTilesFromTarget((float)_maxMovement);
+            Floor[] accessibleTiles = GridHelper.GetAccessibleTiles(_map, _target, _maxMovement, _allowDiagonals, _diagonalsWeight);
             // For each accessible tile
             foreach (Floor floor in accessibleTiles)
             {
@@ -385,6 +385,11 @@ namespace Technical_Demo
                 clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
                 // Setting this value as the "drag value" for next tiles hovering
                 _firstDragValue = clickedFloor.IsWalkable;
+                if (clickedFloor == _pathStart)
+                {
+                    clickedFloor.IsPath = false;
+                    _pathStart = null;
+                }
                 // Generating a path map
                 GeneratePathMap();
             }
@@ -427,7 +432,7 @@ namespace Technical_Demo
                 // Refreshing visuals
                 RefreshVisuals();
             }
-        }        
+        }
         // Resets the Dijkstra visuals
         public void ResetDijkstraVisuals()
         {
@@ -442,7 +447,7 @@ namespace Technical_Demo
                 }
             }
         }
-        
+
         // Displays the distances on the tiles
         public void ShowDistances()
         {
