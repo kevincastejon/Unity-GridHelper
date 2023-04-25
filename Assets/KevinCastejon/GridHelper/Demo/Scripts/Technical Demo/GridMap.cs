@@ -468,7 +468,7 @@ namespace Technical_Demo
                         continue;
                     }
                     _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);
-                    _map[i, j].Label.text = _pathMap.GetMovementCostFromTile(_map[i, j]).ToString("F1");
+                    _map[i, j].Label.text = _pathMap.GetDistanceToTargetFromTile(_map[i, j]).ToString("F1");
                 }
             }
         }

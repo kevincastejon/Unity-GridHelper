@@ -51,12 +51,12 @@ namespace KevinCastejon.GridHelper
         private T _tile;
         private Node<T> _next;
         private Vector2 _nextDirection;
-        private float _movementCosts;
+        private float _distanceToTarget;
 
         internal T Tile { get => _tile; set => _tile = value; }
         internal Node<T> NextNode { get => _next; set => _next = value; }
         internal Vector2 NextDirection { get => _nextDirection; set => _nextDirection = value; }
-        internal float MovementCosts { get => _movementCosts; set => _movementCosts = value; }
+        internal float DistanceToTarget { get => _distanceToTarget; set => _distanceToTarget = value; }
         internal bool IsWalkable { get; set; }
         internal float Weight { get; set; }
     }
@@ -123,17 +123,17 @@ namespace KevinCastejon.GridHelper
             return _dico[tile].NextDirection;
         }
         /// <summary>
-        /// Get the movement cost on the path between the target and a tile.
+        /// Get the distance to the target from a tile.
         /// </summary>
         /// <param name="tile">A tile object</param>
-        /// <returns>The movement cost</returns>
-        public float GetMovementCostFromTile(T tile)
+        /// <returns>The distance to the target</returns>
+        public float GetDistanceToTargetFromTile(T tile)
         {
             if (!tile.IsWalkable)
             {
                 throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
             }
-            return _dico[tile].MovementCosts;
+            return _dico[tile].DistanceToTarget;
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
@@ -875,7 +875,7 @@ namespace KevinCastejon.GridHelper
             PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
             frontier.Enqueue(targetNode, 0);
             targetNode.NextNode = targetNode;
-            targetNode.MovementCosts = 0f;
+            targetNode.DistanceToTarget = 0f;
             while (frontier.Count > 0)
             {
                 Node<T> current = frontier.Dequeue();
@@ -883,13 +883,13 @@ namespace KevinCastejon.GridHelper
                 foreach (Node<T> nei in neibourgs)
                 {
                     bool isDiagonal = allowDiagonals && current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
-                    float newDistance = current.MovementCosts + nei.Tile.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
-                    if (nei.NextNode == null || newDistance < nei.MovementCosts)
+                    float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
+                    if (nei.NextNode == null || newDistance < nei.DistanceToTarget)
                     {
                         frontier.Enqueue(nei, newDistance);
                         nei.NextNode = current;
                         nei.NextDirection = new Vector2(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0f), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0f));
-                        nei.MovementCosts = newDistance;
+                        nei.DistanceToTarget = newDistance;
                     }
                 }
             }

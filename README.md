@@ -119,44 +119,44 @@ You can retrieve the tile that has been used as the target to generate this **Pa
 
 - **Target**
 ```cs
-pathMap.Target;
+YourCustomTileType tile = pathMap.Target;
 ```
 
 You can get all the tiles on the path from a tile to the target.
 
 - **GetPathToTarget**
 ```cs
-pathMap.GetPathToTarget(startTile);
+YourCustomTileType[] tiles = pathMap.GetPathToTarget(startTile);
 ```
 
 Or you can get all the tiles on the path from the target to a tile.
 
 - **GetPathFromTarget**
 ```cs
-pathMap.GetPathFromTarget(destinationTile);
+YourCustomTileType[] tiles = pathMap.GetPathFromTarget(destinationTile);
 ```
 
 ### - <u>Pathfinding</u> - other PathMap features
 
 You can get info on a specific tile through some **PathMap** methods.
 
-You can get the movement cost on the path between the target and a tile.
+Get the distance to the target from a tile.
 
-- **GetMovementCostFromTile**
+- **GetDistanceToTargetFromTile**
 ```cs
-pathMap.GetMovementCostFromTile(tile);
+float cost = pathMap.GetDistanceToTargetFromTile(tile);
 ```
 
 You can get the next tile on the path between the target and a tile.
 
 - **GetNextTileFromTile**
 ```cs
-pathMap.GetNextTileFromTile(tile);
+YourCustomTileType nextTile = pathMap.GetNextTileFromTile(tile);
 ```
 
 You can get the next tile direction on the path between the target and a tile (in 2D grid coordinates).
 
 - **GetNextTileDirectionFromTile**
 ```cs
-pathMap.GetNextTileDirectionFromTile(tile);
+Vector2 nextTileDirection = pathMap.GetNextTileDirectionFromTile(tile);
 ```
