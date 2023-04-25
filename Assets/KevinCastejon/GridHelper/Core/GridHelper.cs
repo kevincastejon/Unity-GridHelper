@@ -44,6 +44,8 @@ namespace KevinCastejon.GridHelper
         internal Node(T tile)
         {
             _tile = tile;
+            IsWalkable = tile != null && tile.IsWalkable;
+            Weight = tile == null ? 1f : tile.Weight;
         }
 
         private T _tile;
@@ -55,8 +57,8 @@ namespace KevinCastejon.GridHelper
         internal Node<T> NextNode { get => _next; set => _next = value; }
         internal Vector2 NextDirection { get => _nextDirection; set => _nextDirection = value; }
         internal float MovementCosts { get => _movementCosts; set => _movementCosts = value; }
-        internal bool IsWalkable { get => _tile != null && _tile.IsWalkable; }
-        internal float Weight { get => _tile == null ? 1f : _tile.Weight; }
+        internal bool IsWalkable { get; set; }
+        internal float Weight { get; set; }
     }
     /// <summary>
     /// An object containing all the calculated paths data of a tile grid
