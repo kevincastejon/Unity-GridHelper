@@ -385,7 +385,7 @@ namespace Technical_Demo
                 clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
                 // Setting this value as the "drag value" for next tiles hovering
                 _firstDragValue = clickedFloor.IsWalkable;
-                if (clickedFloor == _pathStart)
+                if (!clickedFloor.IsWalkable && clickedFloor == _pathStart)
                 {
                     clickedFloor.IsPath = false;
                     _pathStart = null;
@@ -401,6 +401,11 @@ namespace Technical_Demo
             if (!clickedFloor.IsTarget && clickedFloor.IsWalkable != _firstDragValue)
             {
                 clickedFloor.IsWalkable = !clickedFloor.IsWalkable;
+                if (!clickedFloor.IsWalkable && clickedFloor == _pathStart)
+                {
+                    clickedFloor.IsPath = false;
+                    _pathStart = null;
+                }
                 // Generating a path map
                 GeneratePathMap();
 
@@ -410,7 +415,7 @@ namespace Technical_Demo
         private void SetStartTile(Floor clickedFloor)
         {
             // If that tile is not already the start tile and is walkable
-            if (clickedFloor != _pathStart && clickedFloor.IsWalkable)
+            if (_pathMap.IsTileIntoPathMap(clickedFloor) && clickedFloor != _target && clickedFloor != _pathStart && clickedFloor.IsWalkable)
             {
                 // Setting this tile as the start 
                 _pathStart = clickedFloor;
@@ -429,6 +434,10 @@ namespace Technical_Demo
                 _target.IsTarget = true;
                 // Generating a path map
                 GeneratePathMap();
+                if (_pathStart && !_pathMap.IsTileIntoPathMap(_pathStart))
+                {
+                    _pathStart = null;
+                }
                 // Refreshing visuals
                 RefreshVisuals();
             }
@@ -442,6 +451,10 @@ namespace Technical_Demo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
+                    if (_map[i, j] == null)
+                    {
+                        continue;
+                    }
                     _map[i, j].Label.text = "";
                     _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);
                 }
@@ -461,7 +474,7 @@ namespace Technical_Demo
                     {
                         continue;
                     }
-                    if (!_map[i, j].IsWalkable)
+                    if (!_pathMap.IsTileIntoPathMap(_map[i, j]) || !_map[i, j].IsWalkable)
                     {
                         _map[i, j].Label.text = "";
                         _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);
@@ -485,7 +498,7 @@ namespace Technical_Demo
                     {
                         continue;
                     }
-                    if (!_map[i, j].IsWalkable || _pathMap.GetNextTileFromTile(_map[i, j]) == _map[i, j])
+                    if (!_pathMap.IsTileIntoPathMap(_map[i, j]) || !_map[i, j].IsWalkable || _pathMap.GetNextTileFromTile(_map[i, j]) == _map[i, j])
                     {
                         _map[i, j].Label.text = "";
                         _map[i, j].Label.rectTransform.parent.rotation = Quaternion.LookRotation(Vector3.right);

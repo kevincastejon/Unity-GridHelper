@@ -66,36 +66,46 @@ namespace KevinCastejon.GridHelper
     /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
     public class PathMap<T> where T : ITile
     {
-        private readonly Node<T>[,] _map;
-        private readonly Node<T>[] _flatMap;
+        //private readonly Node<T>[,] _map;
+        //private readonly Node<T>[] _flatMap;
         private readonly Dictionary<T, Node<T>> _dico;
         private readonly T _target;
 
-        internal PathMap(Node<T>[,] map, T target)
+        internal PathMap(Dictionary<T, Node<T>> dico, T target)
         {
+            _dico = dico;
             _target = target;
-            _map = map;
-            _flatMap = new Node<T>[_map.GetLength(0) * _map.GetLength(1)];
-            _dico = new Dictionary<T, Node<T>>();
-            int it = 0;
-            for (int i = 0; i < map.GetLength(0); i++)
-            {
-                for (int j = 0; j < map.GetLength(1); j++)
-                {
-                    _flatMap[it] = map[i, j];
-                    if (map[i, j].Tile != null)
-                    {
-                        _dico.Add(map[i, j].Tile, map[i, j]);
-                    }
-                    it++;
-                }
-            }
+            //_map = map;
+            //_flatMap = new Node<T>[map.GetLength(0) * map.GetLength(1)];
+            //_dico = new Dictionary<T, Node<T>>();
+            //int it = 0;
+            //for (int i = 0; i < map.GetLength(0); i++)
+            //{
+            //    for (int j = 0; j < map.GetLength(1); j++)
+            //    {
+            //        //_flatMap[it] = map[i, j];
+            //        if (map[i, j].Tile != null)
+            //        {
+            //            _dico.Add(map[i, j].Tile, map[i, j]);
+            //        }
+            //        it++;
+            //    }
+            //}
         }
 
         /// <summary>
         /// The tile that has been used as the target to generate this PathMap
         /// </summary>
         public T Target { get => _target; }
+        /// <summary>
+        /// Is the tile contained into the this PathMap. Usefull to check if the tile is usable with this PathMap's methods
+        /// </summary>
+        /// <param name="tile">The tile to check</param>
+        /// <returns>A boolean that is true if the tile is contained on the PathMap, false otherwise</returns>
+        public bool IsTileIntoPathMap(T tile)
+        {
+            return _dico.ContainsKey(tile);
+        }
         /// <summary>
         /// Get the next tile on the path between the target and a tile.
         /// </summary>
@@ -106,6 +116,11 @@ namespace KevinCastejon.GridHelper
             if (!tile.IsWalkable)
             {
                 throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
+            }
+            if (!_dico.ContainsKey(tile))
+            {
+                Debug.LogWarning("You're trying to get the next tile on the path to the target from a tile that is either inaccessible or not in the grid");
+                return default;
             }
             return _dico[tile].NextNode.Tile;
         }
@@ -120,6 +135,11 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
             }
+            if (!_dico.ContainsKey(tile))
+            {
+                Debug.LogWarning("You're trying to get the distance to the target from a tile that is either inaccessible or not in the grid");
+                return Vector2.zero;
+            }
             return _dico[tile].NextDirection;
         }
         /// <summary>
@@ -132,6 +152,11 @@ namespace KevinCastejon.GridHelper
             if (!tile.IsWalkable)
             {
                 throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
+            }
+            if (!_dico.ContainsKey(tile))
+            {
+                Debug.LogWarning("You're trying to get the distance to the target from a tile that is either inaccessible or not in the grid");
+                return -1f;
             }
             return _dico[tile].DistanceToTarget;
         }
@@ -146,7 +171,12 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
             }
-            Node<T> node = _map[tile.Y, tile.X];
+            if (!_dico.ContainsKey(tile))
+            {
+                Debug.LogWarning("You're trying to calculate a path from a tile that is either inaccessible or not in the grid");
+                return new T[0];
+            }
+            Node<T> node = _dico[tile];
             List<T> tiles = new List<T>() { node.Tile };
             while (!EqualityComparer<T>.Default.Equals(node.Tile, _target))
             {
@@ -170,14 +200,6 @@ namespace KevinCastejon.GridHelper
     /// </summary>
     public static class GridHelper
     {
-        private static Node<T> GetNode<T>(Node<T>[,] map, int x, int y) where T : ITile
-        {
-            if (x > -1 && y > -1 && x < map.GetLength(1) && y < map.GetLength(0))
-            {
-                return map[y, x];
-            }
-            return null;
-        }
         private static bool GetTile<T>(T[,] map, int x, int y, out T tile) where T : ITile
         {
             if (x > -1 && y > -1 && x < map.GetLength(1) && y < map.GetLength(0))
@@ -255,61 +277,6 @@ namespace KevinCastejon.GridHelper
                 {
                     nodes.Add(nei);
                 }
-            }
-
-            return nodes;
-        }
-        private static List<Node<T>> GetNodeNeighbours<T>(Node<T>[,] map, int x, int y, bool allowDiagonals) where T : ITile
-        {
-            List<Node<T>> nodes = new List<Node<T>>();
-            Node<T> nei;
-            bool leftWalkable;
-            bool rightWalkable;
-            bool topWalkable;
-            bool bottomWalkable;
-            nei = GetNode(map, x - 1, y);
-            leftWalkable = nei != null && nei.IsWalkable;
-            if (nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
-            }
-            nei = GetNode(map, x, y - 1);
-            bottomWalkable = nei != null && nei.IsWalkable;
-            if (nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
-            }
-            nei = GetNode(map, x, y + 1);
-            topWalkable = nei != null && nei.IsWalkable;
-            if (nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
-            }
-            nei = GetNode(map, x + 1, y);
-            rightWalkable = nei != null && nei.IsWalkable;
-            if (nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
-            }
-            nei = GetNode(map, x - 1, y - 1);
-            if (allowDiagonals && leftWalkable && bottomWalkable && nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
-            }
-            nei = GetNode(map, x - 1, y + 1);
-            if (allowDiagonals && leftWalkable && topWalkable && nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
-            }
-            nei = GetNode(map, x + 1, y + 1);
-            if (allowDiagonals && rightWalkable && topWalkable && nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
-            }
-            nei = GetNode(map, x + 1, y - 1);
-            if (allowDiagonals && rightWalkable && bottomWalkable && nei != null && nei.IsWalkable)
-            {
-                nodes.Add(nei);
             }
 
             return nodes;
@@ -857,43 +824,37 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not try to generate a PathMap with an unwalkable tile as the target");
             }
-            int height = map.GetLength(0);
-            int width = map.GetLength(1);
-            Node<T> targetNode = null;
-            Node<T>[,] nodeMap = new Node<T>[height, width];
-            for (int i = 0; i < height; i++)
-            {
-                for (int j = 0; j < width; j++)
-                {
-                    nodeMap[i, j] = new Node<T>(map[i, j]);
-                    if (EqualityComparer<T>.Default.Equals(map[i, j], target))
-                    {
-                        targetNode = nodeMap[i, j];
-                    }
-                }
-            }
+            Node<T> targetNode = new Node<T>(target);
+            Dictionary<T, Node<T>> dico = new Dictionary<T, Node<T>>() { { target, targetNode } };
             PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
             frontier.Enqueue(targetNode, 0);
             targetNode.NextNode = targetNode;
             targetNode.DistanceToTarget = 0f;
-            while (frontier.Count > 0)
+            int limit = 0;
+            while (frontier.Count > 0 && limit < 1000)
             {
                 Node<T> current = frontier.Dequeue();
-                List<Node<T>> neibourgs = GetNodeNeighbours(nodeMap, current.Tile.X, current.Tile.Y, allowDiagonals);
-                foreach (Node<T> nei in neibourgs)
+                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, allowDiagonals);
+                foreach (T neiTile in neighbourgs)
                 {
+                    Node<T> nei = dico.ContainsKey(neiTile) ? dico[neiTile] : new Node<T>(neiTile);
                     bool isDiagonal = allowDiagonals && current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
                     float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
                     if (nei.NextNode == null || newDistance < nei.DistanceToTarget)
                     {
+                        if (!dico.ContainsKey(nei.Tile))
+                        {
+                            dico.Add(nei.Tile, nei);
+                        }
                         frontier.Enqueue(nei, newDistance);
                         nei.NextNode = current;
                         nei.NextDirection = new Vector2(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0f), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0f));
                         nei.DistanceToTarget = newDistance;
                     }
                 }
+                limit++;
             }
-            return new PathMap<T>(nodeMap, target);
+            return new PathMap<T>(dico, target);
         }
     }
 }
