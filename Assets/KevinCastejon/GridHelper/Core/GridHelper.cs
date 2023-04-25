@@ -1,5 +1,4 @@
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -50,13 +49,11 @@ namespace KevinCastejon.GridHelper
         private T _tile;
         private Node<T> _next;
         private Vector2 _nextDirection;
-        private int _movementSteps;
         private float _movementCosts;
 
         internal T Tile { get => _tile; set => _tile = value; }
         internal Node<T> NextNode { get => _next; set => _next = value; }
         internal Vector2 NextDirection { get => _nextDirection; set => _nextDirection = value; }
-        internal int MovementSteps { get => _movementSteps; set => _movementSteps = value; }
         internal float MovementCosts { get => _movementCosts; set => _movementCosts = value; }
         internal bool IsWalkable { get => _tile != null && _tile.IsWalkable; }
         internal float Weight { get => _tile == null ? 1f : _tile.Weight; }
@@ -124,19 +121,6 @@ namespace KevinCastejon.GridHelper
             return _dico[tile].NextDirection;
         }
         /// <summary>
-        /// Get the number of steps on the path between the target and a tile.
-        /// </summary>
-        /// <param name="tile">A tile object</param>
-        /// <returns>The movement steps count</returns>
-        public int GetMovementStepsFromTile(T tile)
-        {
-            if (!tile.IsWalkable)
-            {
-                throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
-            }
-            return _dico[tile].MovementSteps;
-        }
-        /// <summary>
         /// Get the movement cost on the path between the target and a tile.
         /// </summary>
         /// <param name="tile">A tile object</param>
@@ -152,20 +136,11 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all the accessible tiles from the target tile. You can use a int maximum movement steps count (number of tiles), a float maximum movement cost ("distance" of the path taking account of the tiles weights) or no maximum at all (pass 0 as parameter or just do not pass any parameter).
         /// </summary>
-        /// <param name="movementStep"></param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetAccessibleTilesFromTarget(int movementStep = 0)
-        {
-            return _flatMap.Where(n => movementStep > 0 ? n.MovementSteps <= movementStep && n.MovementSteps > 0 : n.MovementSteps > 0).Select(n => (T)n.Tile).ToArray();
-        }
-        /// <summary>
-        /// Get all the accessible tiles from the target tile. You can use a int maximum movement steps count (number of tiles), a float maximum movement cost ("distance" of the path taking account of the tiles weights) or no maximum at all (pass 0 as parameter or just do not pass any parameter).
-        /// </summary>
         /// <param name="movementCost"></param>
         /// <returns>An array of tiles</returns>
         public T[] GetAccessibleTilesFromTarget(float movementCost = 0f)
         {
-            return _flatMap.Where(n => movementCost > 0 ? n.MovementCosts <= movementCost && n.MovementCosts > 0 : n.MovementCosts > 0).Select(n => (T)n.Tile).ToArray();
+            return _flatMap.Where(n => movementCost > 0f ? n.MovementCosts <= movementCost && n.MovementCosts > 0f : n.MovementCosts > 0f).Select(n => n.Tile).ToArray();
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
@@ -779,7 +754,7 @@ namespace KevinCastejon.GridHelper
             PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
             frontier.Enqueue(targetNode, 0);
             targetNode.NextNode = targetNode;
-            targetNode.MovementSteps = 0;
+            targetNode.MovementCosts = 0f;
             while (frontier.Count > 0)
             {
                 Node<T> current = frontier.Dequeue();
@@ -793,7 +768,6 @@ namespace KevinCastejon.GridHelper
                         frontier.Enqueue(nei, newDistance);
                         nei.NextNode = current;
                         nei.NextDirection = new Vector2(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0f), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0f));
-                        nei.MovementSteps = current.MovementSteps + 1;
                         nei.MovementCosts = newDistance;
                     }
                 }
