@@ -9,7 +9,10 @@ namespace KevinCastejon.GridHelperDemoMisc
     public class SliderFloatToStringConverter : MonoBehaviour
     {
         [SerializeField] private UnityEvent<string> _onChange;
-
+        public void ValueChangedF0(float value)
+        {
+            _onChange.Invoke(Mathf.FloorToInt(value).ToString());
+        }
         public void ValueChangedF1(float value)
         {
             _onChange.Invoke(value.ToString("F1"));

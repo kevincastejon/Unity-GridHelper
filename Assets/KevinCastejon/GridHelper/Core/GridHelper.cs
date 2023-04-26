@@ -50,12 +50,12 @@ namespace KevinCastejon.GridHelper
 
         private T _tile;
         private Node<T> _next;
-        private Vector2 _nextDirection;
+        private Vector2Int _nextDirection;
         private float _distanceToTarget;
 
         internal T Tile { get => _tile; set => _tile = value; }
         internal Node<T> NextNode { get => _next; set => _next = value; }
-        internal Vector2 NextDirection { get => _nextDirection; set => _nextDirection = value; }
+        internal Vector2Int NextDirection { get => _nextDirection; set => _nextDirection = value; }
         internal float DistanceToTarget { get => _distanceToTarget; set => _distanceToTarget = value; }
         internal bool IsWalkable { get; set; }
         internal float Weight { get; set; }
@@ -66,37 +66,26 @@ namespace KevinCastejon.GridHelper
     /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
     public class PathMap<T> where T : ITile
     {
-        //private readonly Node<T>[,] _map;
-        //private readonly Node<T>[] _flatMap;
         private readonly Dictionary<T, Node<T>> _dico;
+        private readonly List<T> _accessibleTiles;
         private readonly T _target;
+        private readonly float _maxDistance;
 
-        internal PathMap(Dictionary<T, Node<T>> dico, T target)
+        internal PathMap(Dictionary<T, Node<T>> accessibleTilesDico, List<T> accessibleTiles, T target, float maxDistance)
         {
-            _dico = dico;
+            _dico = accessibleTilesDico;
+            _accessibleTiles = accessibleTiles;
             _target = target;
-            //_map = map;
-            //_flatMap = new Node<T>[map.GetLength(0) * map.GetLength(1)];
-            //_dico = new Dictionary<T, Node<T>>();
-            //int it = 0;
-            //for (int i = 0; i < map.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < map.GetLength(1); j++)
-            //    {
-            //        //_flatMap[it] = map[i, j];
-            //        if (map[i, j].Tile != null)
-            //        {
-            //            _dico.Add(map[i, j].Tile, map[i, j]);
-            //        }
-            //        it++;
-            //    }
-            //}
+            _maxDistance = maxDistance;
         }
-
         /// <summary>
         /// The tile that has been used as the target to generate this PathMap
         /// </summary>
         public T Target { get => _target; }
+        /// <summary>
+        /// The maxDistance parameter value that has been used to generate this PathMap
+        /// </summary>
+        public float MaxDistance { get => _maxDistance; }
         /// <summary>
         /// Is the tile contained into the this PathMap. Usefull to check if the tile is usable with this PathMap's methods
         /// </summary>
@@ -104,6 +93,10 @@ namespace KevinCastejon.GridHelper
         /// <returns>A boolean that is true if the tile is contained on the PathMap, false otherwise</returns>
         public bool IsTileIntoPathMap(T tile)
         {
+            if (tile == null)
+            {
+                return false;
+            }
             return _dico.ContainsKey(tile);
         }
         /// <summary>
@@ -115,11 +108,11 @@ namespace KevinCastejon.GridHelper
         {
             if (!tile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
+                throw new System.Exception("Do not call GetNextTileFromTile() method with unwalkable tile as parameter");
             }
             if (!_dico.ContainsKey(tile))
             {
-                Debug.LogWarning("You're trying to get the next tile on the path to the target from a tile that is either inaccessible or not in the grid");
+                Debug.LogWarning("You're trying to get the next tile on the path to the target from a tile that is not contained into the PathMap");
                 return default;
             }
             return _dico[tile].NextNode.Tile;
@@ -128,17 +121,17 @@ namespace KevinCastejon.GridHelper
         /// Get the next tile on the path between the target and a tile.
         /// </summary>
         /// <param name="tile">The tile</param>
-        /// <returns>A Vector2 direction</returns>
-        public Vector2 GetNextTileDirectionFromTile(T tile)
+        /// <returns>A Vector2Int direction</returns>
+        public Vector2Int GetNextTileDirectionFromTile(T tile)
         {
             if (!tile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
+                throw new System.Exception("Do not call GetNextTileDirectionFromTile() method with unwalkable tile as parameter");
             }
             if (!_dico.ContainsKey(tile))
             {
-                Debug.LogWarning("You're trying to get the distance to the target from a tile that is either inaccessible or not in the grid");
-                return Vector2.zero;
+                Debug.LogWarning("You're trying to get the distance to the target from a tile that is not contained into the PathMap");
+                return Vector2Int.zero;
             }
             return _dico[tile].NextDirection;
         }
@@ -151,14 +144,22 @@ namespace KevinCastejon.GridHelper
         {
             if (!tile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
+                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with unwalkable tile as parameter");
             }
             if (!_dico.ContainsKey(tile))
             {
-                Debug.LogWarning("You're trying to get the distance to the target from a tile that is either inaccessible or not in the grid");
+                Debug.LogWarning("You're trying to get the distance to the target from a tile that is not contained into the PathMap");
                 return -1f;
             }
             return _dico[tile].DistanceToTarget;
+        }
+        /// <summary>
+        /// Get all the accessible tiles from the target tile
+        /// </summary>
+        /// <returns>An array of tiles</returns>
+        public T[] GetAccessibleTiles()
+        {
+            return _accessibleTiles.ToArray();
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
@@ -169,11 +170,11 @@ namespace KevinCastejon.GridHelper
         {
             if (!tile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathMap methods with unwalkable tile as parameter");
+                throw new System.Exception("Do not call GetPathToTarget() method with unwalkable tile as parameter");
             }
             if (!_dico.ContainsKey(tile))
             {
-                Debug.LogWarning("You're trying to calculate a path from a tile that is either inaccessible or not in the grid");
+                Debug.LogWarning("You're trying to calculate a path from a tile that is not contained into the PathMap");
                 return new T[0];
             }
             Node<T> node = _dico[tile];
@@ -290,9 +291,9 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile</param>
         /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesIntoARectangle<T>(T[,] map, T center, Vector2Int rectangleSize) where T : ITile
+        public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize) where T : ITile
         {
-            return GetTilesIntoARectangle(map, center, rectangleSize.x, rectangleSize.y);
+            return GetTilesInARectangle(map, center, rectangleSize.x, rectangleSize.y);
         }
         /// <summary>
         /// Get all tiles contained into a rectangle around a tile
@@ -303,7 +304,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="rectangleSizeX">The rectangle horizontal size</param>
         /// <param name="rectangleSizeY">The rectangle vertical size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesIntoARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
+        public static T[] GetTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
         {
             int top = Mathf.Max(center.Y - rectangleSizeY, 0),
                 bottom = Mathf.Min(center.Y + rectangleSizeY + 1, map.GetLength(0)),
@@ -330,9 +331,9 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile</param>
         /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesIntoARectangle<T>(T[,] map, T center, Vector2Int rectangleSize) where T : ITile
+        public static T[] GetWalkableTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize) where T : ITile
         {
-            return GetWalkableTilesIntoARectangle(map, center, rectangleSize.x, rectangleSize.y);
+            return GetWalkableTilesInARectangle(map, center, rectangleSize.x, rectangleSize.y);
         }
         /// <summary>
         /// Get all walkable tiles contained into a rectangle around a tile
@@ -343,7 +344,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="rectangleSizeX">The rectangle horizontal size</param>
         /// <param name="rectangleSizeY">The rectangle vertical size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesIntoARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
+        public static T[] GetWalkableTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
         {
             int top = Mathf.Max(center.Y - rectangleSizeY, 0),
                 bottom = Mathf.Min(center.Y + rectangleSizeY + 1, map.GetLength(0)),
@@ -445,7 +446,7 @@ namespace KevinCastejon.GridHelper
                     {
                         continue;
                     }
-                    if (map[i, j] != null && map[i, j].IsWalkable && i == top || i == bottom - 1 || j == left || j == right - 1)
+                    if (map[i, j] != null && map[i, j].IsWalkable && (i == top || i == bottom - 1 || j == left || j == right - 1))
                     {
                         list.Add(map[i, j]);
                     }
@@ -461,7 +462,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesIntoARadius<T>(T[,] map, T center, int radius) where T : ITile
+        public static T[] GetTilesInARadius<T>(T[,] map, T center, int radius) where T : ITile
         {
             int top = Mathf.Max(center.Y - radius, 0),
                 bottom = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
@@ -528,7 +529,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesIntoARadius<T>(T[,] map, T center, int radius) where T : ITile
+        public static T[] GetWalkableTilesInARadius<T>(T[,] map, T center, int radius) where T : ITile
         {
             int top = Mathf.CeilToInt(center.Y - radius),
                 bottom = Mathf.FloorToInt(center.Y + radius),
@@ -542,7 +543,7 @@ namespace KevinCastejon.GridHelper
                     float dx = center.X - x,
                     dy = center.Y - y;
                     float distance_squared = dx * dx + dy * dy;
-                    if (map[y, x].IsWalkable && distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0))
+                    if (distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0) && map[y, x].IsWalkable)
                     {
                         list.Add(map[y, x]);
                     }
@@ -763,53 +764,6 @@ namespace KevinCastejon.GridHelper
             return points.ToArray();
         }
         /// <summary>
-        /// Get all the accessible tiles from a target tile. You can use a maximum movement cost or set it to 0 to have no limit.
-        /// </summary>
-        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
-        /// <param name="target">The target tile</param>
-        /// <param name="allowDiagonals">Allow diagonals movements</param>
-        /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
-        /// <param name="maxMovementCost">The maximum movement cost. (0 means no limit)</param>
-        /// <returns>An array of tiles</returns>
-        public static T[] GetAccessibleTiles<T>(T[,] map, T target, float maxMovementCost = 0f, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
-        {
-            if (!target.IsWalkable)
-            {
-                throw new System.Exception("Do not try to call GetAccessibleTiles() with an unwalkable tile as the target");
-            }
-            PriorityQueueUnityPort.PriorityQueue<T, float> frontier = new();
-            List<T> tiles = new List<T>();
-            frontier.Enqueue(target, 0);
-            Dictionary<T, T> fromDico = new Dictionary<T, T>() { { target, target } };
-            Dictionary<T, float> costSoFarDico = new Dictionary<T, float>() { { target, 0f } };
-            while (frontier.Count > 0)
-            {
-                T current = frontier.Dequeue();
-                List<T> neibourgs = GetTileNeighbours<T>(map, current.X, current.Y, allowDiagonals);
-                foreach (T nei in neibourgs)
-                {
-                    bool isDiagonal = current.X != nei.X && current.Y != nei.Y;
-                    float newDistance = costSoFarDico[current] + nei.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
-                    if (maxMovementCost > 0f && newDistance > maxMovementCost)
-                    {
-                        continue;
-                    }
-                    if (!costSoFarDico.ContainsKey(nei) || newDistance < costSoFarDico[nei])
-                    {
-                        frontier.Enqueue(nei, newDistance);
-                        fromDico[nei] = current;
-                        costSoFarDico[nei] = newDistance;
-                        if (!tiles.Contains(nei))
-                        {
-                            tiles.Add(nei);
-                        }
-                    }
-                }
-            }
-            return tiles.ToArray();
-        }
-        /// <summary>
         /// Generates a PathMap object that will contain all the precalculated paths data for the entire grid
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
@@ -818,14 +772,15 @@ namespace KevinCastejon.GridHelper
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
         /// <returns>A PathMap object</returns>
-        public static PathMap<T> GeneratePathMap<T>(T[,] map, T target, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
+        public static PathMap<T> GeneratePathMap<T>(T[,] map, T target, float maxDistance = 0f, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
         {
             if (!target.IsWalkable)
             {
                 throw new System.Exception("Do not try to generate a PathMap with an unwalkable tile as the target");
             }
             Node<T> targetNode = new Node<T>(target);
-            Dictionary<T, Node<T>> dico = new Dictionary<T, Node<T>>() { { target, targetNode } };
+            Dictionary<T, Node<T>> accessibleTilesDico = new Dictionary<T, Node<T>>() { { target, targetNode } };
+            List<T> accessibleTiles = new List<T>() { target };
             PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
             frontier.Enqueue(targetNode, 0);
             targetNode.NextNode = targetNode;
@@ -837,24 +792,29 @@ namespace KevinCastejon.GridHelper
                 List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, allowDiagonals);
                 foreach (T neiTile in neighbourgs)
                 {
-                    Node<T> nei = dico.ContainsKey(neiTile) ? dico[neiTile] : new Node<T>(neiTile);
+                    Node<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node<T>(neiTile);
                     bool isDiagonal = allowDiagonals && current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
                     float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
+                    if (maxDistance > 0f && newDistance > maxDistance)
+                    {
+                        continue;
+                    }
                     if (nei.NextNode == null || newDistance < nei.DistanceToTarget)
                     {
-                        if (!dico.ContainsKey(nei.Tile))
+                        if (!accessibleTilesDico.ContainsKey(nei.Tile))
                         {
-                            dico.Add(nei.Tile, nei);
+                            accessibleTilesDico.Add(nei.Tile, nei);
+                            accessibleTiles.Add(nei.Tile);
                         }
                         frontier.Enqueue(nei, newDistance);
                         nei.NextNode = current;
-                        nei.NextDirection = new Vector2(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0f), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0f));
+                        nei.NextDirection = new Vector2Int(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0));
                         nei.DistanceToTarget = newDistance;
                     }
                 }
                 limit++;
             }
-            return new PathMap<T>(dico, target);
+            return new PathMap<T>(accessibleTilesDico, accessibleTiles, target, maxDistance);
         }
     }
 }

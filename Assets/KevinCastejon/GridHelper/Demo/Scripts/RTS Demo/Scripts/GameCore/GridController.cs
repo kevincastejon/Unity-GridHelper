@@ -35,7 +35,7 @@ namespace RTS_Demo
         {
             get
             {
-                Floor[] inViewRangeFloors = GridHelper.GetTilesIntoARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
+                Floor[] inViewRangeFloors = GridHelper.GetTilesInARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
                 foreach (Character character in _characters)
                 {
                     if (inViewRangeFloors.Contains(character.CurrentTile) && GridHelper.IsLineOfSightClear(_map, CurrentMob.CurrentTile, character.CurrentTile))
@@ -92,13 +92,13 @@ namespace RTS_Demo
             // Calculating intial paths for all characters and mobs
             foreach (Character charac in _characters)
             {
-                charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
-                charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
+                charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+                charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             }
-            foreach (Character charac in _characters)
+            foreach (Character charac in _mobs)
             {
-                charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
-                charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
+                charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+                charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             }
         }
         private void Update()
@@ -150,8 +150,8 @@ namespace RTS_Demo
                 charac = _characters.First(x => !x.HasFinished);
             }
             _currentCharacter = Array.IndexOf(_characters, charac);
-            charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
-            charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
+            charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+            charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             _selectionCircle.gameObject.SetActive(true);
             _selectionCircle.StartMove(CurrentCharacter.transform.position);
         }
@@ -208,7 +208,7 @@ namespace RTS_Demo
         {
             CurrentCharacter.IsPreparingAttack = true;
             ResetTiles(false, false, true, false);
-            Floor[] inViewRangeFloors = GridHelper.GetTilesIntoARadius<Floor>(_map, CurrentCharacter.CurrentTile, CurrentCharacter.AttackRange);
+            Floor[] inViewRangeFloors = GridHelper.GetTilesInARadius<Floor>(_map, CurrentCharacter.CurrentTile, CurrentCharacter.AttackRange);
             foreach (Floor floor in inViewRangeFloors)
             {
                 floor.IsInViewRange = true;
@@ -259,8 +259,8 @@ namespace RTS_Demo
         public void StartIASwitchCharacter()
         {
             Character charac = _mobs.First(x => !x.HasFinished);
-            charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.AllowDiagonals);
-            charac.AccessibleTiles = GridHelper.GetAccessibleTiles(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals, 1.5f);
+            charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+            charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             _currentCharacter = Array.IndexOf(_mobs, charac);
             _selectionCircle.gameObject.SetActive(true);
             _selectionCircle.StartMove(CurrentMob.transform.position);
@@ -307,7 +307,7 @@ namespace RTS_Demo
         {
             CurrentMob.IsPreparingAttack = true;
             ResetTiles(false, false, true, false);
-            Floor[] inViewRangeFloors = GridHelper.GetTilesIntoARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
+            Floor[] inViewRangeFloors = GridHelper.GetTilesInARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
             foreach (Floor floor in inViewRangeFloors)
             {
                 floor.IsInViewRange = true;

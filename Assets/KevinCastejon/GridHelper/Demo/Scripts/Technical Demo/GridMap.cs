@@ -320,7 +320,7 @@ namespace Technical_Demo
             // Resetting all tiles
             ResetPaths();
             // Retrieving the path
-            Floor[] tilesIntoSquare = _outline ? GridHelper.GetTilesOnARectangleOutline(_map, _target, _rectangleSizeX, _rectangleSizeY) : GridHelper.GetTilesIntoARectangle(_map, _target, _rectangleSizeX, _rectangleSizeY);
+            Floor[] tilesIntoSquare = _outline ? GridHelper.GetTilesOnARectangleOutline(_map, _target, _rectangleSizeX, _rectangleSizeY) : GridHelper.GetTilesInARectangle(_map, _target, _rectangleSizeX, _rectangleSizeY);
             // For each tile along the path
             foreach (Floor floor in tilesIntoSquare)
             {
@@ -334,7 +334,7 @@ namespace Technical_Demo
             // Resetting all tiles
             ResetPaths();
             // Retrieving the path
-            Floor[] tilesIntoRadius = _outline ? GridHelper.GetTilesOnARadiusOutline(_map, _target, _circleSize) : GridHelper.GetTilesIntoARadius(_map, _target, _circleSize);
+            Floor[] tilesIntoRadius = _outline ? GridHelper.GetTilesOnARadiusOutline(_map, _target, _circleSize) : GridHelper.GetTilesInARadius(_map, _target, _circleSize);
             // For each tile along the path
             foreach (Floor floor in tilesIntoRadius)
             {
@@ -348,7 +348,7 @@ namespace Technical_Demo
             // Reseting all tiles visuals
             ResetPaths();
             // Retrieving the accessible tiles from the pathMap
-            Floor[] accessibleTiles = GridHelper.GetAccessibleTiles(_map, _target, _maxMovement, _allowDiagonals, _diagonalsWeight);
+            Floor[] accessibleTiles = _pathMap.GetAccessibleTiles();
             // For each accessible tile
             foreach (Floor floor in accessibleTiles)
             {
@@ -516,7 +516,7 @@ namespace Technical_Demo
         private void GeneratePathMap()
         {
             // Generating a path map
-            _pathMap = GridHelper.GeneratePathMap(_map, _target, _allowDiagonals, _diagonalsWeight);
+            _pathMap = GridHelper.GeneratePathMap(_map, _target, 0f, _allowDiagonals, _diagonalsWeight);
         }
         // Resets the tiles path visuals
         private void ResetPaths()

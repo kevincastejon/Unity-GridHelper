@@ -20,51 +20,51 @@ What is a *tile* ? Any object (custom class, struct, component, ...) that implem
 
 ### - <u>Extractions</u>
 
-You can extract tiles into a radius, or into a rectangle, around a tile.
+You can extract tiles in a radius, or in a rectangle, around a tile.
 
-- **GetTilesIntoARectangle**
+- **GetTilesInARectangle**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesIntoARectangle(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = GridHelper.GetTilesInARectangle(grid, centerTile, rectangleSize);
 ```
-- **GetTilesIntoARadius**
+- **GetTilesInARadius**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesIntoARadius(grid, centerTile, radius);
+YourCustomTileType[] tiles = GridHelper.GetTilesInARadius(grid, centerTile, radius);
 ```
 
-You can also get only the walkable tiles into a radius/rectangle, around a tile.
+You can also get only the walkable tiles in a radius/rectangle, around a tile.
 
-- **GetWalkableTilesIntoARectangle**
+- **GetWalkableTilesInARectangle**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesIntoARectangle(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = GridHelper.GetWalkableTilesInARectangle(grid, centerTile, rectangleSize);
 ```
-- **GetWalkableTilesIntoARadius**
+- **GetWalkableTilesInARadius**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesIntoARadius(grid, centerTile, radius);
+YourCustomTileType[] tiles = GridHelper.GetWalkableTilesInARadius(grid, centerTile, radius);
 ```
 
 You can also get only the tiles on the radius/rectangle outline.
 
-- **GetTilesIntoARectangleOutline**
+- **GetTilesOnARectangleOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesIntoARectangleOutline(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = GridHelper.GetTilesOnARectangleOutline(grid, centerTile, rectangleSize);
 ```
-- **GetTilesIntoARadiusOutline**
+- **GetTilesOnARadiusOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesIntoARadiusOutline(grid, centerTile, radius);
+YourCustomTileType[] tiles = GridHelper.GetTilesOnARadiusOutline(grid, centerTile, radius);
 ```
 
 Finally, you can also get only the walkable tiles on the radius/rectangle outline.
 
-- **GetWalkableTilesIntoARectangleOutline**
+- **GetWalkableTilesOnARectangleOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesIntoARectangleOutline(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = GridHelper.GetWalkableTilesOnARectangleOutline(grid, centerTile, rectangleSize);
 ```
-- **GetWalkableTilesIntoARadiusOutline**
+- **GetWalkableTilesOnARadiusOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesIntoARadiusOutline(grid, centerTile, radius);
+YourCustomTileType[] tiles = GridHelper.GetWalkableTilesOnARadiusOutline(grid, centerTile, radius);
 ```
 
-### - <u>Line</u>
+### - <u>Raycasting</u>
 
 You can get all the tiles on a line between two tiles
 
@@ -96,16 +96,9 @@ bool isLineClear = GridHelper.IsLineOfSightClear(grid, startTile, stopTile);
 
 ### - <u>Pathfinding</u>
 
-You can get all the accessible tiles from a target tile. You can use a maximum movement cost or set it to 0 to have no limit. (This method uses a **Dijkstra** algorithm with early exit)
-
-- **GetAccessibleTilesFromTarget**
-```cs
-YourCustomTileType[] tiles = GridHelper.GetAccessibleTilesFromTarget(maximumMovement);
-```
-
 The other part of the pathfinding section of this library generates and uses a **PathMap** object that holds all the calculated paths data for the entire grid.
 
-This way of doing pathfinding is usefull for some usages (like Tower Defenses) because it calculates once all the paths between one tile and all the others. (These methods use **Dijkstra** algorithm)
+This way of doing pathfinding is usefull for some usages (like Tower Defenses) because it calculates once all the paths between one tile and all the others. (The **PathMap** generation uses **Dijkstra** algorithm)
 
 To generate the **PathMap** object, use the **GeneratePathMap** method.
 
@@ -120,6 +113,27 @@ You can retrieve the tile that has been used as the target to generate this **Pa
 - **Target**
 ```cs
 YourCustomTileType tile = pathMap.Target;
+```
+
+You can retrieve the *maxDistance* parameter value that has been used to generate this **PathMap**
+
+- **MaxDistance**
+```cs
+float maxDistance = pathMap.MaxDistance;
+```
+
+You can get all the accessible tiles from the target tile.
+
+- **GetAccessibleTiles**
+```cs
+YourCustomTileType[] tiles = GridHelper.GetAccessibleTiles();
+```
+
+You can know if a tile is contained into a **PathMap**. This is usefull before calling the **PathMap** methods that takes a tile as parameter, as this tile has to be into the **PathMap** in order to make it work.
+
+- **IsTileIntoPathMap**
+```cs
+bool isTileIntoPathMap = pathMap.IsTileIntoPathMap(tile);
 ```
 
 You can get all the tiles on the path from a tile to the target.
