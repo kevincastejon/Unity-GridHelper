@@ -45,7 +45,7 @@ namespace KevinCastejon.GridHelper
         {
             _tile = tile;
             IsWalkable = tile != null && tile.IsWalkable;
-            Weight = tile == null ? 1f : tile.Weight;
+            Weight = tile == null ? 1f : Mathf.Max(tile.Weight, 1f);
         }
 
         private T _tile;

@@ -38,7 +38,7 @@ namespace TD_Demo
         {
             // Referencing the camera
             _camera = Camera.main;
-            _pathMap = GridHelper.Pathfinding.GeneratePathMap(_map, _goalTile, 0);
+            _pathMap = GridHelper.Pathfinding.GeneratePathMap(_map, _goalTile);
         }
         private void Update()
         {
