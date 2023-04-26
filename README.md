@@ -1,6 +1,6 @@
 # GridHelper
 
-This package offers a utilitary API to help with operations on **grids** such as **tile extraction**, **line of sight**, **pathfinding**, etc...
+This package offers a utilitary API to help with operations on **grids** such as **tile extraction**, **raycasting**, **pathfinding**, etc...
 
 Comes with several demo examples.
 
