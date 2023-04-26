@@ -574,19 +574,19 @@ namespace APIDemo
         }
         private void GetWalkableTilesInARadius()
         {
-            _pathTiles = GridHelper.GetWalkableTilesInARadius(_map, _targetTile, _radius);
+            _pathTiles = GridHelper.Extraction.GetWalkableTilesInARadius(_map, _targetTile, _radius);
         }
         private void GetWalkableTilesInARadiusOutline()
         {
-            _pathTiles = GridHelper.GetWalkableTilesOnARadiusOutline(_map, _targetTile, _radius);
+            _pathTiles = GridHelper.Extraction.GetWalkableTilesOnARadiusOutline(_map, _targetTile, _radius);
         }
         private void GetWalkableTilesInARectangle()
         {
-            _pathTiles = GridHelper.GetWalkableTilesInARectangle(_map, _targetTile, _rectangleSizeX, _rectangleSizeY);
+            _pathTiles = GridHelper.Extraction.GetWalkableTilesInARectangle(_map, _targetTile, _rectangleSizeX, _rectangleSizeY);
         }
         private void GetWalkableTilesInARectangleOutline()
         {
-            _pathTiles = GridHelper.GetWalkableTilesOnARectangleOutline(_map, _targetTile, _rectangleSizeX, _rectangleSizeY);
+            _pathTiles = GridHelper.Extraction.GetWalkableTilesOnARectangleOutline(_map, _targetTile, _rectangleSizeX, _rectangleSizeY);
         }
         private void GetWalkableTilesOnALine()
         {
@@ -594,7 +594,7 @@ namespace APIDemo
             {
                 return;
             }
-            _pathTiles = GridHelper.GetWalkableTilesOnALine(_map, _targetTile, _startTile, _maxDistance);
+            _pathTiles = GridHelper.Raycasting.GetWalkableTilesOnALine(_map, _targetTile, _startTile, _maxDistance);
         }
         private void GetLineOfSight()
         {
@@ -602,11 +602,11 @@ namespace APIDemo
             {
                 return;
             }
-            _pathTiles = GridHelper.GetLineOfSight(_map, _targetTile, _startTile, _maxDistance);
+            _pathTiles = GridHelper.Raycasting.GetLineOfSight(_map, _targetTile, _startTile, _maxDistance);
         }
         private void GetAccessibleTiles()
         {
-            PathMap<Tile> pathMap = GridHelper.GeneratePathMap(_map, _targetTile, _maxDistance, _allowDiagonals, _diagonalsWeight);
+            PathMap<Tile> pathMap = GridHelper.Pathfinding.GeneratePathMap(_map, _targetTile, _maxDistance, _allowDiagonals, _diagonalsWeight);
             _pathTiles = pathMap.GetAccessibleTiles();
         }
         private void GetPathToTarget()
@@ -663,7 +663,7 @@ namespace APIDemo
         private void GenerateGlobalPathMap()
         {
             // Generating a path map
-            _globalPathMap = GridHelper.GeneratePathMap(_map, _targetTile, 0f, _allowDiagonals, _diagonalsWeight);
+            _globalPathMap = GridHelper.Pathfinding.GeneratePathMap(_map, _targetTile, 0f, _allowDiagonals, _diagonalsWeight);
         }
         private void ShowDistances()
         {

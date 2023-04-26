@@ -35,10 +35,10 @@ namespace RTS_Demo
         {
             get
             {
-                Floor[] inViewRangeFloors = GridHelper.GetTilesInARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
+                Floor[] inViewRangeFloors = GridHelper.Extraction.GetTilesInARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
                 foreach (Character character in _characters)
                 {
-                    if (inViewRangeFloors.Contains(character.CurrentTile) && GridHelper.IsLineOfSightClear(_map, CurrentMob.CurrentTile, character.CurrentTile))
+                    if (inViewRangeFloors.Contains(character.CurrentTile) && GridHelper.Raycasting.IsLineOfSightClear(_map, CurrentMob.CurrentTile, character.CurrentTile))
                     {
                         return character.CurrentTile;
                     }
@@ -92,12 +92,12 @@ namespace RTS_Demo
             // Calculating intial paths for all characters and mobs
             foreach (Character charac in _characters)
             {
-                charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+                charac.PathMap = GridHelper.Pathfinding.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
                 charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             }
             foreach (Character charac in _mobs)
             {
-                charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+                charac.PathMap = GridHelper.Pathfinding.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
                 charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             }
         }
@@ -150,7 +150,7 @@ namespace RTS_Demo
                 charac = _characters.First(x => !x.HasFinished);
             }
             _currentCharacter = Array.IndexOf(_characters, charac);
-            charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+            charac.PathMap = GridHelper.Pathfinding.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
             charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             _selectionCircle.gameObject.SetActive(true);
             _selectionCircle.StartMove(CurrentCharacter.transform.position);
@@ -208,7 +208,7 @@ namespace RTS_Demo
         {
             CurrentCharacter.IsPreparingAttack = true;
             ResetTiles(false, false, true, false);
-            Floor[] inViewRangeFloors = GridHelper.GetTilesInARadius<Floor>(_map, CurrentCharacter.CurrentTile, CurrentCharacter.AttackRange);
+            Floor[] inViewRangeFloors = GridHelper.Extraction.GetTilesInARadius<Floor>(_map, CurrentCharacter.CurrentTile, CurrentCharacter.AttackRange);
             foreach (Floor floor in inViewRangeFloors)
             {
                 floor.IsInViewRange = true;
@@ -220,7 +220,7 @@ namespace RTS_Demo
             _lineRenderer.enabled = false;
             if (_hoveredFloor)
             {
-                Floor[] inLineSightFloors = GridHelper.GetLineOfSight<Floor>(_map, CurrentCharacter.CurrentTile, _hoveredFloor, CurrentCharacter.AttackRange);
+                Floor[] inLineSightFloors = GridHelper.Raycasting.GetLineOfSight<Floor>(_map, CurrentCharacter.CurrentTile, _hoveredFloor, CurrentCharacter.AttackRange);
                 _target = inLineSightFloors.Length > 0 ? inLineSightFloors[inLineSightFloors.Length - 1] : null;
                 foreach (Floor floor in inLineSightFloors)
                 {
@@ -259,7 +259,7 @@ namespace RTS_Demo
         public void StartIASwitchCharacter()
         {
             Character charac = _mobs.First(x => !x.HasFinished);
-            charac.PathMap = GridHelper.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
+            charac.PathMap = GridHelper.Pathfinding.GeneratePathMap(_map, charac.CurrentTile, charac.MaxMovement, charac.AllowDiagonals);
             charac.AccessibleTiles = charac.PathMap.GetAccessibleTiles();
             _currentCharacter = Array.IndexOf(_mobs, charac);
             _selectionCircle.gameObject.SetActive(true);
@@ -307,7 +307,7 @@ namespace RTS_Demo
         {
             CurrentMob.IsPreparingAttack = true;
             ResetTiles(false, false, true, false);
-            Floor[] inViewRangeFloors = GridHelper.GetTilesInARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
+            Floor[] inViewRangeFloors = GridHelper.Extraction.GetTilesInARadius<Floor>(_map, CurrentMob.CurrentTile, CurrentMob.AttackRange);
             foreach (Floor floor in inViewRangeFloors)
             {
                 floor.IsInViewRange = true;
@@ -316,7 +316,7 @@ namespace RTS_Demo
             if (target)
             {
                 _target = target;
-                Floor[] inLineSightFloors = GridHelper.GetLineOfSight<Floor>(_map, CurrentMob.CurrentTile, target, CurrentMob.AttackRange);
+                Floor[] inLineSightFloors = GridHelper.Raycasting.GetLineOfSight<Floor>(_map, CurrentMob.CurrentTile, target, CurrentMob.AttackRange);
                 foreach (Floor floor in inLineSightFloors)
                 {
                     floor.IsPath = true;

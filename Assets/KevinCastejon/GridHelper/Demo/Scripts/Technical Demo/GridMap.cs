@@ -287,7 +287,7 @@ namespace Technical_Demo
                 return;
             }
             // Retrieving the line of tiles
-            Floor[] lineOfTiles = GridHelper.GetTilesOnALine(_map, _target, _pathStart);
+            Floor[] lineOfTiles = GridHelper.Raycasting.GetTilesOnALine(_map, _target, _pathStart);
             // For each tile along the line
             foreach (Floor floor in lineOfTiles)
             {
@@ -306,7 +306,7 @@ namespace Technical_Demo
                 return;
             }
             // Retrieving the line of sight
-            Floor[] lineOfSight = GridHelper.GetLineOfSight(_map, _target, _pathStart);
+            Floor[] lineOfSight = GridHelper.Raycasting.GetLineOfSight(_map, _target, _pathStart);
             // For each tile along the line of sight
             foreach (Floor floor in lineOfSight)
             {
@@ -320,7 +320,7 @@ namespace Technical_Demo
             // Resetting all tiles
             ResetPaths();
             // Retrieving the path
-            Floor[] tilesIntoSquare = _outline ? GridHelper.GetTilesOnARectangleOutline(_map, _target, _rectangleSizeX, _rectangleSizeY) : GridHelper.GetTilesInARectangle(_map, _target, _rectangleSizeX, _rectangleSizeY);
+            Floor[] tilesIntoSquare = _outline ? GridHelper.Extraction.GetTilesOnARectangleOutline(_map, _target, _rectangleSizeX, _rectangleSizeY) : GridHelper.Extraction.GetTilesInARectangle(_map, _target, _rectangleSizeX, _rectangleSizeY);
             // For each tile along the path
             foreach (Floor floor in tilesIntoSquare)
             {
@@ -334,7 +334,7 @@ namespace Technical_Demo
             // Resetting all tiles
             ResetPaths();
             // Retrieving the path
-            Floor[] tilesIntoRadius = _outline ? GridHelper.GetTilesOnARadiusOutline(_map, _target, _circleSize) : GridHelper.GetTilesInARadius(_map, _target, _circleSize);
+            Floor[] tilesIntoRadius = _outline ? GridHelper.Extraction.GetTilesOnARadiusOutline(_map, _target, _circleSize) : GridHelper.Extraction.GetTilesInARadius(_map, _target, _circleSize);
             // For each tile along the path
             foreach (Floor floor in tilesIntoRadius)
             {
@@ -516,7 +516,7 @@ namespace Technical_Demo
         private void GeneratePathMap()
         {
             // Generating a path map
-            _pathMap = GridHelper.GeneratePathMap(_map, _target, 0f, _allowDiagonals, _diagonalsWeight);
+            _pathMap = GridHelper.Pathfinding.GeneratePathMap(_map, _target, 0f, _allowDiagonals, _diagonalsWeight);
         }
         // Resets the tiles path visuals
         private void ResetPaths()
