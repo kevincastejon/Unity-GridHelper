@@ -111,10 +111,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetNextTileFromTile() method with unwalkable tile as parameter");
             }
-            if (!_dico.ContainsKey(tile))
+            if (!IsTileIntoPathMap(tile))
             {
-                Debug.LogWarning("You're trying to get the next tile on the path to the target from a tile that is not contained into the PathMap");
-                return default;
+                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
             }
             return _dico[tile].NextNode.Tile;
         }
@@ -129,10 +128,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetNextTileDirectionFromTile() method with unwalkable tile as parameter");
             }
-            if (!_dico.ContainsKey(tile))
+            if (!IsTileIntoPathMap(tile))
             {
-                Debug.LogWarning("You're trying to get the distance to the target from a tile that is not contained into the PathMap");
-                return Vector2Int.zero;
+                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
             }
             return _dico[tile].NextDirection;
         }
@@ -147,10 +145,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with unwalkable tile as parameter");
             }
-            if (!_dico.ContainsKey(tile))
+            if (!IsTileIntoPathMap(tile))
             {
-                Debug.LogWarning("You're trying to get the distance to the target from a tile that is not contained into the PathMap");
-                return -1f;
+                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
             }
             return _dico[tile].DistanceToTarget;
         }
@@ -180,10 +177,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetPathToTarget() method with unwalkable tile as parameter");
             }
-            if (!_dico.ContainsKey(startTile))
+            if (!IsTileIntoPathMap(startTile))
             {
-                Debug.LogWarning("You're trying to calculate a path from a tile that is not contained into the PathMap");
-                return new T[0];
+                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
             }
             Node<T> node = _dico[startTile];
             List<T> tiles = new List<T>() { node.Tile };
