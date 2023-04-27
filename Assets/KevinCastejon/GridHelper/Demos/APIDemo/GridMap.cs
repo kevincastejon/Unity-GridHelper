@@ -23,7 +23,8 @@ namespace APIDemo
     public class GridMap : MonoBehaviour
     {
         [SerializeField] private bool _allowDiagonals;
-        [SerializeField] [Range(0f, 99f)] private float _maxDistance = 2;
+        [SerializeField] [Range(0f, 99f)] private float _maxPathDistance = 2f;
+        [SerializeField] [Range(0f, 99f)] private float _maxLineDistance = 0f;
         [SerializeField] [Range(1, 99)] private int _radius = 2;
         [SerializeField] [Range(1, 99)] private int _rectangleSizeX = 2;
         [SerializeField] [Range(1, 99)] private int _rectangleSizeY = 2;
@@ -111,29 +112,17 @@ namespace APIDemo
 
             }
         }
-        public float MaxDistance
+        public float MaxPathDistance
         {
             get
             {
-                return _maxDistance;
+                return _maxPathDistance;
             }
 
             set
             {
-                _maxDistance = value;
-                if (_demoType == DemoType.LINE_OF_TILES)
-                {
-                    CleanPathTiles();
-                    GetWalkableTilesOnALine();
-                    SetTilesPath();
-                }
-                else if (_demoType == DemoType.LINE_OF_SIGHT)
-                {
-                    CleanPathTiles();
-                    GetLineOfSight();
-                    SetTilesPath();
-                }
-                else if (_demoType == DemoType.PATHFINDING_ACCESSIBLE)
+                _maxPathDistance = value;
+                if (_demoType == DemoType.PATHFINDING_ACCESSIBLE)
                 {
                     CleanPathTiles();
                     GenerateGlobalPathMap();
@@ -155,6 +144,31 @@ namespace APIDemo
                     GenerateGlobalPathMap();
                     ShowInverseDirections();
                     GetPathFromTarget();
+                    SetTilesPath();
+                }
+
+            }
+        }
+        public float MaxLineDistance
+        {
+            get
+            {
+                return _maxLineDistance;
+            }
+
+            set
+            {
+                _maxLineDistance = value;
+                if (_demoType == DemoType.LINE_OF_TILES)
+                {
+                    CleanPathTiles();
+                    GetWalkableTilesOnALine();
+                    SetTilesPath();
+                }
+                else if (_demoType == DemoType.LINE_OF_SIGHT)
+                {
+                    CleanPathTiles();
+                    GetLineOfSight();
                     SetTilesPath();
                 }
 
@@ -283,10 +297,10 @@ namespace APIDemo
                 }
             }
             // Doing some UI init
-            _maxDistanceSliderLineOfSight.value = _maxDistance;
-            _maxDistanceSliderPath.value = _maxDistance;
-            _maxDistanceLabelLineOfSight.text = _maxDistance.ToString();
-            _maxDistanceLabelPath.text = _maxDistance.ToString();
+            _maxDistanceSliderLineOfSight.value = _maxLineDistance;
+            _maxDistanceSliderPath.value = _maxPathDistance;
+            _maxDistanceLabelLineOfSight.text = _maxLineDistance.ToString();
+            _maxDistanceLabelPath.text = _maxPathDistance.ToString();
             _allowDiagonalsToggle.isOn = _allowDiagonals;
             _diagonalsWeightSlider.interactable = _allowDiagonals;
             _diagonalsWeightSlider.value = _diagonalsWeight;
@@ -339,6 +353,12 @@ namespace APIDemo
                     }
                 }
                 _hoveredTile = tile;
+            }
+            else if (_demoType != DemoType.EXTRACTION_RADIUS && _demoType != DemoType.EXTRACTION_RADIUS_OUTLINE && _demoType != DemoType.EXTRACTION_RECTANGLE && _demoType != DemoType.EXTRACTION_RECTANGLE_OUTLINE && _demoType != DemoType.PATHFINDING_ACCESSIBLE)
+            {
+                _hoveredTile = null;
+                _startTile = null;
+                CleanPathTiles();
             }
         }
 
@@ -547,7 +567,7 @@ namespace APIDemo
             {
                 return;
             }
-            if (clickedTile == _startTile)
+            if (_demoType != DemoType.LINE_OF_SIGHT && _demoType != DemoType.LINE_OF_TILES && clickedTile == _startTile)
             {
                 _startTile = null;
             }
@@ -594,7 +614,7 @@ namespace APIDemo
             {
                 return;
             }
-            _pathTiles = Raycasting.GetWalkableTilesOnALine(_map, _targetTile, _startTile, _maxDistance);
+            _pathTiles = Raycasting.GetWalkableTilesOnALine(_map, _targetTile, _startTile, _maxLineDistance);
         }
         private void GetLineOfSight()
         {
@@ -602,11 +622,11 @@ namespace APIDemo
             {
                 return;
             }
-            _pathTiles = Raycasting.GetLineOfSight(_map, _targetTile, _startTile, _maxDistance);
+            _pathTiles = Raycasting.GetLineOfSight(_map, _targetTile, _startTile, _maxLineDistance);
         }
         private void GetAccessibleTiles()
         {
-            PathMap<Tile> pathMap = Pathfinding.GeneratePathMap(_map, _targetTile, _maxDistance, _allowDiagonals, _diagonalsWeight);
+            PathMap<Tile> pathMap = Pathfinding.GeneratePathMap(_map, _targetTile, _maxPathDistance, _allowDiagonals, _diagonalsWeight);
             _pathTiles = pathMap.GetAccessibleTiles();
         }
         private void GetPathToTarget()

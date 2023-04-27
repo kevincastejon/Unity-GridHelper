@@ -541,38 +541,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnALine<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
         {
-            Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
-            int dx = p1.x - p0.x, dy = p1.y - p0.y;
-            int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
-            int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
-
-            Vector2Int p = new Vector2Int(p0.x, p0.y);
-            List<T> points = new List<T> { map[p.y, p.x] };
-            for (int ix = 0, iy = 0; ix < nx || iy < ny;)
-            {
-                if ((0.5 + ix) / nx < (0.5 + iy) / ny)
-                {
-                    // next step is horizontal
-                    p.x += sign_x;
-                    ix++;
-                }
-                else
-                {
-                    // next step is vertical
-                    p.y += sign_y;
-                    iy++;
-                }
-                if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance)
-                {
-                    break;
-                }
-                if (map[p.y, p.x] != null && (includeStart || !Equals(map[p.y, p.x], includeStart)) && (includeDestination || !Equals(map[p.y, p.x], includeDestination)))
-                {
-                    points.Add(map[p.y, p.x]);
-                }
-            }
-            return points.ToArray();
+            return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, false, true, out bool isclear);
         }
         /// <summary>
         /// Get all walkable tiles on a line between two tiles
@@ -587,40 +556,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetWalkableTilesOnALine<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
         {
-            Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
-            int dx = p1.x - p0.x, dy = p1.y - p0.y;
-            int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
-            int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
-
-            Vector2Int p = new Vector2Int(p0.x, p0.y);
-            List<T> points = new List<T> { map[p.y, p.x] };
-            for (int ix = 0, iy = 0; ix < nx || iy < ny;)
-            {
-                if ((0.5 + ix) / nx < (0.5 + iy) / ny)
-                {
-                    // next step is horizontal
-                    p.x += sign_x;
-                    ix++;
-                }
-                else
-                {
-                    // next step is vertical
-                    p.y += sign_y;
-                    iy++;
-                }
-                if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance)
-                {
-                    break;
-                }
-                if (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable && (includeStart || !Equals(map[p.y, p.x], includeStart)) && (includeDestination || !Equals(map[p.y, p.x], includeDestination)))
-                {
-                    continue;
-                }
-
-                points.Add(map[p.y, p.x]);
-            }
-            return points.ToArray();
+            return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, false, false, out bool isclear);
         }
         /// <summary>
         /// Is the line of sight clear between two tiles
@@ -630,39 +566,10 @@ namespace KevinCastejon.GridHelper
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The stop tile</param>
         /// <returns>An array of tiles</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
         {
-            Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
-            int dx = p1.x - p0.x, dy = p1.y - p0.y;
-            int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
-            int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
-
-            Vector2Int p = new Vector2Int(p0.x, p0.y);
-            for (int ix = 0, iy = 0; ix < nx || iy < ny;)
-            {
-                if ((0.5 + ix) / nx < (0.5 + iy) / ny)
-                {
-                    // next step is horizontal
-                    p.x += sign_x;
-                    ix++;
-                }
-                else
-                {
-                    // next step is vertical
-                    p.y += sign_y;
-                    iy++;
-                }
-                if (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable)
-                {
-                    return false;
-                }
-                if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance)
-                {
-                    return true;
-                }
-            }
-            return true;
+            Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, true, false, out bool isclear);
+            return isclear;
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -677,6 +584,10 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
         {
+            return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, true, false, out bool isclear);
+        }
+        private static T[] Raycast<T>(T[,] map, T startTile, T destinationTile, float maxDistance, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear) where T : ITile
+        {
             Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
             Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
             int dx = p1.x - p0.x, dy = p1.y - p0.y;
@@ -685,6 +596,7 @@ namespace KevinCastejon.GridHelper
 
             Vector2Int p = new Vector2Int(p0.x, p0.y);
             List<T> points = new List<T> { map[p.y, p.x] };
+            isLineClear = true;
             for (int ix = 0, iy = 0; ix < nx || iy < ny;)
             {
                 if ((0.5 + ix) / nx < (0.5 + iy) / ny)
@@ -699,14 +611,24 @@ namespace KevinCastejon.GridHelper
                     p.y += sign_y;
                     iy++;
                 }
-                if (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable || (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance))
+                bool breakIt = false;
+                breakIt = breakIt ? true : breakOnWalls && (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable);
+                isLineClear = breakIt;
+                breakIt = breakIt ? true : (maxDistance > 0f && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance);
+                bool continueIt = false;
+                continueIt = map[p.y, p.x] == null;
+                continueIt = continueIt ? true : !includeWalls && !map[p.y, p.x].IsWalkable;
+                continueIt = continueIt ? true : !includeStart && Equals(map[p.y, p.x], includeStart);
+                continueIt = continueIt ? true : !includeDestination || Equals(map[p.y, p.x], includeDestination);
+                if (breakIt)
                 {
                     break;
                 }
-                if ((includeStart || !Equals(map[p.y, p.x], includeStart)) && (includeDestination || !Equals(map[p.y, p.x], includeDestination)))
+                if (continueIt)
                 {
-                    points.Add(map[p.y, p.x]);
+                    continue;
                 }
+                points.Add(map[p.y, p.x]);
             }
             return points.ToArray();
         }
