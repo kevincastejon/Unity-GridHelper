@@ -1,4 +1,4 @@
-using KevinCastejon.Grid2DHelper;
+using KevinCastejon.GridHelper;
 using UnityEngine;
 namespace ConsoleDemo
 {
@@ -50,7 +50,7 @@ namespace ConsoleDemo
                 { anyTile                 ,new Tile("25",1,5, true),new Tile("26",2,5, false),new Tile("27",3,5, true),target }
             };
             // Generating the path map (costly)
-            PathMap<Tile> pathMap = Grid2DHelper.Pathfinding.GeneratePathMap(_grid, target);
+            PathMap<Tile> pathMap = Pathfinding.GeneratePathMap(_grid, target);
             // Getting the path between the target and any tile on the map ("free" cost)
             Tile[] path = pathMap.GetPathToTarget(anyTile);
             // Displaying grid into console
