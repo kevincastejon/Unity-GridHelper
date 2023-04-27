@@ -105,7 +105,7 @@ bool isLineClear = Raycasting.IsLineOfSightClear(grid, startTile, destinationTil
 
 ### - <u>Pathfinding</u>
 
-The pathfinding class of this library generates and uses a **PathMap** object that holds all the calculated paths data for the entire grid.
+The pathfinding part of this library generates and uses a **PathMap** object that holds all the calculated paths data for the entire grid.
 
 This way of doing pathfinding is usefull for some usages (like Tower Defenses) because it calculates once all the paths between one tile, called the "target", and all the others. (The **PathMap** generation uses **Dijkstra** algorithm)
 
