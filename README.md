@@ -138,7 +138,7 @@ You can get all the accessible tiles from the target tile.
 YourCustomTileType[] tiles = GridHelper.GetAccessibleTiles();
 ```
 
-You can know if a tile is contained into a **PathMap**. This is usefull before calling the **PathMap** methods that takes a tile as parameter, as this tile has to be into the **PathMap** in order to make it work.
+You can know if a tile is contained into the **PathMap**. This is usefull before calling the **PathMap** methods that takes a tile as parameter, as this tile has to be contained the **PathMap**.
 
 - **IsTileIntoPathMap**
 ```cs
