@@ -16,7 +16,7 @@ Comes with several demo examples.
 
 All you need to use this API is a two-dimensional array of tiles using *row major order* (first index is line, second is the column).
 
-What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** interface of this library. This interface requires four properties:
+What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** interface of this library. This interface requires four properties getters:
 - *bool* **IsWalkable** . Must return if the tile can be walk/see throught (for pathfinding/raycasting)
 - *float* **Weight** . Must return the tile's weight (the 'cost' it will takes to walk throught that tile)
 - *int* **X** . Must return the horizontal position of the tile into the grid
