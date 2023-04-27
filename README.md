@@ -74,28 +74,28 @@ You can get all the tiles on a line between two tiles
 
 - **GetTilesOnALine**
 ```cs
-YourCustomTileType[] tiles = Raycasting.GetTilesOnALine(grid, startTile, stopTile);
+YourCustomTileType[] tiles = Raycasting.GetTilesOnALine(grid, startTile, destinationTile);
 ```
 
 You can also get only the walkable tiles on a line between two tiles
 
 - **GetWalkableTilesOnALine**
 ```cs
-YourCustomTileType[] tiles = Raycasting.GetWalkableTilesOnALine(grid, startTile, stopTile);
+YourCustomTileType[] tiles = Raycasting.GetWalkableTilesOnALine(grid, startTile, destinationTile);
 ```
 
 You can get the line of sight between two tiles (a line that "stops" at the first encountered unwalkable tile)
 
 - **GetLineOfSight**
 ```cs
-YourCustomTileType[] tiles = Raycasting.GetLineOfSight(grid, startTile, stopTile);
+YourCustomTileType[] tiles = Raycasting.GetLineOfSight(grid, startTile, destinationTile);
 ```
 
 You can know if the line of sight between two tiles is clear (has not encountered any unwalkable tile)
 
 - **IsLineOfSightClear**
 ```cs
-bool isLineClear = Raycasting.IsLineOfSightClear(grid, startTile, stopTile);
+bool isLineClear = Raycasting.IsLineOfSightClear(grid, startTile, destinationTile);
 ```
 
 ### - <u>Pathfinding</u>
