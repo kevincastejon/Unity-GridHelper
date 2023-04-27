@@ -22,6 +22,11 @@ What is a *tile* ? Any object (custom class, struct, component, ...) that implem
 - *int* **X** . Must return the horizontal position of the tile into the grid
 - *int* **Y** . Must return the vertical position of the tile into the grid
 
+This API is using a namespace so you have to add a using instruction to the scripts that will need this library.
+```cs
+using KevinCastejon.GridHelper;
+```
+
 ### - <u>Extractions</u>
 
 You can extract tiles in a radius, or in a rectangle, around a tile.
