@@ -104,10 +104,10 @@ The pathfinding class of this library generates and uses a **PathMap** object th
 
 This way of doing pathfinding is usefull for some usages (like Tower Defenses) because it calculates once all the paths between one tile, called the "target", and all the others. (The **PathMap** generation uses **Dijkstra** algorithm)
 
-To generate the **PathMap** object, use the **GeneratePathMap** method.
+To generate the **PathMap** object, use the **GeneratePathMap** method. You can use an optional *maxDistance* parameter that limits the paths calculation to a amount of distance (movement 'cost'). Default is 0 and means no limit (all accessible tiles on the entire grid will be treated).
 
 ```cs
-PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(grid, targetTile);
+PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(grid, targetTile, maxDistance);
 ```
 
 Once the **PathMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
