@@ -107,7 +107,7 @@ This way of doing pathfinding is usefull for some usages (like Tower Defenses) b
 To generate the **PathMap** object, use the **GeneratePathMap** method.
 
 ```cs
-PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(_grid, targetTile);
+PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(grid, targetTile);
 ```
 
 Once the **PathMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
