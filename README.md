@@ -115,6 +115,8 @@ To generate the **PathMap** object, use the **GeneratePathMap** method. You can 
 PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(grid, targetTile, maxDistance);
 ```
 
+### - <u>PathMap</u>
+
 Once the **PathMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
 
 You can retrieve the tile that has been used as the target to generate this **PathMap**
@@ -159,7 +161,7 @@ Or you can get all the tiles on the path from the target to a tile.
 YourCustomTileType[] tiles = pathMap.GetPathFromTarget(destinationTile);
 ```
 
-### - <u>Pathfinding</u> - other PathMap features
+### - <u>PathMap</u> - other features
 
 You can get info on a specific tile through some **PathMap** methods.
 
