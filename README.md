@@ -28,44 +28,44 @@ You can extract tiles in a radius, or in a rectangle, around a tile.
 
 - **GetTilesInARectangle**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesInARectangle(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = Extraction.GetTilesInARectangle(grid, centerTile, rectangleSize);
 ```
 - **GetTilesInARadius**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesInARadius(grid, centerTile, radius);
+YourCustomTileType[] tiles = Extraction.GetTilesInARadius(grid, centerTile, radius);
 ```
 
 You can also get only the walkable tiles in a radius/rectangle, around a tile.
 
 - **GetWalkableTilesInARectangle**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesInARectangle(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = Extraction.GetWalkableTilesInARectangle(grid, centerTile, rectangleSize);
 ```
 - **GetWalkableTilesInARadius**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesInARadius(grid, centerTile, radius);
+YourCustomTileType[] tiles = Extraction.GetWalkableTilesInARadius(grid, centerTile, radius);
 ```
 
 You can also get only the tiles on the radius/rectangle outline.
 
 - **GetTilesOnARectangleOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesOnARectangleOutline(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = Extraction.GetTilesOnARectangleOutline(grid, centerTile, rectangleSize);
 ```
 - **GetTilesOnARadiusOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesOnARadiusOutline(grid, centerTile, radius);
+YourCustomTileType[] tiles = Extraction.GetTilesOnARadiusOutline(grid, centerTile, radius);
 ```
 
 Finally, you can also get only the walkable tiles on the radius/rectangle outline.
 
 - **GetWalkableTilesOnARectangleOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesOnARectangleOutline(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnARectangleOutline(grid, centerTile, rectangleSize);
 ```
 - **GetWalkableTilesOnARadiusOutline**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesOnARadiusOutline(grid, centerTile, radius);
+YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnARadiusOutline(grid, centerTile, radius);
 ```
 
 ### - <u>Raycasting</u>
@@ -74,28 +74,28 @@ You can get all the tiles on a line between two tiles
 
 - **GetTilesOnALine**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetTilesOnALine(grid, startTile, stopTile);
+YourCustomTileType[] tiles = Raycasting.GetTilesOnALine(grid, startTile, stopTile);
 ```
 
 You can also get only the walkable tiles on a line between two tiles
 
 - **GetWalkableTilesOnALine**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetWalkableTilesOnALine(grid, startTile, stopTile);
+YourCustomTileType[] tiles = Raycasting.GetWalkableTilesOnALine(grid, startTile, stopTile);
 ```
 
 You can get the line of sight between two tiles (a line that "stops" at the first encountered unwalkable tile)
 
 - **GetLineOfSight**
 ```cs
-YourCustomTileType[] tiles = GridHelper.GetLineOfSight(grid, startTile, stopTile);
+YourCustomTileType[] tiles = Raycasting.GetLineOfSight(grid, startTile, stopTile);
 ```
 
 You can know if the line of sight between two tiles is clear (has not encountered any unwalkable tile)
 
 - **IsLineOfSightClear**
 ```cs
-bool isLineClear = GridHelper.IsLineOfSightClear(grid, startTile, stopTile);
+bool isLineClear = Raycasting.IsLineOfSightClear(grid, startTile, stopTile);
 ```
 
 ### - <u>Pathfinding</u>
@@ -107,7 +107,7 @@ This way of doing pathfinding is usefull for some usages (like Tower Defenses) b
 To generate the **PathMap** object, use the **GeneratePathMap** method.
 
 ```cs
-PathMap<YourCustomTileType> pathMap = GridHelper.GeneratePathMap(_grid, targetTile);
+PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(_grid, targetTile);
 ```
 
 Once the **PathMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
