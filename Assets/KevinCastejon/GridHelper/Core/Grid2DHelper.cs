@@ -1,9 +1,8 @@
-
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace KevinCastejon.GridHelper
+namespace KevinCastejon.Grid2DHelper
 {
     /// <summary>
     /// An interface that the user-defined tile class has to implement in order to work with most of this library's methods
@@ -156,50 +155,62 @@ namespace KevinCastejon.GridHelper
         /// <summary>
         /// Get all the accessible tiles from the target tile
         /// </summary>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public T[] GetAccessibleTiles()
+        public T[] GetAccessibleTiles(bool includeTarget = true)
         {
-            return _accessibleTiles.ToArray();
+            if (includeTarget)
+            {
+                return _accessibleTiles.ToArray();
+            }
+            return _accessibleTiles.Where(t => !EqualityComparer<T>.Default.Equals(t, _target)).ToArray();
         }
         /// <summary>
         /// Get all the tiles on the path from a tile to the target.
         /// </summary>
-        /// <param name="tile">The start tile</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public T[] GetPathToTarget(T tile)
+        public T[] GetPathToTarget(T startTile, bool includeStart = true, bool includeTarget = true)
         {
-            if (!tile.IsWalkable)
+            if (!startTile.IsWalkable)
             {
                 throw new System.Exception("Do not call GetPathToTarget() method with unwalkable tile as parameter");
             }
-            if (!_dico.ContainsKey(tile))
+            if (!_dico.ContainsKey(startTile))
             {
                 Debug.LogWarning("You're trying to calculate a path from a tile that is not contained into the PathMap");
                 return new T[0];
             }
-            Node<T> node = _dico[tile];
+            Node<T> node = _dico[startTile];
             List<T> tiles = new List<T>() { node.Tile };
             while (!EqualityComparer<T>.Default.Equals(node.Tile, _target))
             {
                 node = node.NextNode;
-                tiles.Add(node.Tile);
+                if (includeStart || !EqualityComparer<T>.Default.Equals(node.Tile, startTile) && includeTarget || !EqualityComparer<T>.Default.Equals(node.Tile, _target))
+                {
+                    tiles.Add(node.Tile);
+                }
             }
             return tiles.Select(x => x).ToArray();
         }
         /// <summary>
         /// Get all the tiles on the path from the target to a tile.
         /// </summary>
-        /// <param name="tile">The destination tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public T[] GetPathFromTarget(T tile)
+        public T[] GetPathFromTarget(T destinationTile, bool includeDestination = true, bool includeTarget = true)
         {
-            return GetPathToTarget(tile).Reverse().ToArray();
+            return GetPathToTarget(destinationTile, includeDestination, includeTarget).Reverse().ToArray();
         }
     }
     /// <summary>
     /// Helper static class for 2D grid operations
     /// </summary>
-    public static class GridHelper
+    public static class Grid2DHelper
     {
         private static bool GetTile<T>(T[,] map, int x, int y, out T tile) where T : ITile
         {
@@ -291,10 +302,11 @@ namespace KevinCastejon.GridHelper
             /// <param name="map">A two-dimensional array of any objects</param>
             /// <param name="center">The center tile</param>
             /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
+            /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize) where T : ITile
+            public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter = true) where T : ITile
             {
-                return GetTilesInARectangle(map, center, rectangleSize.x, rectangleSize.y);
+                return GetTilesInARectangle(map, center, rectangleSize.x, rectangleSize.y, includeCenter);
             }
             /// <summary>
             /// Get all tiles contained into a rectangle around a tile
@@ -304,8 +316,9 @@ namespace KevinCastejon.GridHelper
             /// <param name="center">The center tile</param>
             /// <param name="rectangleSizeX">The rectangle horizontal size</param>
             /// <param name="rectangleSizeY">The rectangle vertical size</param>
+            /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
+            public static T[] GetTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY, bool includeCenter = true) where T : ITile
             {
                 int top = Mathf.Max(center.Y - rectangleSizeY, 0),
                     bottom = Mathf.Min(center.Y + rectangleSizeY + 1, map.GetLength(0)),
@@ -316,7 +329,7 @@ namespace KevinCastejon.GridHelper
                 {
                     for (int j = left; j < right; j++)
                     {
-                        if (map[i, j] != null)
+                        if (map[i, j] != null && (includeCenter || !EqualityComparer<T>.Default.Equals(map[i, j], center)))
                         {
                             list.Add(map[i, j]);
                         }
@@ -331,10 +344,11 @@ namespace KevinCastejon.GridHelper
             /// <param name="map">A two-dimensional array of tiles</param>
             /// <param name="center">The center tile</param>
             /// <param name="rectangleSize">The Vector2Int representing rectangle size</param>
+            /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetWalkableTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize) where T : ITile
+            public static T[] GetWalkableTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter = true) where T : ITile
             {
-                return GetWalkableTilesInARectangle(map, center, rectangleSize.x, rectangleSize.y);
+                return GetWalkableTilesInARectangle(map, center, rectangleSize.x, rectangleSize.y, includeCenter);
             }
             /// <summary>
             /// Get all walkable tiles contained into a rectangle around a tile
@@ -344,8 +358,9 @@ namespace KevinCastejon.GridHelper
             /// <param name="center">The center tile</param>
             /// <param name="rectangleSizeX">The rectangle horizontal size</param>
             /// <param name="rectangleSizeY">The rectangle vertical size</param>
+            /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetWalkableTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
+            public static T[] GetWalkableTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY, bool includeCenter = true) where T : ITile
             {
                 int top = Mathf.Max(center.Y - rectangleSizeY, 0),
                     bottom = Mathf.Min(center.Y + rectangleSizeY + 1, map.GetLength(0)),
@@ -356,7 +371,7 @@ namespace KevinCastejon.GridHelper
                 {
                     for (int j = left; j < right; j++)
                     {
-                        if (map[i, j] != null && map[i, j].IsWalkable)
+                        if (map[i, j] != null && map[i, j].IsWalkable && (includeCenter || !EqualityComparer<T>.Default.Equals(map[i, j], center)))
                         {
                             list.Add(map[i, j]);
                         }
@@ -462,8 +477,9 @@ namespace KevinCastejon.GridHelper
             /// <param name="map">A two-dimensional array of tiles</param>
             /// <param name="center">The center tile</param>
             /// <param name="radius">The radius</param>
+            /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetTilesInARadius<T>(T[,] map, T center, int radius) where T : ITile
+            public static T[] GetTilesInARadius<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
             {
                 int top = Mathf.Max(center.Y - radius, 0),
                     bottom = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
@@ -476,7 +492,7 @@ namespace KevinCastejon.GridHelper
                         right = Mathf.Min(Mathf.FloorToInt(center.X + dx + 1), map.GetLength(1));
                     for (int x = left; x < right; x++)
                     {
-                        if (map[y, x] != null)
+                        if (map[y, x] != null && (includeCenter || !EqualityComparer<T>.Default.Equals(map[y, x], center)))
                         {
                             list.Add(map[y, x]);
                         }
@@ -529,8 +545,9 @@ namespace KevinCastejon.GridHelper
             /// <param name="map">A two-dimensional array of tiles</param>
             /// <param name="center">The center tile</param>
             /// <param name="radius">The radius</param>
+            /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetWalkableTilesInARadius<T>(T[,] map, T center, int radius) where T : ITile
+            public static T[] GetWalkableTilesInARadius<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
             {
                 int top = Mathf.CeilToInt(center.Y - radius),
                     bottom = Mathf.FloorToInt(center.Y + radius),
@@ -544,7 +561,7 @@ namespace KevinCastejon.GridHelper
                         float dx = center.X - x,
                         dy = center.Y - y;
                         float distance_squared = dx * dx + dy * dy;
-                        if (distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0) && map[y, x].IsWalkable)
+                        if (distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0) && map[y, x].IsWalkable && (includeCenter || !EqualityComparer<T>.Default.Equals(map[y, x], center)))
                         {
                             list.Add(map[y, x]);
                         }
@@ -590,22 +607,24 @@ namespace KevinCastejon.GridHelper
                 }
                 return list.ToArray();
             }
+        }
+        public class Raycasting
+        {
             /// <summary>
             /// Get all tiles on a line between two tiles
             /// </summary>
             /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
             /// <param name="map">A two-dimensional array of tiles</param>
-            /// <param name="start">The start tile</param>
-            /// <param name="stop">The stop tile</param>
+            /// <param name="startTile">The start tile</param>
+            /// <param name="destinationTile">The stop tile</param>
             /// <param name="maxDistance">The maximum distance from the start tile</param>
+            /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+            /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-        }
-        public class Raycasting
-        {
-            public static T[] GetTilesOnALine<T>(T[,] map, T start, T stop, float maxDistance = 0f) where T : ITile
+            public static T[] GetTilesOnALine<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
             {
-                Vector2Int p0 = new Vector2Int(start.X, start.Y);
-                Vector2Int p1 = new Vector2Int(stop.X, stop.Y);
+                Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
+                Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
                 int dx = p1.x - p0.x, dy = p1.y - p0.y;
                 int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
                 int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
@@ -626,11 +645,11 @@ namespace KevinCastejon.GridHelper
                         p.y += sign_y;
                         iy++;
                     }
-                    if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(start.X, start.Y)) > maxDistance)
+                    if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance)
                     {
                         break;
                     }
-                    if (map[p.y, p.x] != null)
+                    if (map[p.y, p.x] != null && (includeStart || !Equals(map[p.y, p.x], includeStart)) && (includeDestination || !Equals(map[p.y, p.x], includeDestination)))
                     {
                         points.Add(map[p.y, p.x]);
                     }
@@ -642,14 +661,16 @@ namespace KevinCastejon.GridHelper
             /// </summary>
             /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
             /// <param name="map">A two-dimensional array of tiles</param>
-            /// <param name="start">The start tile</param>
-            /// <param name="stop">The stop tile</param>
+            /// <param name="startTile">The start tile</param>
+            /// <param name="destinationTile">The stop tile</param>
             /// <param name="maxDistance">The maximum distance from the start tile</param>
+            /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+            /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetWalkableTilesOnALine<T>(T[,] map, T start, T stop, float maxDistance = 0f) where T : ITile
+            public static T[] GetWalkableTilesOnALine<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
             {
-                Vector2Int p0 = new Vector2Int(start.X, start.Y);
-                Vector2Int p1 = new Vector2Int(stop.X, stop.Y);
+                Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
+                Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
                 int dx = p1.x - p0.x, dy = p1.y - p0.y;
                 int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
                 int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
@@ -670,11 +691,11 @@ namespace KevinCastejon.GridHelper
                         p.y += sign_y;
                         iy++;
                     }
-                    if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(start.X, start.Y)) > maxDistance)
+                    if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance)
                     {
                         break;
                     }
-                    if (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable)
+                    if (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable && (includeStart || !Equals(map[p.y, p.x], includeStart)) && (includeDestination || !Equals(map[p.y, p.x], includeDestination)))
                     {
                         continue;
                     }
@@ -688,13 +709,13 @@ namespace KevinCastejon.GridHelper
             /// </summary>
             /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
             /// <param name="map">A two-dimensional array of tiles</param>
-            /// <param name="start">The start tile</param>
-            /// <param name="stop">The stop tile</param>
+            /// <param name="startTile">The start tile</param>
+            /// <param name="destinationTile">The stop tile</param>
             /// <returns>An array of tiles</returns>
-            public static bool IsLineOfSightClear<T>(T[,] map, T start, T stop, float maxDistance = 0f) where T : ITile
+            public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f) where T : ITile
             {
-                Vector2Int p0 = new Vector2Int(start.X, start.Y);
-                Vector2Int p1 = new Vector2Int(stop.X, stop.Y);
+                Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
+                Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
                 int dx = p1.x - p0.x, dy = p1.y - p0.y;
                 int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
                 int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
@@ -718,7 +739,7 @@ namespace KevinCastejon.GridHelper
                     {
                         return false;
                     }
-                    if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(start.X, start.Y)) > maxDistance)
+                    if (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance)
                     {
                         return true;
                     }
@@ -730,14 +751,16 @@ namespace KevinCastejon.GridHelper
             /// </summary>
             /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
             /// <param name="map">A two-dimensional array of tiles</param>
-            /// <param name="start">The start tile</param>
-            /// <param name="stop">The stop tile</param>
+            /// <param name="startTile">The start tile</param>
+            /// <param name="destinationTile">The stop tile</param>
             /// <param name="maxDistance">The maximum distance from the start tile</param>
+            /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+            /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
             /// <returns>An array of tiles</returns>
-            public static T[] GetLineOfSight<T>(T[,] map, T start, T stop, float maxDistance = 0f) where T : ITile
+            public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
             {
-                Vector2Int p0 = new Vector2Int(start.X, start.Y);
-                Vector2Int p1 = new Vector2Int(stop.X, stop.Y);
+                Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
+                Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
                 int dx = p1.x - p0.x, dy = p1.y - p0.y;
                 int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
                 int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
@@ -758,36 +781,38 @@ namespace KevinCastejon.GridHelper
                         p.y += sign_y;
                         iy++;
                     }
-                    if (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable || (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(start.X, start.Y)) > maxDistance))
+                    if (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable || (maxDistance > 0 && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance))
                     {
                         break;
                     }
-
-                    points.Add(map[p.y, p.x]);
+                    if ((includeStart || !Equals(map[p.y, p.x], includeStart)) && (includeDestination || !Equals(map[p.y, p.x], includeDestination)))
+                    {
+                        points.Add(map[p.y, p.x]);
+                    }
                 }
                 return points.ToArray();
             }
+        }
+        public class Pathfinding
+        {
             /// <summary>
             /// Generates a PathMap object that will contain all the precalculated paths data for the entire grid
             /// </summary>
             /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
             /// <param name="map">A two-dimensional array of tiles</param>
-            /// <param name="target">The target tile for the paths calculation</param>
+            /// <param name="targetTile">The target tile for the paths calculation</param>
             /// <param name="allowDiagonals">Allow diagonals movements</param>
             /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
             /// <returns>A PathMap object</returns>
-        }
-        public class Pathfinding
-        {
-            public static PathMap<T> GeneratePathMap<T>(T[,] map, T target, float maxDistance = 0f, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
+            public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
             {
-                if (!target.IsWalkable)
+                if (!targetTile.IsWalkable)
                 {
                     throw new System.Exception("Do not try to generate a PathMap with an unwalkable tile as the target");
                 }
-                Node<T> targetNode = new Node<T>(target);
-                Dictionary<T, Node<T>> accessibleTilesDico = new Dictionary<T, Node<T>>() { { target, targetNode } };
-                List<T> accessibleTiles = new List<T>() { target };
+                Node<T> targetNode = new Node<T>(targetTile);
+                Dictionary<T, Node<T>> accessibleTilesDico = new Dictionary<T, Node<T>>() { { targetTile, targetNode } };
+                List<T> accessibleTiles = new List<T>() { targetTile };
                 PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
                 frontier.Enqueue(targetNode, 0);
                 targetNode.NextNode = targetNode;
@@ -821,7 +846,7 @@ namespace KevinCastejon.GridHelper
                     }
                     limit++;
                 }
-                return new PathMap<T>(accessibleTilesDico, accessibleTiles, target, maxDistance);
+                return new PathMap<T>(accessibleTilesDico, accessibleTiles, targetTile, maxDistance);
             }
         }
     }

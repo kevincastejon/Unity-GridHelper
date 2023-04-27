@@ -1,4 +1,4 @@
-using KevinCastejon.GridHelper;
+using KevinCastejon.Grid2DHelper;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ namespace TD_Demo
         {
             // Referencing the camera
             _camera = Camera.main;
-            _pathMap = GridHelper.Pathfinding.GeneratePathMap(_map, _goalTile);
+            _pathMap = Grid2DHelper.Pathfinding.GeneratePathMap(_map, _goalTile);
         }
         private void Update()
         {

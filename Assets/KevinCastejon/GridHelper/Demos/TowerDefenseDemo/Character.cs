@@ -1,4 +1,4 @@
-using KevinCastejon.GridHelper;
+using KevinCastejon.Grid2DHelper;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;

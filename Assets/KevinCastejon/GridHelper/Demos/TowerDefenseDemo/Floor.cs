@@ -1,4 +1,4 @@
-using KevinCastejon.GridHelper;
+using KevinCastejon.Grid2DHelper;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,8 +15,6 @@ namespace TD_Demo
         private int _x;
         private int _y;
         private Renderer _renderer;
-        //private Transform _arrow;
-        //private Floor _next;
 
         public float Weight { get => 1f; }
         public bool IsWalkable
@@ -50,27 +48,6 @@ namespace TD_Demo
                 }
             }
         }
-        //public Floor Next
-        //{
-        //    get
-        //    {
-        //        return _next;
-        //    }
-
-        //    set
-        //    {
-        //        _next = value;
-        //        if (!_isWalkable || _next == null || _next == this)
-        //        {
-        //            _arrow.GetChild(0).gameObject.SetActive(true);
-        //        }
-        //        else
-        //        {
-        //            _arrow.GetChild(0).gameObject.SetActive(true);
-        //            _arrow.rotation = Quaternion.LookRotation(_next.transform.position - transform.position);
-        //        }
-        //    }
-        //}
 
         private void Awake()
         {
