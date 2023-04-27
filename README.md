@@ -18,7 +18,7 @@ All you need to use this API is a two-dimensional array of tiles using *row majo
 
 What is a *tile* ? Any object (custom class, struct, component, ...) that implements the very light **ITile** interface of this library. This interface requires four properties getters:
 - *bool* **IsWalkable** . Must return if the tile can be walk/see throught (for pathfinding/raycasting)
-- *float* **Weight** . Must return the tile's weight (the 'cost' it will takes to walk throught that tile)
+- *float* **Weight** . Must return the tile's weight (the 'cost' it will takes to walk throught that tile). Minimum is 1.
 - *int* **X** . Must return the horizontal position of the tile into the grid
 - *int* **Y** . Must return the vertical position of the tile into the grid
 
