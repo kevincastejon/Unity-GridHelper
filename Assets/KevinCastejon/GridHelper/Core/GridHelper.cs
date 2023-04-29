@@ -88,11 +88,11 @@ namespace KevinCastejon.GridHelper
         /// </summary>
         public float MaxDistance { get => _maxDistance; }
         /// <summary>
-        /// Is the tile contained into the this PathMap. Usefull to check if the tile is usable with this PathMap's methods
+        /// Is the tile is accessible from the target into this this PathMap. Usefull to check if the tile is usable as a parameter for this PathMap's methods.
         /// </summary>
         /// <param name="tile">The tile to check</param>
-        /// <returns>A boolean that is true if the tile is contained on the PathMap, false otherwise</returns>
-        public bool IsTileIntoPathMap(T tile)
+        /// <returns>A boolean that is true if the tile is contained into the PathMap, false otherwise</returns>
+        public bool IsTileAccessible(T tile)
         {
             if (tile == null)
             {
@@ -111,9 +111,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetNextTileFromTile() method with unwalkable tile as parameter");
             }
-            if (!IsTileIntoPathMap(tile))
+            if (!IsTileAccessible(tile))
             {
-                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
+                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
             }
             return _dico[tile].NextNode.Tile;
         }
@@ -128,9 +128,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetNextTileDirectionFromTile() method with unwalkable tile as parameter");
             }
-            if (!IsTileIntoPathMap(tile))
+            if (!IsTileAccessible(tile))
             {
-                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
+                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
             }
             return _dico[tile].NextDirection;
         }
@@ -145,9 +145,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with unwalkable tile as parameter");
             }
-            if (!IsTileIntoPathMap(tile))
+            if (!IsTileAccessible(tile))
             {
-                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
+                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
             }
             return _dico[tile].DistanceToTarget;
         }
@@ -177,9 +177,9 @@ namespace KevinCastejon.GridHelper
             {
                 throw new System.Exception("Do not call GetPathToTarget() method with unwalkable tile as parameter");
             }
-            if (!IsTileIntoPathMap(startTile))
+            if (!IsTileAccessible(startTile))
             {
-                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with a tile that is not contained into the PathMap");
+                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
             }
             Node<T> node = _dico[startTile];
             List<T> tiles = new List<T>() { node.Tile };
@@ -210,6 +210,100 @@ namespace KevinCastejon.GridHelper
     /// </summary>
     public class Extraction
     {
+        private static T[] ExtractRectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY, bool includeCenter, bool includeWalls) where T : ITile
+        {
+            int bottom = Mathf.Max(center.Y - rectangleSizeY, 0),
+                top = Mathf.Min(center.Y + rectangleSizeY + 1, map.GetLength(0)),
+                left = Mathf.Max(center.X - rectangleSizeX, 0),
+                right = Mathf.Min(center.X + rectangleSizeX + 1, map.GetLength(1));
+            List<T> list = new List<T>();
+            for (int i = bottom; i < top; i++)
+            {
+                for (int j = left; j < right; j++)
+                {
+                    if (map[i, j] != null && (includeWalls || map[i, j].IsWalkable) && (includeCenter || !EqualityComparer<T>.Default.Equals(map[i, j], center)))
+                    {
+                        list.Add(map[i, j]);
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+        private static T[] ExtractRectangleOutline<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY, bool includeWalls) where T : ITile
+        {
+            int bottom = center.Y - rectangleSizeY,
+                top = center.Y + rectangleSizeY + 1,
+                left = center.X - rectangleSizeX,
+                right = center.X + rectangleSizeX + 1;
+            List<T> list = new List<T>();
+            for (int i = bottom; i < top; i++)
+            {
+                for (int j = left; j < right; j++)
+                {
+                    if (i < 0 || i >= map.GetLength(0) || j < 0 || j >= map.GetLength(1))
+                    {
+                        continue;
+                    }
+                    if (map[i, j] != null && (includeWalls || map[i, j].IsWalkable) && (i == top - 1 || i == bottom || j == left || j == right - 1))
+                    {
+                        list.Add(map[i, j]);
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+        private static T[] ExtractRadius<T>(T[,] map, T center, int radius, bool includeCenter, bool includeWalls) where T : ITile
+        {
+            int bottom = Mathf.Max(center.Y - radius, 0),
+                top = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
+            List<T> list = new List<T>();
+            for (int y = bottom; y < top; y++)
+            {
+                int dy = y - center.Y;
+                float dx = Mathf.Sqrt((float)radius * radius - (float)dy * dy);
+                int left = Mathf.Max(Mathf.CeilToInt(center.X - dx), 0),
+                    right = Mathf.Min(Mathf.FloorToInt(center.X + dx + 1), map.GetLength(1));
+                for (int x = left; x < right; x++)
+                {
+                    if (map[y, x] != null && (includeWalls || map[y, x].IsWalkable) && (includeCenter || !EqualityComparer<T>.Default.Equals(map[y, x], center)))
+                    {
+                        list.Add(map[y, x]);
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+        private static T[] ExtractRadiusOutline<T>(T[,] map, T center, int radius, bool includeWalls) where T : ITile
+        {
+            int bottom = Mathf.Max(center.Y - radius, 0),
+                top = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
+            List<T> list = new List<T>();
+            for (int y = bottom; y < top; y++)
+            {
+                for (int r = 0; r <= Mathf.FloorToInt(radius * Mathf.Sqrt(0.5f)); r++)
+                {
+                    int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
+                    Vector2Int a = new Vector2Int(center.X - dd, center.Y + r);
+                    if (a.y >= 0 && a.y < map.GetLength(0) && a.x >= 0 && a.x < map.GetLength(1) && map[a.y, a.x] != null && (includeWalls || map[a.y, a.x].IsWalkable) && !list.Contains(map[a.y, a.x])) list.Add(map[a.y, a.x]);
+                    Vector2Int b = new Vector2Int(center.X + dd, center.Y + r);
+                    if (b.y >= 0 && b.y < map.GetLength(0) && b.x >= 0 && b.x < map.GetLength(1) && map[b.y, b.x] != null && (includeWalls || map[b.y, b.x].IsWalkable) && !list.Contains(map[b.y, b.x])) list.Add(map[b.y, b.x]);
+                    Vector2Int c = new Vector2Int(center.X - dd, center.Y - r);
+                    if (c.y >= 0 && c.y < map.GetLength(0) && c.x >= 0 && c.x < map.GetLength(1) && map[c.y, c.x] != null && (includeWalls || map[c.y, c.x].IsWalkable) && !list.Contains(map[c.y, c.x])) list.Add(map[c.y, c.x]);
+                    Vector2Int d = new Vector2Int(center.X + dd, center.Y - r);
+                    if (d.y >= 0 && d.y < map.GetLength(0) && d.x >= 0 && d.x < map.GetLength(1) && map[d.y, d.x] != null && (includeWalls || map[d.y, d.x].IsWalkable) && !list.Contains(map[d.y, d.x])) list.Add(map[d.y, d.x]);
+                    Vector2Int e = new Vector2Int(center.X + r, center.Y - dd);
+                    if (e.y >= 0 && e.y < map.GetLength(0) && e.x >= 0 && e.x < map.GetLength(1) && map[e.y, e.x] != null && (includeWalls || map[e.y, e.x].IsWalkable) && !list.Contains(map[e.y, e.x])) list.Add(map[e.y, e.x]);
+                    Vector2Int f = new Vector2Int(center.X + r, center.Y + dd);
+                    if (f.y >= 0 && f.y < map.GetLength(0) && f.x >= 0 && f.x < map.GetLength(1) && map[f.y, f.x] != null && (includeWalls || map[f.y, f.x].IsWalkable) && !list.Contains(map[f.y, f.x])) list.Add(map[f.y, f.x]);
+                    Vector2Int g = new Vector2Int(center.X - r, center.Y - dd);
+                    if (g.y >= 0 && g.y < map.GetLength(0) && g.x >= 0 && g.x < map.GetLength(1) && map[g.y, g.x] != null && (includeWalls || map[g.y, g.x].IsWalkable) && !list.Contains(map[g.y, g.x])) list.Add(map[g.y, g.x]);
+                    Vector2Int h = new Vector2Int(center.X - r, center.Y + dd);
+                    if (h.y >= 0 && h.y < map.GetLength(0) && h.x >= 0 && h.x < map.GetLength(1) && map[h.y, h.x] != null && (includeWalls || map[h.y, h.x].IsWalkable) && !list.Contains(map[h.y, h.x])) list.Add(map[h.y, h.x]);
+                }
+            }
+            return list.ToArray();
+        }
+
         /// <summary>
         /// Get all tiles contained into a rectangle around a tile
         /// </summary>
@@ -235,22 +329,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY, bool includeCenter = true) where T : ITile
         {
-            int top = Mathf.Max(center.Y - rectangleSizeY, 0),
-                bottom = Mathf.Min(center.Y + rectangleSizeY + 1, map.GetLength(0)),
-                left = Mathf.Max(center.X - rectangleSizeX, 0),
-                right = Mathf.Min(center.X + rectangleSizeX + 1, map.GetLength(1));
-            List<T> list = new List<T>();
-            for (int i = top; i < bottom; i++)
-            {
-                for (int j = left; j < right; j++)
-                {
-                    if (map[i, j] != null && (includeCenter || !EqualityComparer<T>.Default.Equals(map[i, j], center)))
-                    {
-                        list.Add(map[i, j]);
-                    }
-                }
-            }
-            return list.ToArray();
+            return ExtractRectangle(map, center, rectangleSizeX, rectangleSizeY, includeCenter, true);
         }
         /// <summary>
         /// Get all walkable tiles contained into a rectangle around a tile
@@ -277,22 +356,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetWalkableTilesInARectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY, bool includeCenter = true) where T : ITile
         {
-            int top = Mathf.Max(center.Y - rectangleSizeY, 0),
-                bottom = Mathf.Min(center.Y + rectangleSizeY + 1, map.GetLength(0)),
-                left = Mathf.Max(center.X - rectangleSizeX, 0),
-                right = Mathf.Min(center.X + rectangleSizeX + 1, map.GetLength(1));
-            List<T> list = new List<T>();
-            for (int i = top; i < bottom; i++)
-            {
-                for (int j = left; j < right; j++)
-                {
-                    if (map[i, j] != null && map[i, j].IsWalkable && (includeCenter || !EqualityComparer<T>.Default.Equals(map[i, j], center)))
-                    {
-                        list.Add(map[i, j]);
-                    }
-                }
-            }
-            return list.ToArray();
+            return ExtractRectangle(map, center, rectangleSizeX, rectangleSizeY, includeCenter, false);
         }
         /// <summary>
         /// Get all tiles on a rectangle outline around a tile
@@ -317,29 +381,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
         {
-            int top = center.Y - rectangleSizeY,
-                bottom = center.Y + rectangleSizeY + 1,
-                left = center.X - rectangleSizeX,
-                right = center.X + rectangleSizeX + 1;
-            List<T> list = new List<T>();
-            for (int i = top; i < bottom; i++)
-            {
-                for (int j = left; j < right; j++)
-                {
-                    if (i < 0 || i >= map.GetLength(0) || j < 0 || j >= map.GetLength(1))
-                    {
-                        continue;
-                    }
-                    if (i == top || i == bottom - 1 || j == left || j == right - 1)
-                    {
-                        if (map[i, j] != null)
-                        {
-                            list.Add(map[i, j]);
-                        }
-                    }
-                }
-            }
-            return list.ToArray();
+            return ExtractRectangleOutline(map, center, rectangleSizeX, rectangleSizeY, true);
         }
         /// <summary>
         /// Get all walkable tiles on a rectangle outline around a tile
@@ -364,26 +406,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetWalkableTilesOnARectangleOutline<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY) where T : ITile
         {
-            int top = center.Y - rectangleSizeY,
-                bottom = center.Y + rectangleSizeY + 1,
-                left = center.X - rectangleSizeX,
-                right = center.X + rectangleSizeX + 1;
-            List<T> list = new List<T>();
-            for (int i = top; i < bottom; i++)
-            {
-                for (int j = left; j < right; j++)
-                {
-                    if (i < 0 || i >= map.GetLength(0) || j < 0 || j >= map.GetLength(1))
-                    {
-                        continue;
-                    }
-                    if (map[i, j] != null && map[i, j].IsWalkable && (i == top || i == bottom - 1 || j == left || j == right - 1))
-                    {
-                        list.Add(map[i, j]);
-                    }
-                }
-            }
-            return list.ToArray();
+            return ExtractRectangleOutline(map, center, rectangleSizeX, rectangleSizeY, false);
         }
         /// <summary>
         /// Get all tiles contained into a radius around a tile
@@ -396,24 +419,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInARadius<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
         {
-            int top = Mathf.Max(center.Y - radius, 0),
-                bottom = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
-            List<T> list = new List<T>();
-            for (int y = top; y < bottom; y++)
-            {
-                int dy = y - center.Y;
-                float dx = Mathf.Sqrt((float)radius * radius - (float)dy * dy);
-                int left = Mathf.Max(Mathf.CeilToInt(center.X - dx), 0),
-                    right = Mathf.Min(Mathf.FloorToInt(center.X + dx + 1), map.GetLength(1));
-                for (int x = left; x < right; x++)
-                {
-                    if (map[y, x] != null && (includeCenter || !EqualityComparer<T>.Default.Equals(map[y, x], center)))
-                    {
-                        list.Add(map[y, x]);
-                    }
-                }
-            }
-            return list.ToArray();
+            return ExtractRadius(map, center, radius, includeCenter, true);
         }
         /// <summary>
         /// Get all tiles on a radius outline around a tile
@@ -425,33 +431,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnARadiusOutline<T>(T[,] map, T center, int radius) where T : ITile
         {
-            int top = Mathf.Max(center.Y - radius, 0),
-                bottom = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
-            List<T> list = new List<T>();
-            for (int y = top; y < bottom; y++)
-            {
-                for (int r = 0; r <= Mathf.FloorToInt(radius * Mathf.Sqrt(0.5f)); r++)
-                {
-                    int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
-                    Vector2Int a = new Vector2Int(center.X - dd, center.Y + r);
-                    if (a.y >= 0 && a.y < map.GetLength(0) && a.x >= 0 && a.x < map.GetLength(1) && map[a.y, a.x] != null && !list.Contains(map[a.y, a.x])) list.Add(map[a.y, a.x]);
-                    Vector2Int b = new Vector2Int(center.X + dd, center.Y + r);
-                    if (b.y >= 0 && b.y < map.GetLength(0) && b.x >= 0 && b.x < map.GetLength(1) && map[b.y, b.x] != null && !list.Contains(map[b.y, b.x])) list.Add(map[b.y, b.x]);
-                    Vector2Int c = new Vector2Int(center.X - dd, center.Y - r);
-                    if (c.y >= 0 && c.y < map.GetLength(0) && c.x >= 0 && c.x < map.GetLength(1) && map[c.y, c.x] != null && !list.Contains(map[c.y, c.x])) list.Add(map[c.y, c.x]);
-                    Vector2Int d = new Vector2Int(center.X + dd, center.Y - r);
-                    if (d.y >= 0 && d.y < map.GetLength(0) && d.x >= 0 && d.x < map.GetLength(1) && map[d.y, d.x] != null && !list.Contains(map[d.y, d.x])) list.Add(map[d.y, d.x]);
-                    Vector2Int e = new Vector2Int(center.X + r, center.Y - dd);
-                    if (e.y >= 0 && e.y < map.GetLength(0) && e.x >= 0 && e.x < map.GetLength(1) && map[e.y, e.x] != null && !list.Contains(map[e.y, e.x])) list.Add(map[e.y, e.x]);
-                    Vector2Int f = new Vector2Int(center.X + r, center.Y + dd);
-                    if (f.y >= 0 && f.y < map.GetLength(0) && f.x >= 0 && f.x < map.GetLength(1) && map[f.y, f.x] != null && !list.Contains(map[f.y, f.x])) list.Add(map[f.y, f.x]);
-                    Vector2Int g = new Vector2Int(center.X - r, center.Y - dd);
-                    if (g.y >= 0 && g.y < map.GetLength(0) && g.x >= 0 && g.x < map.GetLength(1) && map[g.y, g.x] != null && !list.Contains(map[g.y, g.x])) list.Add(map[g.y, g.x]);
-                    Vector2Int h = new Vector2Int(center.X - r, center.Y + dd);
-                    if (h.y >= 0 && h.y < map.GetLength(0) && h.x >= 0 && h.x < map.GetLength(1) && map[h.y, h.x] != null && !list.Contains(map[h.y, h.x])) list.Add(map[h.y, h.x]);
-                }
-            }
-            return list.ToArray();
+            return ExtractRadiusOutline(map, center, radius, true);
         }
         /// <summary>
         /// Get all walkable tiles contained into a radius around a tile
@@ -464,25 +444,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetWalkableTilesInARadius<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
         {
-            int top = Mathf.CeilToInt(center.Y - radius),
-                bottom = Mathf.FloorToInt(center.Y + radius),
-                left = Mathf.CeilToInt(center.X - radius),
-                right = Mathf.FloorToInt(center.X + radius);
-            List<T> list = new List<T>();
-            for (int y = top; y <= bottom; y++)
-            {
-                for (int x = left; x <= right; x++)
-                {
-                    float dx = center.X - x,
-                    dy = center.Y - y;
-                    float distance_squared = dx * dx + dy * dy;
-                    if (distance_squared <= radius * radius && x >= 0 && y >= 0 && x < map.GetLength(1) && y < map.GetLength(0) && map[y, x].IsWalkable && (includeCenter || !EqualityComparer<T>.Default.Equals(map[y, x], center)))
-                    {
-                        list.Add(map[y, x]);
-                    }
-                }
-            }
-            return list.ToArray();
+            return ExtractRadius(map, center, radius, includeCenter, false);
         }
         /// <summary>
         /// Get all walkable tiles on a radius outline around a tile
@@ -494,33 +456,118 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetWalkableTilesOnARadiusOutline<T>(T[,] map, T center, int radius) where T : ITile
         {
-            int top = Mathf.Max(center.Y - radius, 0),
-                bottom = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
-            List<T> list = new List<T>();
-            for (int y = top; y < bottom; y++)
+            return ExtractRadiusOutline(map, center, radius, false);
+        }
+        /// <summary>
+        /// Is this tile contained into a rectangle or not.
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="center">The center tile</param>
+        /// <param name="tile">To tile to check</param>
+        /// <param name="rectangleSize">The rectangle size</param>
+        /// <returns>A boolean that is true if the tile is contained into the rectangle, false otherwise</returns>
+        public static bool IsTileInARectangle<T>(T center, T tile, Vector2Int rectangleSize) where T : ITile
+        {
+            return IsTileInARectangle(center, tile, rectangleSize.x, rectangleSize.y);
+        }
+        /// <summary>
+        /// Is this tile contained into a rectangle or not.
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="center">The center tile</param>
+        /// <param name="tile">To tile to check</param>
+        /// <param name="rectangleSizeX">The rectangle horizontal size</param>
+        /// <param name="rectangleSizeY">The rectangle vertical size</param>
+        /// <returns>A boolean that is true if the tile is contained into the rectangle, false otherwise</returns>
+        public static bool IsTileInARectangle<T>(T center, T tile, int rectangleSizeX, int rectangleSizeY) where T : ITile
+        {
+            int bottom = center.Y - rectangleSizeY;
+            int top = center.Y + rectangleSizeY;
+            int left = center.X - rectangleSizeX;
+            int right = center.X + rectangleSizeX;
+            return tile.X >= left && tile.X <= right && tile.Y >= bottom && tile.Y <= top;
+        }
+        /// <summary>
+        /// Is this tile is on a rectangle outline or not.
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="center">The center tile</param>
+        /// <param name="tile">To tile to check</param>
+        /// <param name="rectangleSize">The rectangle size</param>
+        /// <returns>A boolean that is true if the tile is on the rectangle outline, false otherwise</returns>
+        public static bool IsTileOnARectangleOutline<T>(T center, T tile, Vector2Int rectangleSize) where T : ITile
+        {
+            return IsTileOnARectangleOutline(center, tile, rectangleSize.x, rectangleSize.y);
+        }
+        /// <summary>
+        /// Is this tile is on a rectangle outline or not.
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="center">The center tile</param>
+        /// <param name="tile">To tile to check</param>
+        /// <param name="rectangleSizeX">The rectangle horizontal size</param>
+        /// <param name="rectangleSizeY">The rectangle vertical size</param>
+        /// <returns>A boolean that is true if the tile is on the rectangle outline, false otherwise</returns>
+        public static bool IsTileOnARectangleOutline<T>(T center, T tile, int rectangleSizeX, int rectangleSizeY) where T : ITile
+        {
+            int bottom = center.Y - rectangleSizeY,
+                top = center.Y + rectangleSizeY,
+                left = center.X - rectangleSizeX,
+                right = center.X + rectangleSizeX;
+            return (tile.X == left && tile.Y <= top && tile.Y >= bottom) || (tile.X == right && tile.Y <= top && tile.Y >= bottom) || (tile.Y == bottom && tile.X <= right && tile.X >= left) || (tile.Y == top && tile.X <= right && tile.X >= left);
+        }
+        /// <summary>
+        /// Is this tile contained into a radius or not.
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="center">The center tile</param>
+        /// <param name="tile">To tile to check</param>
+        /// <param name="radius">The radius</param>
+        /// <returns>A boolean that is true if the tile is contained into the radius, false otherwise</returns>
+        public static bool IsTileInARadius<T>(T center, T tile, int radius) where T : ITile
+        {
+            int bottom = center.Y - radius;
+            int top = center.Y + radius + 1;
+            int left = center.X - radius;
+            int right = center.X + radius + 1;
+            return tile.X >= left && tile.X <= right && tile.Y >= bottom && tile.Y <= top && Vector2Int.Distance(new Vector2Int(center.X, center.Y), new Vector2Int(tile.X, tile.Y)) <= radius;
+        }
+        /// <summary>
+        /// Is this tile on a radius outline or not.
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="center">The center tile</param>
+        /// <param name="tile">To tile to check</param>
+        /// <param name="radius">The radius</param>
+        /// <returns>A boolean that is true if the tile on a radius outline , false otherwise</returns>
+        public static bool IsTileOnARadiusOutline<T>(T center, T tile, int radius) where T : ITile
+        {
+            int bottom = center.Y - radius;
+            int top = center.Y + radius + 1;
+            for (int y = bottom; y < top; y++)
             {
                 for (int r = 0; r <= Mathf.FloorToInt(radius * Mathf.Sqrt(0.5f)); r++)
                 {
                     int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
                     Vector2Int a = new Vector2Int(center.X - dd, center.Y + r);
-                    if (a.y >= 0 && a.y < map.GetLength(0) && a.x >= 0 && a.x < map.GetLength(1) && map[a.y, a.x] != null && map[a.y, a.x].IsWalkable && !list.Contains(map[a.y, a.x])) list.Add(map[a.y, a.x]);
+                    if (a.y==tile.Y && a.x == tile.X) return true;
                     Vector2Int b = new Vector2Int(center.X + dd, center.Y + r);
-                    if (b.y >= 0 && b.y < map.GetLength(0) && b.x >= 0 && b.x < map.GetLength(1) && map[b.y, b.x] != null && map[b.y, b.x].IsWalkable && !list.Contains(map[b.y, b.x])) list.Add(map[b.y, b.x]);
+                    if (b.y==tile.Y && b.x == tile.X) return true;
                     Vector2Int c = new Vector2Int(center.X - dd, center.Y - r);
-                    if (c.y >= 0 && c.y < map.GetLength(0) && c.x >= 0 && c.x < map.GetLength(1) && map[c.y, c.x] != null && map[c.y, c.x].IsWalkable && !list.Contains(map[c.y, c.x])) list.Add(map[c.y, c.x]);
+                    if (c.y==tile.Y && c.x == tile.X) return true;
                     Vector2Int d = new Vector2Int(center.X + dd, center.Y - r);
-                    if (d.y >= 0 && d.y < map.GetLength(0) && d.x >= 0 && d.x < map.GetLength(1) && map[d.y, d.x] != null && map[d.y, d.x].IsWalkable && !list.Contains(map[d.y, d.x])) list.Add(map[d.y, d.x]);
+                    if (d.y==tile.Y && d.x == tile.X) return true;
                     Vector2Int e = new Vector2Int(center.X + r, center.Y - dd);
-                    if (e.y >= 0 && e.y < map.GetLength(0) && e.x >= 0 && e.x < map.GetLength(1) && map[e.y, e.x] != null && map[e.y, e.x].IsWalkable && !list.Contains(map[e.y, e.x])) list.Add(map[e.y, e.x]);
+                    if (e.y==tile.Y && e.x == tile.X) return true;
                     Vector2Int f = new Vector2Int(center.X + r, center.Y + dd);
-                    if (f.y >= 0 && f.y < map.GetLength(0) && f.x >= 0 && f.x < map.GetLength(1) && map[f.y, f.x] != null && map[f.y, f.x].IsWalkable && !list.Contains(map[f.y, f.x])) list.Add(map[f.y, f.x]);
+                    if (f.y==tile.Y && f.x == tile.X) return true;
                     Vector2Int g = new Vector2Int(center.X - r, center.Y - dd);
-                    if (g.y >= 0 && g.y < map.GetLength(0) && g.x >= 0 && g.x < map.GetLength(1) && map[g.y, g.x] != null && map[g.y, g.x].IsWalkable && !list.Contains(map[g.y, g.x])) list.Add(map[g.y, g.x]);
+                    if (g.y==tile.Y && g.x == tile.X) return true;
                     Vector2Int h = new Vector2Int(center.X - r, center.Y + dd);
-                    if (h.y >= 0 && h.y < map.GetLength(0) && h.x >= 0 && h.x < map.GetLength(1) && map[h.y, h.x] != null && map[h.y, h.x].IsWalkable && !list.Contains(map[h.y, h.x])) list.Add(map[h.y, h.x]);
+                    if (h.y==tile.Y && h.x == tile.X) return true;
                 }
             }
-            return list.ToArray();
+            return false;
         }
     }
     /// <summary>
@@ -528,6 +575,53 @@ namespace KevinCastejon.GridHelper
     /// </summary>
     public class Raycasting
     {
+        private static T[] Raycast<T>(T[,] map, T startTile, T destinationTile, float maxDistance, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear) where T : ITile
+        {
+            Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
+            int dx = p1.x - p0.x, dy = p1.y - p0.y;
+            int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
+            int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
+
+            Vector2Int p = new Vector2Int(p0.x, p0.y);
+            List<T> points = new List<T> { map[p.y, p.x] };
+            isLineClear = true;
+            for (int ix = 0, iy = 0; ix < nx || iy < ny;)
+            {
+                if ((0.5 + ix) / nx < (0.5 + iy) / ny)
+                {
+                    // next step is horizontal
+                    p.x += sign_x;
+                    ix++;
+                }
+                else
+                {
+                    // next step is vertical
+                    p.y += sign_y;
+                    iy++;
+                }
+                bool breakIt = false;
+                breakIt = breakIt ? true : breakOnWalls && (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable);
+                isLineClear = !breakIt;
+                breakIt = breakIt ? true : (maxDistance > 0f && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance);
+                bool continueIt = false;
+                continueIt = continueIt ? true : map[p.y, p.x] == null;
+                continueIt = continueIt ? true : !includeWalls && !map[p.y, p.x].IsWalkable;
+                continueIt = continueIt ? true : !includeStart && Equals(map[p.y, p.x], includeStart);
+                continueIt = continueIt ? true : !includeDestination || Equals(map[p.y, p.x], includeDestination);
+                if (breakIt)
+                {
+                    break;
+                }
+                if (continueIt)
+                {
+                    continue;
+                }
+                points.Add(map[p.y, p.x]);
+            }
+            return points.ToArray();
+        }
+
         /// <summary>
         /// Get all tiles on a line between two tiles
         /// </summary>
@@ -586,51 +680,20 @@ namespace KevinCastejon.GridHelper
         {
             return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, true, false, out bool isclear);
         }
-        private static T[] Raycast<T>(T[,] map, T startTile, T destinationTile, float maxDistance, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear) where T : ITile
+        /// <summary>
+        /// Get all tiles on a line between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The stop tile</param>
+        /// <param name="maxDistance">The maximum distance from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, out bool isLineClear, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true) where T : ITile
         {
-            Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
-            Vector2Int p1 = new Vector2Int(destinationTile.X, destinationTile.Y);
-            int dx = p1.x - p0.x, dy = p1.y - p0.y;
-            int nx = Mathf.Abs(dx), ny = Mathf.Abs(dy);
-            int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
-
-            Vector2Int p = new Vector2Int(p0.x, p0.y);
-            List<T> points = new List<T> { map[p.y, p.x] };
-            isLineClear = true;
-            for (int ix = 0, iy = 0; ix < nx || iy < ny;)
-            {
-                if ((0.5 + ix) / nx < (0.5 + iy) / ny)
-                {
-                    // next step is horizontal
-                    p.x += sign_x;
-                    ix++;
-                }
-                else
-                {
-                    // next step is vertical
-                    p.y += sign_y;
-                    iy++;
-                }
-                bool breakIt = false;
-                breakIt = breakIt ? true : breakOnWalls && (map[p.y, p.x] == null || !map[p.y, p.x].IsWalkable);
-                isLineClear = breakIt;
-                breakIt = breakIt ? true : (maxDistance > 0f && Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance);
-                bool continueIt = false;
-                continueIt = map[p.y, p.x] == null;
-                continueIt = continueIt ? true : !includeWalls && !map[p.y, p.x].IsWalkable;
-                continueIt = continueIt ? true : !includeStart && Equals(map[p.y, p.x], includeStart);
-                continueIt = continueIt ? true : !includeDestination || Equals(map[p.y, p.x], includeDestination);
-                if (breakIt)
-                {
-                    break;
-                }
-                if (continueIt)
-                {
-                    continue;
-                }
-                points.Add(map[p.y, p.x]);
-            }
-            return points.ToArray();
+            return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, true, false, out isLineClear);
         }
     }
     /// <summary>

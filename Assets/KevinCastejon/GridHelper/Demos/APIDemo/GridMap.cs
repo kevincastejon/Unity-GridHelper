@@ -18,7 +18,6 @@ namespace APIDemo
         LINE_OF_SIGHT,
         PATHFINDING_ACCESSIBLE,
         PATHFINDING_PATH_TO_TARGET,
-        PATHFINDING_PATH_FROM_TARGET,
     }
     public class GridMap : MonoBehaviour
     {
@@ -42,6 +41,7 @@ namespace APIDemo
         [SerializeField] private TextMeshProUGUI _extractSizeXLabel;
         [SerializeField] private Slider _extractSizeYSlider;
         [SerializeField] private TextMeshProUGUI _extractSizeYLabel;
+        [SerializeField] private Image _extractLED;
 
         private Camera _camera;
         private DemoType _demoType;
@@ -66,7 +66,7 @@ namespace APIDemo
                 {
                     return;
                 }
-                if (_demoType == DemoType.PATHFINDING_ACCESSIBLE || _demoType == DemoType.PATHFINDING_PATH_TO_TARGET || _demoType == DemoType.PATHFINDING_PATH_FROM_TARGET)
+                if (_demoType == DemoType.PATHFINDING_ACCESSIBLE || _demoType == DemoType.PATHFINDING_PATH_TO_TARGET)
                 {
                     HideDistancesAndDirections();
                 }
@@ -101,14 +101,6 @@ namespace APIDemo
                     GetPathToTarget();
                     SetTilesPath();
                 }
-                else if (_demoType == DemoType.PATHFINDING_PATH_FROM_TARGET)
-                {
-                    CleanPathTiles();
-                    GenerateGlobalPathMap();
-                    ShowInverseDirections();
-                    GetPathFromTarget();
-                    SetTilesPath();
-                }
 
             }
         }
@@ -138,15 +130,6 @@ namespace APIDemo
                     GetPathToTarget();
                     SetTilesPath();
                 }
-                else if (_demoType == DemoType.PATHFINDING_PATH_FROM_TARGET)
-                {
-                    CleanPathTiles();
-                    GenerateGlobalPathMap();
-                    ShowInverseDirections();
-                    GetPathFromTarget();
-                    SetTilesPath();
-                }
-
             }
         }
         public float MaxLineDistance
@@ -271,15 +254,6 @@ namespace APIDemo
                     GetPathToTarget();
                     SetTilesPath();
                 }
-                else if (_demoType == DemoType.PATHFINDING_PATH_FROM_TARGET)
-                {
-                    CleanPathTiles();
-                    GenerateGlobalPathMap();
-                    ShowInverseDirections();
-                    GetPathFromTarget();
-                    SetTilesPath();
-                }
-
             }
         }
 
@@ -354,11 +328,15 @@ namespace APIDemo
                 }
                 _hoveredTile = tile;
             }
-            else if (_demoType != DemoType.EXTRACTION_RADIUS && _demoType != DemoType.EXTRACTION_RADIUS_OUTLINE && _demoType != DemoType.EXTRACTION_RECTANGLE && _demoType != DemoType.EXTRACTION_RECTANGLE_OUTLINE && _demoType != DemoType.PATHFINDING_ACCESSIBLE)
+            else
             {
-                _hoveredTile = null;
-                _startTile = null;
-                CleanPathTiles();
+                _extractLED.color = Color.white;
+                if (_demoType != DemoType.EXTRACTION_RADIUS && _demoType != DemoType.EXTRACTION_RADIUS_OUTLINE && _demoType != DemoType.EXTRACTION_RECTANGLE && _demoType != DemoType.EXTRACTION_RECTANGLE_OUTLINE && _demoType != DemoType.PATHFINDING_ACCESSIBLE)
+                {
+                    _hoveredTile = null;
+                    _startTile = null;
+                    CleanPathTiles();
+                }
             }
         }
 
@@ -395,11 +373,6 @@ namespace APIDemo
                     GenerateGlobalPathMap();
                     ShowDirections();
                     GetPathToTarget();
-                    break;
-                case DemoType.PATHFINDING_PATH_FROM_TARGET:
-                    GenerateGlobalPathMap();
-                    ShowInverseDirections();
-                    GetPathFromTarget();
                     break;
                 default:
                     break;
@@ -442,13 +415,6 @@ namespace APIDemo
                     ShowDirections();
                     GetPathToTarget();
                     break;
-                case DemoType.PATHFINDING_PATH_FROM_TARGET:
-                    HideDistancesAndDirections();
-                    GenerateGlobalPathMap();
-                    ShowInverseDirections();
-                    GetPathFromTarget();
-                    break;
-
                 default:
                     break;
             }
@@ -484,11 +450,6 @@ namespace APIDemo
                 case DemoType.PATHFINDING_PATH_TO_TARGET:
                     CleanPathTiles();
                     GetPathToTarget();
-                    SetTilesPath();
-                    break;
-                case DemoType.PATHFINDING_PATH_FROM_TARGET:
-                    CleanPathTiles();
-                    GetPathFromTarget();
                     SetTilesPath();
                     break;
                 default:
@@ -530,12 +491,6 @@ namespace APIDemo
                     ShowDirections();
                     GetPathToTarget();
                     break;
-                case DemoType.PATHFINDING_PATH_FROM_TARGET:
-                    HideDistancesAndDirections();
-                    GenerateGlobalPathMap();
-                    ShowInverseDirections();
-                    GetPathFromTarget();
-                    break;
                 default:
                     break;
             }
@@ -554,6 +509,23 @@ namespace APIDemo
         }
         private void OnTileEntered(Tile hoveredTile)
         {
+            switch (_demoType)
+            {
+                case DemoType.EXTRACTION_RADIUS:
+                    _extractLED.color = Extraction.IsTileInARadius(_targetTile, hoveredTile, _radius) ? Color.green : Color.red;
+                    break;
+                case DemoType.EXTRACTION_RADIUS_OUTLINE:
+                    _extractLED.color = Extraction.IsTileOnARadiusOutline(_targetTile, hoveredTile, _radius) ? Color.green : Color.red;
+                    break;
+                case DemoType.EXTRACTION_RECTANGLE:
+                    _extractLED.color = Extraction.IsTileInARectangle(_targetTile, hoveredTile, _rectangleSizeX, _rectangleSizeY) ? Color.green : Color.red;
+                    break;
+                case DemoType.EXTRACTION_RECTANGLE_OUTLINE:
+                    _extractLED.color = Extraction.IsTileOnARectangleOutline(_targetTile, hoveredTile, _rectangleSizeX, _rectangleSizeY) ? Color.green : Color.red;
+                    break;
+                default:
+                    break;
+            }
             if (hoveredTile == _startTile || (_demoType == DemoType.PATHFINDING_PATH_TO_TARGET && !hoveredTile.IsWalkable))
             {
                 return;
@@ -631,19 +603,11 @@ namespace APIDemo
         }
         private void GetPathToTarget()
         {
-            if (!_globalPathMap.IsTileIntoPathMap(_startTile))
+            if (!_globalPathMap.IsTileAccessible(_startTile))
             {
                 return;
             }
             _pathTiles = _globalPathMap.GetPathToTarget(_startTile);
-        }
-        private void GetPathFromTarget()
-        {
-            if (!_globalPathMap.IsTileIntoPathMap(_startTile))
-            {
-                return;
-            }
-            _pathTiles = _globalPathMap.GetPathFromTarget(_startTile);
         }
         private void SetTilesPath()
         {
@@ -691,7 +655,7 @@ namespace APIDemo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
-                    if (!_globalPathMap.IsTileIntoPathMap(_map[i, j]))
+                    if (!_globalPathMap.IsTileAccessible(_map[i, j]))
                     {
                         continue;
                     }
@@ -705,25 +669,11 @@ namespace APIDemo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
-                    if (!_globalPathMap.IsTileIntoPathMap(_map[i, j]))
+                    if (!_globalPathMap.IsTileAccessible(_map[i, j]))
                     {
                         continue;
                     }
                     _map[i, j].ShowDirection(_globalPathMap.GetNextTileDirectionFromTile(_map[i, j]));
-                }
-            }
-        }
-        private void ShowInverseDirections()
-        {
-            for (int i = 0; i < _map.GetLength(0); i++)
-            {
-                for (int j = 0; j < _map.GetLength(1); j++)
-                {
-                    if (!_globalPathMap.IsTileIntoPathMap(_map[i, j]))
-                    {
-                        continue;
-                    }
-                    _map[i, j].ShowDirection(-_globalPathMap.GetNextTileDirectionFromTile(_map[i, j]));
                 }
             }
         }

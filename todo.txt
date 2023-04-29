@@ -1,2 +1,2 @@
-optimize Raycasting methods
 add Pathfinding strategies (A* and BFS with early exit)
+add Raycasting strategies (Interpolation, Orthogonal ,SuperCovering)

@@ -1,6 +1,6 @@
 # GridHelper
 
-This package offers a utilitary API to help with operations on **grids** such as **tile extraction**, **raycasting**, and **pathfinding**.
+This package offers a utilitary API to help with operations on **grids** such as tile **extraction**, **raycasting**, and **pathfinding**.
 
 Comes with several demo examples.
 
@@ -71,6 +71,25 @@ YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnARectangleOutline(grid
 - **GetWalkableTilesOnARadiusOutline**
 ```cs
 YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnARadiusOutline(grid, centerTile, radius);
+```
+
+Besides from extracting tiles from shapes, you can know if a specific tile is contained into a radius/rectangle or not. Same with the outlines.
+
+- **IsTileInARectangle**
+```cs
+bool isTileInARectangle = Extraction.IsTileInARectangle(centerTile, rectangleSize);
+```
+- **IsTileInARectangleOutline**
+```cs
+bool isTileInARectangleOutline = Extraction.IsTileInARectangleOutline(centerTile, radius);
+```
+- **IsTileInARectangle**
+```cs
+bool isTileInARectangle = Extraction.IsTileInARectangle(centerTile, rectangleSize);
+```
+- **IsTileInARectangleOutline**
+```cs
+bool isTileInARectangleOutline = Extraction.IsTileInARectangleOutline(centerTile, radius);
 ```
 
 ### - <u>Raycasting</u>
