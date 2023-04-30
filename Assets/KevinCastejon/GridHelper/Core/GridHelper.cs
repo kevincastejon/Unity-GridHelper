@@ -550,21 +550,21 @@ namespace KevinCastejon.GridHelper
                 {
                     int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
                     Vector2Int a = new Vector2Int(center.X - dd, center.Y + r);
-                    if (a.y==tile.Y && a.x == tile.X) return true;
+                    if (a.y == tile.Y && a.x == tile.X) return true;
                     Vector2Int b = new Vector2Int(center.X + dd, center.Y + r);
-                    if (b.y==tile.Y && b.x == tile.X) return true;
+                    if (b.y == tile.Y && b.x == tile.X) return true;
                     Vector2Int c = new Vector2Int(center.X - dd, center.Y - r);
-                    if (c.y==tile.Y && c.x == tile.X) return true;
+                    if (c.y == tile.Y && c.x == tile.X) return true;
                     Vector2Int d = new Vector2Int(center.X + dd, center.Y - r);
-                    if (d.y==tile.Y && d.x == tile.X) return true;
+                    if (d.y == tile.Y && d.x == tile.X) return true;
                     Vector2Int e = new Vector2Int(center.X + r, center.Y - dd);
-                    if (e.y==tile.Y && e.x == tile.X) return true;
+                    if (e.y == tile.Y && e.x == tile.X) return true;
                     Vector2Int f = new Vector2Int(center.X + r, center.Y + dd);
-                    if (f.y==tile.Y && f.x == tile.X) return true;
+                    if (f.y == tile.Y && f.x == tile.X) return true;
                     Vector2Int g = new Vector2Int(center.X - r, center.Y - dd);
-                    if (g.y==tile.Y && g.x == tile.X) return true;
+                    if (g.y == tile.Y && g.x == tile.X) return true;
                     Vector2Int h = new Vector2Int(center.X - r, center.Y + dd);
-                    if (h.y==tile.Y && h.x == tile.X) return true;
+                    if (h.y == tile.Y && h.x == tile.X) return true;
                 }
             }
             return false;
@@ -584,7 +584,11 @@ namespace KevinCastejon.GridHelper
             int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
 
             Vector2Int p = new Vector2Int(p0.x, p0.y);
-            List<T> points = new List<T> { map[p.y, p.x] };
+            List<T> points = new List<T>();
+            if (includeStart)
+            {
+                points.Add(map[p.y, p.x]);
+            }
             isLineClear = true;
             for (int ix = 0, iy = 0; ix < nx || iy < ny;)
             {
@@ -607,8 +611,7 @@ namespace KevinCastejon.GridHelper
                 bool continueIt = false;
                 continueIt = continueIt ? true : map[p.y, p.x] == null;
                 continueIt = continueIt ? true : !includeWalls && !map[p.y, p.x].IsWalkable;
-                continueIt = continueIt ? true : !includeStart && Equals(map[p.y, p.x], includeStart);
-                continueIt = continueIt ? true : !includeDestination || Equals(map[p.y, p.x], includeDestination);
+                continueIt = continueIt ? true : !includeDestination && Equals(map[p.y, p.x], destinationTile);
                 if (breakIt)
                 {
                     break;
