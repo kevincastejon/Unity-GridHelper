@@ -21,7 +21,7 @@ namespace APIDemo
     }
     public class GridMap : MonoBehaviour
     {
-        [SerializeField] private bool _allowDiagonals;
+        [SerializeField] private DiagonalsPolicy _diagonalsPolicy;
         [SerializeField] [Range(0f, 99f)] private float _maxPathDistance = 2f;
         [SerializeField] [Range(0f, 99f)] private float _maxLineDistance = 0f;
         [SerializeField] [Range(1, 99)] private int _radius = 2;
@@ -32,7 +32,7 @@ namespace APIDemo
         [SerializeField] private Slider _maxDistanceSliderPath;
         [SerializeField] private TextMeshProUGUI _maxDistanceLabelLineOfSight;
         [SerializeField] private TextMeshProUGUI _maxDistanceLabelPath;
-        [SerializeField] private Toggle _allowDiagonalsToggle;
+        [SerializeField] private TMP_Dropdown _diagonalsPolicyDropDown;
         [SerializeField] private Slider _diagonalsWeightSlider;
         [SerializeField] private TextMeshProUGUI _diagonalsWeightLabel;
         [SerializeField] private Slider _extractRadiusSlider;
@@ -75,16 +75,16 @@ namespace APIDemo
             }
         }
 
-        public bool AllowDiagonals
+        public DiagonalsPolicy DiagonalsPolicy
         {
             get
             {
-                return _allowDiagonals;
+                return _diagonalsPolicy;
             }
 
             set
             {
-                _allowDiagonals = value;
+                _diagonalsPolicy = value;
                 if (_demoType == DemoType.PATHFINDING_ACCESSIBLE)
                 {
                     CleanPathTiles();
@@ -275,8 +275,8 @@ namespace APIDemo
             _maxDistanceSliderPath.value = _maxPathDistance;
             _maxDistanceLabelLineOfSight.text = _maxLineDistance.ToString();
             _maxDistanceLabelPath.text = _maxPathDistance.ToString();
-            _allowDiagonalsToggle.isOn = _allowDiagonals;
-            _diagonalsWeightSlider.interactable = _allowDiagonals;
+            _diagonalsPolicyDropDown.value = (int)_diagonalsPolicy;
+            _diagonalsWeightSlider.interactable = _diagonalsPolicy != DiagonalsPolicy.NONE;
             _diagonalsWeightSlider.value = _diagonalsWeight;
             _diagonalsWeightLabel.text = _diagonalsWeight.ToString("F1");
             _extractRadiusSlider.value = _radius;
@@ -598,7 +598,7 @@ namespace APIDemo
         }
         private void GetAccessibleTiles()
         {
-            PathMap<Tile> pathMap = Pathfinding.GeneratePathMap(_map, _targetTile, _maxPathDistance, _allowDiagonals, _diagonalsWeight);
+            PathMap<Tile> pathMap = Pathfinding.GeneratePathMap(_map, _targetTile, _maxPathDistance, _diagonalsPolicy, _diagonalsWeight);
             _pathTiles = pathMap.GetAccessibleTiles();
         }
         private void GetPathToTarget()
@@ -644,10 +644,14 @@ namespace APIDemo
         {
             DemoType = (DemoType)demoType;
         }
+        public void SetDiagonalsPolicy(int diagonalsPolicy)
+        {
+            DiagonalsPolicy = (DiagonalsPolicy)diagonalsPolicy;
+        }
         private void GenerateGlobalPathMap()
         {
             // Generating a path map
-            _globalPathMap = Pathfinding.GeneratePathMap(_map, _targetTile, 0f, _allowDiagonals, _diagonalsWeight);
+            _globalPathMap = Pathfinding.GeneratePathMap(_map, _targetTile, 0f, _diagonalsPolicy, _diagonalsWeight);
         }
         private void ShowDistances()
         {

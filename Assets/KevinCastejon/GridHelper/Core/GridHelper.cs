@@ -7,6 +7,16 @@ using UnityEngine;
 namespace KevinCastejon.GridHelper
 {
     /// <summary>
+    /// Represents the diagonals permissiveness
+    /// </summary>
+    public enum DiagonalsPolicy
+    {
+        NONE,
+        DIAGONAL_2FREE,
+        DIAGONAL_1FREE,
+        ALL_DIAGONALS,
+    }
+    /// <summary>
     /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods
     /// </summary>
     public interface ITile
@@ -714,7 +724,7 @@ namespace KevinCastejon.GridHelper
             tile = default;
             return false;
         }
-        private static List<T> GetTileNeighbours<T>(T[,] map, int x, int y, bool allowDiagonals) where T : ITile
+        private static List<T> GetTileNeighbours<T>(T[,] map, int x, int y, DiagonalsPolicy diagonalsPolicy) where T : ITile
         {
             List<T> nodes = new List<T>();
             T nei;
@@ -756,28 +766,40 @@ namespace KevinCastejon.GridHelper
             }
             if (GetTile(map, x - 1, y - 1, out nei))
             {
-                if (allowDiagonals && leftWalkable && bottomWalkable && nei != null && nei.IsWalkable)
+                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true : 
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? leftWalkable && bottomWalkable :
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? leftWalkable || bottomWalkable : false))) && 
+                    nei != null && nei.IsWalkable)
                 {
                     nodes.Add(nei);
                 }
             }
             if (GetTile(map, x - 1, y + 1, out nei))
             {
-                if (allowDiagonals && leftWalkable && topWalkable && nei != null && nei.IsWalkable)
+                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true :
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? leftWalkable && topWalkable :
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? leftWalkable || topWalkable : false))) &&
+                    nei != null && nei.IsWalkable)
                 {
                     nodes.Add(nei);
                 }
             }
             if (GetTile(map, x + 1, y + 1, out nei))
             {
-                if (allowDiagonals && rightWalkable && topWalkable && nei != null && nei.IsWalkable)
+                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true :
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? rightWalkable && topWalkable :
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? rightWalkable || topWalkable : false))) &&
+                    nei != null && nei.IsWalkable)
                 {
                     nodes.Add(nei);
                 }
             }
             if (GetTile(map, x + 1, y - 1, out nei))
             {
-                if (allowDiagonals && rightWalkable && bottomWalkable && nei != null && nei.IsWalkable)
+                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true :
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? rightWalkable && bottomWalkable :
+                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? rightWalkable || bottomWalkable : false))) &&
+                    nei != null && nei.IsWalkable)
                 {
                     nodes.Add(nei);
                 }
@@ -795,7 +817,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
         /// <returns>A PathMap object</returns>
-        public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, bool allowDiagonals = true, float diagonalWeightRatio = 1.5f) where T : ITile
+        public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.DIAGONAL_2FREE, float diagonalWeightRatio = 1.5f) where T : ITile
         {
             if (!targetTile.IsWalkable)
             {
@@ -808,15 +830,14 @@ namespace KevinCastejon.GridHelper
             frontier.Enqueue(targetNode, 0);
             targetNode.NextNode = targetNode;
             targetNode.DistanceToTarget = 0f;
-            int limit = 0;
-            while (frontier.Count > 0 && limit < 1000)
+            while (frontier.Count > 0)
             {
                 Node<T> current = frontier.Dequeue();
-                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, allowDiagonals);
+                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, diagonalsPolicy);
                 foreach (T neiTile in neighbourgs)
                 {
                     Node<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node<T>(neiTile);
-                    bool isDiagonal = allowDiagonals && current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
+                    bool isDiagonal = current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
                     float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
                     if (maxDistance > 0f && newDistance > maxDistance)
                     {
@@ -835,7 +856,6 @@ namespace KevinCastejon.GridHelper
                         nei.DistanceToTarget = newDistance;
                     }
                 }
-                limit++;
             }
             return new PathMap<T>(accessibleTilesDico, accessibleTiles, targetTile, maxDistance);
         }
