@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6d50d8903bd83ca4d8ad9dd5120b5ba5, type: 2}
+  - {fileID: 2100000, guid: aa1fab7f5b77f494eaf7b774c73e4d0e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -111,8 +111,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _renderer: {fileID: 6620009605011291334}
-  _semiFade: {fileID: 2100000, guid: cd9f8c9f90e3b1a4d9e24558edb9b4cf, type: 2}
-  _fade: {fileID: 2100000, guid: 6d50d8903bd83ca4d8ad9dd5120b5ba5, type: 2}
-  _opaque: {fileID: 2100000, guid: fe7c390065348e345ae55826e62e3760, type: 2}
-  _opaqueVariant: {fileID: 2100000, guid: e37fbfd1769952d4b9294a0f102413c6, type: 2}
+  _semiFade: {fileID: 2100000, guid: 2b35e942dd2461c498e20cdd6bc9ed6b, type: 2}
+  _fade: {fileID: 2100000, guid: aa1fab7f5b77f494eaf7b774c73e4d0e, type: 2}
+  _opaque: {fileID: 2100000, guid: 911c159a43d3739478beffb5f067cf58, type: 2}
+  _opaqueVariant: {fileID: 2100000, guid: 7000713b3b430524880085a90e73de81, type: 2}
   _tileMode: 0

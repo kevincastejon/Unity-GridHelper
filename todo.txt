@@ -1,2 +1,4 @@
-add Pathfinding strategies (A* and BFS with early exit)
+add "direct" Pathfinding strategies without PathMap (A* and BFS with early exit)
 add Raycasting strategies (Interpolation, Orthogonal ,SuperCovering)
+add settings for row/column major orders (and so on in 3D...)
+optimiser le test de movement policy pour ne l'effectuer que quand cest necessaire (sur les bords)
