@@ -223,12 +223,12 @@ namespace KevinCastejon.GridHelper3D
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
             }
-            Node3D<T> node = _dico[startTile];
+            Node3D<T> node = includeStart ? _dico[startTile] : _dico[startTile].NextNode;
             List<T> tiles = new List<T>() { node.Tile };
             while (!EqualityComparer<T>.Default.Equals(node.Tile, _target))
             {
                 node = node.NextNode;
-                if (includeStart || !EqualityComparer<T>.Default.Equals(node.Tile, startTile) && includeTarget || !EqualityComparer<T>.Default.Equals(node.Tile, _target))
+                if (includeTarget || !EqualityComparer<T>.Default.Equals(node.Tile, _target))
                 {
                     tiles.Add(node.Tile);
                 }
@@ -867,7 +867,6 @@ namespace KevinCastejon.GridHelper3D
     /// </summary>
     public class Pathfinding3D
     {
-
         private static bool GetTile<T>(T[,,] map, int x, int y, int z, out T tile) where T : ITile3D
         {
             if (x > -1 && x < map.GetLength(1) && y > -1 && y < map.GetLength(0) && z > -1 && z < map.GetLength(2))
@@ -1242,7 +1241,6 @@ namespace KevinCastejon.GridHelper3D
             }
             return true;
         }
-
         private static List<T> GetTileNeighbours<T>(T[,,] map, int x, int y, int z, EdgesDiagonalsPolicy edgesPolicy, VerticesDiagonalsPolicy verticesPolicy, MovementPolicy movementPolicy) where T : ITile3D
         {
             List<T> nodes = new List<T>();
@@ -1396,7 +1394,6 @@ namespace KevinCastejon.GridHelper3D
 
             return nodes;
         }
-
         private static bool IsEdgeDiagonal<T>(EdgesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
         {
             if (policy == EdgesDiagonalsPolicy.NONE)
@@ -1405,7 +1402,6 @@ namespace KevinCastejon.GridHelper3D
             }
             float magnitude = (new Vector3Int(next.Tile.X, next.Tile.Y, next.Tile.Z) - new Vector3Int(current.Tile.X, current.Tile.Y, current.Tile.Z)).magnitude;
             return magnitude > 1.1f && magnitude < 1.5f;
-
         }
         private static bool IsVerticeDiagonal<T>(VerticesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
         {
@@ -1414,7 +1410,6 @@ namespace KevinCastejon.GridHelper3D
                 return false;
             }
             return (new Vector3Int(next.Tile.X, next.Tile.Y, next.Tile.Z) - new Vector3Int(current.Tile.X, current.Tile.Y, current.Tile.Z)).magnitude > 1.6f;
-
         }
 
         /// <summary>
@@ -1449,8 +1444,8 @@ namespace KevinCastejon.GridHelper3D
                     Node3D<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node3D<T>(neiTile);
                     bool isEdgeDiagonal = IsEdgeDiagonal(edgesPolicy, current, nei);
                     bool isVerticeDiagonal = IsVerticeDiagonal(verticesPolicy, current, nei);
-                    Debug.Log(isEdgeDiagonal);
                     float newDistance = current.DistanceToTarget + (nei.Tile.Weight * (isVerticeDiagonal ? verticeDiagonalWeightRatio : (isEdgeDiagonal ? edgeDiagonalWeightRatio : 1f)));
+                    //Debug.Log(neiTile.X+" "+neiTile.Y+"    "+newDistance+" / "+maxDistance);
                     if (maxDistance > 0f && newDistance > maxDistance)
                     {
                         continue;
@@ -1472,5 +1467,12 @@ namespace KevinCastejon.GridHelper3D
             return new PathMap3D<T>(accessibleTilesDico, accessibleTiles, targetTile, maxDistance);
         }
 
+    }
+    internal static class ITileComparator
+    {
+        public static bool Equals(ITile3D tileA, ITile3D tileB)
+        {
+            return tileA.X == tileB.X && tileA.Y == tileB.Y && tileA.Z == tileB.Z;
+        }
     }
 }
