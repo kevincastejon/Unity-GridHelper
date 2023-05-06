@@ -111,8 +111,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _renderer: {fileID: 6620009605011291334}
-  _semiFade: {fileID: 2100000, guid: 2b35e942dd2461c498e20cdd6bc9ed6b, type: 2}
-  _fade: {fileID: 2100000, guid: aa1fab7f5b77f494eaf7b774c73e4d0e, type: 2}
-  _opaque: {fileID: 2100000, guid: 911c159a43d3739478beffb5f067cf58, type: 2}
-  _opaqueVariant: {fileID: 2100000, guid: 7000713b3b430524880085a90e73de81, type: 2}
+  _accessibleMat: {fileID: 2100000, guid: 2b35e942dd2461c498e20cdd6bc9ed6b, type: 2}
+  _pathMat: {fileID: 2100000, guid: 993f8e28cc9abbd498e9fd5c3715c635, type: 2}
+  _airMat: {fileID: 2100000, guid: aa1fab7f5b77f494eaf7b774c73e4d0e, type: 2}
+  _targetMat: {fileID: 2100000, guid: 911c159a43d3739478beffb5f067cf58, type: 2}
+  _stopMat: {fileID: 2100000, guid: 9523610fe89fb3c4caaf5b2b8484613c, type: 2}
+  _wallMat: {fileID: 2100000, guid: 7000713b3b430524880085a90e73de81, type: 2}
   _tileMode: 0

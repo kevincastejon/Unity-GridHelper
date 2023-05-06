@@ -6,20 +6,24 @@ namespace Grid3DHelper.APIDemo.Pathfinding
 {
     public enum TileMode
     {
-        FADE,
-        SEMIFADE,
-        OPAQUE,
-        OPAQUE_VARIANT
+        AIR,
+        ACCESSIBLE,
+        PATH,
+        TARGET,
+        STOP,
+        WALL
     }
     public class Tile : MonoBehaviour, ITile3D
     {
         [SerializeField] private Renderer _renderer;
-        [SerializeField] private Material _semiFade;
-        [SerializeField] private Material _fade;
-        [SerializeField] private Material _opaque;
-        [SerializeField] private Material _opaqueVariant;
+        [SerializeField] private Material _accessibleMat;
+        [SerializeField] private Material _pathMat;
+        [SerializeField] private Material _airMat;
+        [SerializeField] private Material _targetMat;
+        [SerializeField] private Material _stopMat;
+        [SerializeField] private Material _wallMat;
         [SerializeField] [HideInInspector] private TileMode _tileMode;
-        public bool IsWalkable { get => _tileMode != TileMode.OPAQUE_VARIANT; }
+        public bool IsWalkable { get => _tileMode != TileMode.WALL; }
 
         public float Weight => 1f;
 
@@ -32,12 +36,12 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         [ContextMenu("Set To Wall")]
         public void SetToWall()
         {
-            TileMode = TileMode.OPAQUE_VARIANT;
+            TileMode = TileMode.WALL;
         }
         [ContextMenu("Set To Walkable")]
         public void SetToWalkable()
         {
-            TileMode = TileMode.FADE;
+            TileMode = TileMode.AIR;
         }
         public TileMode TileMode
         {
@@ -51,17 +55,23 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 _tileMode = value;
                 switch (_tileMode)
                 {
-                    case TileMode.FADE:
-                        _renderer.material = _fade;
+                    case TileMode.AIR:
+                        _renderer.material = _airMat;
                         break;
-                    case TileMode.SEMIFADE:
-                        _renderer.material = _semiFade;
+                    case TileMode.ACCESSIBLE:
+                        _renderer.material = _accessibleMat;
                         break;
-                    case TileMode.OPAQUE:
-                        _renderer.material = _opaque;
+                    case TileMode.PATH:
+                        _renderer.material = _pathMat;
                         break;
-                    case TileMode.OPAQUE_VARIANT:
-                        _renderer.material = _opaqueVariant;
+                    case TileMode.TARGET:
+                        _renderer.material = _targetMat;
+                        break;
+                    case TileMode.STOP:
+                        _renderer.material = _stopMat;
+                        break;
+                    case TileMode.WALL:
+                        _renderer.material = _wallMat;
                         break;
                     default:
                         break;

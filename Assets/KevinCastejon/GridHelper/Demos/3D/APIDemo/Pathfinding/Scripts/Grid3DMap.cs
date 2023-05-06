@@ -27,54 +27,25 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         [SerializeField] private TextMeshProUGUI _sliderStopCountY;
         [SerializeField] private Slider _sliderStopZ;
         [SerializeField] private TextMeshProUGUI _sliderStopCountZ;
-        private DemoType _demoType;
+        [SerializeField] private Toggle _flyToggle;
+        [SerializeField] private Toggle _wallBelowToggle;
+        [SerializeField] private Toggle _wallAsideToggle;
+        [SerializeField] private Toggle _wallAboveToggle;
+
+        private float _maxDistance = 6f;
         private EdgesDiagonalsPolicy _edgesDiagoPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE;
         private float _edgesDiagoWeight = (Vector2.up + Vector2.right).magnitude;
         private VerticesDiagonalsPolicy _verticesDiagoPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE;
         private float _verticesDiagoWeight = (Vector3.up + Vector3.right + Vector3.forward).magnitude;
         private MovementPolicy _movementPolicy = MovementPolicy.WALL_BELOW;
+
         Tile[,,] _map = new Tile[12, 16, 18];
+        Tile[] _accessibleTiles;
         Tile[] _path;
+
         private Tile _targetTile;
         private Tile _stopTile;
-        private float _maxDistance = 6f;
         PathMap3D<Tile> _pathMap;
-
-        public DemoType DemoType
-        {
-            get
-            {
-                return _demoType;
-            }
-
-            set
-            {
-                if (_demoType == value)
-                {
-                    return;
-                }
-                _demoType = value;
-                if (_demoType == DemoType.PATH)
-                {
-                    SetRandomAccessibleStop();
-                }
-                Demo();
-            }
-        }
-
-        private void SetRandomAccessibleStop()
-        {
-            if (_stopTile)
-            {
-                _stopTile.TileMode = TileMode.SEMIFADE;
-            }
-            Tile[] tiles = _pathMap.GetAccessibleTiles(false);
-            _stopTile = tiles[Random.Range(0, tiles.Length)];
-            _stopTile.TileMode = TileMode.OPAQUE;
-            _sliderStopX.SetValueWithoutNotify(_stopTile.X);
-            _sliderStopY.SetValueWithoutNotify(_stopTile.Y);
-            _sliderStopZ.SetValueWithoutNotify(_stopTile.Z);
-        }
 
         public float MaxDistance
         {
@@ -86,7 +57,11 @@ namespace Grid3DHelper.APIDemo.Pathfinding
             set
             {
                 _maxDistance = value;
+                ClearPath();
+                ClearAccessibleTiles();
                 CalculatePathMap();
+                ShowAccessibleTiles();
+                ShowPath();
             }
         }
         public float EdgesDiagoWeight
@@ -99,7 +74,11 @@ namespace Grid3DHelper.APIDemo.Pathfinding
             set
             {
                 _edgesDiagoWeight = value;
+                ClearPath();
+                ClearAccessibleTiles();
                 CalculatePathMap();
+                ShowAccessibleTiles();
+                ShowPath();
             }
         }
         public float VerticesDiagoWeight
@@ -112,7 +91,11 @@ namespace Grid3DHelper.APIDemo.Pathfinding
             set
             {
                 _verticesDiagoWeight = value;
+                ClearPath();
+                ClearAccessibleTiles();
                 CalculatePathMap();
+                ShowAccessibleTiles();
+                ShowPath();
             }
         }
         public EdgesDiagonalsPolicy EdgesDiagoPolicy
@@ -125,7 +108,11 @@ namespace Grid3DHelper.APIDemo.Pathfinding
             set
             {
                 _edgesDiagoPolicy = value;
+                ClearPath();
+                ClearAccessibleTiles();
                 CalculatePathMap();
+                ShowAccessibleTiles();
+                ShowPath();
             }
         }
         public VerticesDiagonalsPolicy VerticesDiagoPolicy
@@ -138,7 +125,11 @@ namespace Grid3DHelper.APIDemo.Pathfinding
             set
             {
                 _verticesDiagoPolicy = value;
+                ClearPath();
+                ClearAccessibleTiles();
                 CalculatePathMap();
+                ShowAccessibleTiles();
+                ShowPath();
             }
         }
         public MovementPolicy MovementPolicy
@@ -151,14 +142,14 @@ namespace Grid3DHelper.APIDemo.Pathfinding
             set
             {
                 _movementPolicy = value;
+                ClearPath();
+                ClearAccessibleTiles();
                 CalculatePathMap();
+                ShowAccessibleTiles();
+                ShowPath();
             }
         }
 
-        public void SetDemoType(int enumIndex)
-        {
-            DemoType = (DemoType)enumIndex;
-        }
         public void SetEdgesDiagonalsPolicy(int enumIndex)
         {
             EdgesDiagoPolicy = (EdgesDiagonalsPolicy)enumIndex;
@@ -167,13 +158,37 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         {
             VerticesDiagoPolicy = (VerticesDiagonalsPolicy)enumIndex;
         }
-        public void SetMovementPolicy(int enumIndex)
+        public void SetMovementPolicy()
         {
-            MovementPolicy = (MovementPolicy)enumIndex;
+            int value = 0;
+            if (!_flyToggle.isOn)
+            {
+                if (!_wallBelowToggle.isOn && !_wallAsideToggle.isOn && !_wallAboveToggle.isOn)
+                {
+                    _flyToggle.isOn = true;
+                }
+                else
+                {
+                    if (_wallBelowToggle.isOn)
+                    {
+                        value += 1;
+                    }
+                    if (_wallAsideToggle.isOn)
+                    {
+                        value += 2;
+                    }
+                    if (_wallAboveToggle.isOn)
+                    {
+                        value += 4;
+                    }
+                }
+            }
+            MovementPolicy = (MovementPolicy)value;
         }
+
         public void MoveStartX(int value)
         {
-            if (_map[_targetTile.Y, value, _targetTile.Z].IsWalkable)
+            if (_map[_targetTile.Y, value, _targetTile.Z].IsWalkable && _map[_targetTile.Y, value, _targetTile.Z] != _stopTile)
             {
                 SetStart(_map[_targetTile.Y, value, _targetTile.Z]);
                 _sliderStartCountX.text = value.ToString();
@@ -186,7 +201,7 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         }
         public void MoveStartY(int value)
         {
-            if (_map[value, _targetTile.X, _targetTile.Z].IsWalkable)
+            if (_map[value, _targetTile.X, _targetTile.Z].IsWalkable && _map[value, _targetTile.X, _targetTile.Z] != _stopTile)
             {
                 SetStart(_map[value, _targetTile.X, _targetTile.Z]);
                 _sliderStartCountY.text = value.ToString();
@@ -199,7 +214,7 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         }
         public void MoveStartZ(int value)
         {
-            if (_map[_targetTile.Y, _targetTile.X, value].IsWalkable)
+            if (_map[_targetTile.Y, _targetTile.X, value].IsWalkable && _map[_targetTile.Y, _targetTile.X, value] != _stopTile)
             {
                 SetStart(_map[_targetTile.Y, _targetTile.X, value]);
                 _sliderStartCountZ.text = value.ToString();
@@ -210,9 +225,10 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 _sliderStartCountZ.text = _targetTile.Z.ToString();
             }
         }
+
         public void MoveStopX(int value)
         {
-            if (_pathMap.IsTileAccessible(_map[_stopTile.Y, value, _stopTile.Z]))
+            if (_map[_stopTile.Y, value, _stopTile.Z].IsWalkable && _map[_stopTile.Y, value, _stopTile.Z] != _targetTile)
             {
                 SetStop(_map[_stopTile.Y, value, _stopTile.Z]);
                 _sliderStopCountX.text = value.ToString();
@@ -225,7 +241,7 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         }
         public void MoveStopY(int value)
         {
-            if (_pathMap.IsTileAccessible(_map[value, _stopTile.X, _stopTile.Z]))
+            if (_map[value, _stopTile.X, _stopTile.Z].IsWalkable && _map[value, _stopTile.X, _stopTile.Z] != _targetTile)
             {
                 SetStop(_map[value, _stopTile.X, _stopTile.Z]);
                 _sliderStopCountY.text = value.ToString();
@@ -238,7 +254,7 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         }
         public void MoveStopZ(int value)
         {
-            if (_pathMap.IsTileAccessible(_map[_stopTile.Y, _stopTile.X, value]))
+            if (_map[_stopTile.Y, _stopTile.X, value].IsWalkable && _map[_stopTile.Y, _stopTile.X, value] != _targetTile)
             {
                 SetStop(_map[_stopTile.Y, _stopTile.X, value]);
                 _sliderStopCountZ.text = value.ToString();
@@ -261,69 +277,82 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 _map[tile.Y, tile.X, tile.Z] = tile;
             }
             _targetTile = _map[1, 8, 9];
-            _targetTile.TileMode = TileMode.OPAQUE;
+            _targetTile.TileMode = TileMode.TARGET;
+            _stopTile = _map[1, 2, 2];
+            _stopTile.TileMode = TileMode.STOP;
             CalculatePathMap();
+            ShowAccessibleTiles();
+            ShowPath();
         }
 
         private void SetStop(Tile tile)
         {
-            if (!_pathMap.IsTileAccessible(tile))
-            {
-                return;
-            }
-            if (_stopTile)
-            {
-                _stopTile.TileMode = TileMode.FADE;
-            }
+            ClearPath();
+            _stopTile.TileMode = _pathMap.IsTileAccessible(_stopTile) ? TileMode.ACCESSIBLE : TileMode.AIR;
             _stopTile = tile;
-            Demo();
-            _stopTile.TileMode = TileMode.OPAQUE;
+            _stopTile.TileMode = TileMode.STOP;
+            ShowPath();
         }
         private void SetStart(Tile tile)
         {
-            if (_targetTile)
-            {
-                _targetTile.TileMode = TileMode.FADE;
-            }
+            ClearAccessibleTiles();
+            ClearPath();
+            _targetTile.TileMode = _pathMap.IsTileAccessible(_targetTile) ? TileMode.ACCESSIBLE : TileMode.AIR;
             _targetTile = tile;
+            _targetTile.TileMode = TileMode.TARGET;
             CalculatePathMap();
-            _targetTile.TileMode = TileMode.OPAQUE;
+            ShowAccessibleTiles();
+            ShowPath();
         }
 
         private void CalculatePathMap()
         {
             _pathMap = Pathfinding3D.GeneratePathMap(_map, _targetTile, _maxDistance, _edgesDiagoPolicy, _edgesDiagoWeight, _verticesDiagoPolicy, _verticesDiagoWeight, _movementPolicy);
-            if (_stopTile && !_pathMap.IsTileAccessible(_stopTile))
-            {
-                SetRandomAccessibleStop();
-            }
-            Demo();
         }
-        private void Demo()
+
+        private void ClearAccessibleTiles()
+        {
+            if (_accessibleTiles != null)
+            {
+                foreach (Tile tile in _accessibleTiles)
+                {
+                    if (tile != _stopTile)
+                    {
+                        tile.TileMode = TileMode.AIR;
+                    }
+                }
+            }
+        }
+        private void ShowAccessibleTiles()
+        {
+            _accessibleTiles = _pathMap.GetAccessibleTiles(false);
+            foreach (Tile tile in _accessibleTiles)
+            {
+                if (tile != _stopTile)
+                {
+                    tile.TileMode = TileMode.ACCESSIBLE;
+                }
+            }
+        }
+
+        private void ClearPath()
         {
             if (_path != null)
             {
                 foreach (Tile tile in _path)
                 {
-                    tile.TileMode = TileMode.FADE;
+                    tile.TileMode = _pathMap.IsTileAccessible(tile) ? TileMode.ACCESSIBLE : TileMode.AIR;
                 }
             }
-            switch (_demoType)
+        }
+        private void ShowPath()
+        {
+            if (_pathMap.IsTileAccessible(_stopTile))
             {
-                case DemoType.ACCESSIBLE_TILES:
-                    _path = _pathMap.GetAccessibleTiles(false);
-                    break;
-                case DemoType.PATH:
-                    _path = _pathMap.GetPathFromTarget(_stopTile, false, false);
-                    break;
-                default:
-                    break;
-            }
-            foreach (Tile tile in _path)
-            {
-                if (tile != _stopTile)
+                _path = _pathMap.GetPathFromTarget(_stopTile, false, false);
+                foreach (Tile tile in _path)
                 {
-                    tile.TileMode = TileMode.SEMIFADE;
+                    tile.TileMode = TileMode.PATH;
                 }
             }
         }

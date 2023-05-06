@@ -224,6 +224,10 @@ namespace KevinCastejon.GridHelper3D
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
             }
             Node3D<T> node = includeStart ? _dico[startTile] : _dico[startTile].NextNode;
+            if (!includeTarget && EqualityComparer<T>.Default.Equals(node.Tile, _target))
+            {
+                return new T[0];
+            }
             List<T> tiles = new List<T>() { node.Tile };
             while (!EqualityComparer<T>.Default.Equals(node.Tile, _target))
             {
@@ -1467,12 +1471,5 @@ namespace KevinCastejon.GridHelper3D
             return new PathMap3D<T>(accessibleTilesDico, accessibleTiles, targetTile, maxDistance);
         }
 
-    }
-    internal static class ITileComparator
-    {
-        public static bool Equals(ITile3D tileA, ITile3D tileB)
-        {
-            return tileA.X == tileB.X && tileA.Y == tileB.Y && tileA.Z == tileB.Z;
-        }
     }
 }
