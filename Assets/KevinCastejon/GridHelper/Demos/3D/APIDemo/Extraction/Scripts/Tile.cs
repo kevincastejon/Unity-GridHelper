@@ -6,18 +6,20 @@ namespace Grid3DHelper.APIDemo.Extraction
 {
     public enum TileMode
     {
-        FADE,
-        SEMIFADE,
-        OPAQUE
+        AIR,
+        ACCESSIBLE,
+        TARGET,
+        WALL
     }
     public class Tile : MonoBehaviour, ITile3D
     {
         [SerializeField] private Renderer _renderer;
-        [SerializeField] private Material _semiFade;
-        [SerializeField] private Material _fade;
-        [SerializeField] private Material _opaque;
-        private TileMode _tileMode;
-        public bool IsWalkable { get => false; }
+        [SerializeField] private Material _airMat;
+        [SerializeField] private Material _extractedMat;
+        [SerializeField] private Material _targetMat;
+        [SerializeField] private Material _wallMat;
+        [SerializeField] [HideInInspector] private TileMode _tileMode;
+        public bool IsWalkable { get => _tileMode != TileMode.WALL; }
 
         public float Weight => 1f;
 
@@ -26,6 +28,17 @@ namespace Grid3DHelper.APIDemo.Extraction
         public int Y { get; set; }
 
         public int Z { get; set; }
+
+        [ContextMenu("Set To Wall")]
+        public void SetToWall()
+        {
+            TileMode = TileMode.WALL;
+        }
+        [ContextMenu("Set To Walkable")]
+        public void SetToWalkable()
+        {
+            TileMode = TileMode.AIR;
+        }
         public TileMode TileMode
         {
             get
@@ -38,14 +51,17 @@ namespace Grid3DHelper.APIDemo.Extraction
                 _tileMode = value;
                 switch (_tileMode)
                 {
-                    case TileMode.FADE:
-                        _renderer.material = _fade;
+                    case TileMode.AIR:
+                        _renderer.material = _airMat;
                         break;
-                    case TileMode.SEMIFADE:
-                        _renderer.material = _semiFade;
+                    case TileMode.TARGET:
+                        _renderer.material = _targetMat;
                         break;
-                    case TileMode.OPAQUE:
-                        _renderer.material = _opaque;
+                    case TileMode.ACCESSIBLE:
+                        _renderer.material = _extractedMat;
+                        break;
+                    case TileMode.WALL:
+                        _renderer.material = _wallMat;
                         break;
                     default:
                         break;

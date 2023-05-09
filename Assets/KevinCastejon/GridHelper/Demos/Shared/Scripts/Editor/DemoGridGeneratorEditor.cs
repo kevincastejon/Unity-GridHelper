@@ -38,13 +38,45 @@ namespace GridHelperDemoMisc
             {
                 EditorGUILayout.PropertyField(_depth);
             }
+            EditorGUI.BeginDisabledGroup(_tilePrefab.objectReferenceValue == null);
             if (GUILayout.Button("Generate"))
             {
                 Undo.IncrementCurrentGroup();
                 Undo.SetCurrentGroupName("Generated tiles");
                 var undoGroupIndex = Undo.GetCurrentGroup();
-                _object.GenerateMap((o)=> Undo.RegisterCreatedObjectUndo(o, ""));
+                for (int y = 0; y < _height.intValue; y++)
+                {
+                    GameObject line = new GameObject("Line (" + y + ")");
+                    line.transform.parent = _object.transform;
+                    line.transform.localPosition = new Vector3(0f, y, 0f);
+                    Undo.RegisterCreatedObjectUndo(line, "");
+                    for (int x = 0; x < _width.intValue; x++)
+                    {
+                        if (!_3D.boolValue)
+                        {
+                            GameObject tile = (GameObject)PrefabUtility.InstantiatePrefab(_tilePrefab.objectReferenceValue);
+                            tile.name = "Tile (" + x + ")";
+                            tile.transform.parent = line.transform;
+                            tile.transform.localPosition = new Vector3(x, 0f, 0f);
+                            Undo.RegisterCreatedObjectUndo(tile, "");
+                            continue;
+                        }
+                        GameObject col = new("Column (" + x + ")");
+                        col.transform.parent = line.transform;
+                        col.transform.localPosition = new Vector3(x, 0f, 0f);
+                        Undo.RegisterCreatedObjectUndo(col, "");
+                        for (int z = 0; z < _depth.intValue; z++)
+                        {
+                            GameObject tile = (GameObject)PrefabUtility.InstantiatePrefab(_tilePrefab.objectReferenceValue);
+                            tile.name = "Tile (" + z + ")";
+                            tile.transform.parent = col.transform;
+                            tile.transform.localPosition = new Vector3(0f, 0f, z);
+                            Undo.RegisterCreatedObjectUndo(tile, "");
+                        }
+                    }
+                }
             }
+            EditorGUI.EndDisabledGroup();
             serializedObject.ApplyModifiedProperties();
         }
     }

@@ -63,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 6d50d8903bd83ca4d8ad9dd5120b5ba5, type: 2}
+  - {fileID: 2100000, guid: 0818bcd05dadeea4caf507890410933c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -111,6 +111,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _renderer: {fileID: 6620009605011291334}
-  _semiFade: {fileID: 2100000, guid: cd9f8c9f90e3b1a4d9e24558edb9b4cf, type: 2}
-  _fade: {fileID: 2100000, guid: 6d50d8903bd83ca4d8ad9dd5120b5ba5, type: 2}
-  _opaque: {fileID: 2100000, guid: fe7c390065348e345ae55826e62e3760, type: 2}
+  _airMat: {fileID: 2100000, guid: 0818bcd05dadeea4caf507890410933c, type: 2}
+  _extractedMat: {fileID: 2100000, guid: aac6746d7b6e46248a9dcd3b1167ea8e, type: 2}
+  _targetMat: {fileID: 2100000, guid: 4ddced6950b65a946b64cd998064bdd5, type: 2}
+  _wallMat: {fileID: 2100000, guid: 13dbbf7d7e43bdb448cbda8621445e1e, type: 2}
+  _tileMode: 0

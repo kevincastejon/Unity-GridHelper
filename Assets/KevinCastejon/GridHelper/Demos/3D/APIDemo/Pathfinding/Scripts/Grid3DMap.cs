@@ -27,19 +27,22 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         [SerializeField] private TextMeshProUGUI _sliderStopCountY;
         [SerializeField] private Slider _sliderStopZ;
         [SerializeField] private TextMeshProUGUI _sliderStopCountZ;
+        [SerializeField] private TMP_Dropdown _horizontalEdgesDiagonalsPolicyDropdown;
+        [SerializeField] private Slider _horizontalEdgesDiagonalsWeightSlider;
+        [SerializeField] private TextMeshProUGUI _horizontalEdgesDiagonalsWeightCount;
+        [SerializeField] private TMP_Dropdown _verticalEdgesDiagonalsPolicyDropdown;
+        [SerializeField] private Slider _verticalEdgesDiagonalsWeightSlider;
+        [SerializeField] private TextMeshProUGUI _verticalEdgesDiagonalsWeightCount;
+        [SerializeField] private TMP_Dropdown _verticesDiagonalsPolicyDropdown;
+        [SerializeField] private Slider _verticesDiagonalsWeightSlider;
+        [SerializeField] private TextMeshProUGUI _verticesDiagonalsWeightCount;
         [SerializeField] private Toggle _flyToggle;
         [SerializeField] private Toggle _wallBelowToggle;
         [SerializeField] private Toggle _wallAsideToggle;
         [SerializeField] private Toggle _wallAboveToggle;
+        [SerializeField] private Pathfinding3DPolicy _pathfindingPolicy;
 
         private float _maxDistance = 6f;
-        private EdgesDiagonalsPolicy _horizontalEdgesDiagoPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE;
-        private EdgesDiagonalsPolicy _verticalEdgesDiagoPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE;
-        private float _horizontalEdgesDiagoWeight = (Vector2.up + Vector2.right).magnitude;
-        private float _verticalEdgesDiagoWeight = (Vector2.up + Vector2.right).magnitude;
-        private VerticesDiagonalsPolicy _verticesDiagoPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE;
-        private float _verticesDiagoWeight = (Vector3.up + Vector3.right + Vector3.forward).magnitude;
-        private MovementPolicy _movementPolicy = MovementPolicy.WALL_BELOW;
 
         Tile[,,] _map = new Tile[12, 16, 18];
         Tile[] _accessibleTiles;
@@ -66,16 +69,16 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 ShowPath();
             }
         }
-        public float HorizontalEdgesDiagoWeight
+        public float HorizontalEdgesDiagonalsWeight
         {
             get
             {
-                return _horizontalEdgesDiagoWeight;
+                return _pathfindingPolicy.HorizontalEdgesDiagonalsWeight;
             }
 
             set
             {
-                _horizontalEdgesDiagoWeight = value;
+                _pathfindingPolicy.HorizontalEdgesDiagonalsWeight = value;
                 ClearPath();
                 ClearAccessibleTiles();
                 CalculatePathMap();
@@ -83,16 +86,16 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 ShowPath();
             }
         }
-        public float VerticalEdgesDiagoWeight
+        public float VerticalEdgesDiagonalsWeight
         {
             get
             {
-                return _verticalEdgesDiagoWeight;
+                return _pathfindingPolicy.VerticalEdgesDiagonalsWeight;
             }
 
             set
             {
-                _verticalEdgesDiagoWeight = value;
+                _pathfindingPolicy.VerticalEdgesDiagonalsWeight = value;
                 ClearPath();
                 ClearAccessibleTiles();
                 CalculatePathMap();
@@ -100,16 +103,16 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 ShowPath();
             }
         }
-        public float VerticesDiagoWeight
+        public float VerticesDiagonalsWeight
         {
             get
             {
-                return _verticesDiagoWeight;
+                return _pathfindingPolicy.VerticesDiagonalsWeight;
             }
 
             set
             {
-                _verticesDiagoWeight = value;
+                _pathfindingPolicy.VerticesDiagonalsWeight = value;
                 ClearPath();
                 ClearAccessibleTiles();
                 CalculatePathMap();
@@ -117,16 +120,16 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 ShowPath();
             }
         }
-        public EdgesDiagonalsPolicy HorizontalEdgesDiagoPolicy
+        public EdgesDiagonalsPolicy HorizontalEdgesDiagonalsPolicy
         {
             get
             {
-                return _horizontalEdgesDiagoPolicy;
+                return _pathfindingPolicy.HorizontalEdgesDiagonalsPolicy;
             }
 
             set
             {
-                _horizontalEdgesDiagoPolicy = value;
+                _pathfindingPolicy.HorizontalEdgesDiagonalsPolicy = value;
                 ClearPath();
                 ClearAccessibleTiles();
                 CalculatePathMap();
@@ -134,16 +137,16 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 ShowPath();
             }
         }
-        public EdgesDiagonalsPolicy VerticalEdgesDiagoPolicy
+        public EdgesDiagonalsPolicy VerticalEdgesDiagonalsPolicy
         {
             get
             {
-                return _verticalEdgesDiagoPolicy;
+                return _pathfindingPolicy.VerticalEdgesDiagonalsPolicy;
             }
 
             set
             {
-                _verticalEdgesDiagoPolicy = value;
+                _pathfindingPolicy.VerticalEdgesDiagonalsPolicy = value;
                 ClearPath();
                 ClearAccessibleTiles();
                 CalculatePathMap();
@@ -151,16 +154,16 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 ShowPath();
             }
         }
-        public VerticesDiagonalsPolicy VerticesDiagoPolicy
+        public VerticesDiagonalsPolicy VerticesDiagonalsPolicy
         {
             get
             {
-                return _verticesDiagoPolicy;
+                return _pathfindingPolicy.VerticesDiagonalsPolicy;
             }
 
             set
             {
-                _verticesDiagoPolicy = value;
+                _pathfindingPolicy.VerticesDiagonalsPolicy = value;
                 ClearPath();
                 ClearAccessibleTiles();
                 CalculatePathMap();
@@ -172,12 +175,12 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         {
             get
             {
-                return _movementPolicy;
+                return _pathfindingPolicy.MovementPolicy;
             }
 
             set
             {
-                _movementPolicy = value;
+                _pathfindingPolicy.MovementPolicy = value;
                 ClearPath();
                 ClearAccessibleTiles();
                 CalculatePathMap();
@@ -188,15 +191,15 @@ namespace Grid3DHelper.APIDemo.Pathfinding
 
         public void SetHorizontalEdgesDiagonalsPolicy(int enumIndex)
         {
-            HorizontalEdgesDiagoPolicy = (EdgesDiagonalsPolicy)enumIndex;
+            HorizontalEdgesDiagonalsPolicy = (EdgesDiagonalsPolicy)enumIndex;
         }
         public void SetVerticalEdgesDiagonalsPolicy(int enumIndex)
         {
-            VerticalEdgesDiagoPolicy = (EdgesDiagonalsPolicy)enumIndex;
+            VerticalEdgesDiagonalsPolicy = (EdgesDiagonalsPolicy)enumIndex;
         }
         public void SetVerticesDiagonalsPolicy(int enumIndex)
         {
-            VerticesDiagoPolicy = (VerticesDiagonalsPolicy)enumIndex;
+            VerticesDiagonalsPolicy = (VerticesDiagonalsPolicy)enumIndex;
         }
         public void SetMovementPolicy()
         {
@@ -316,10 +319,31 @@ namespace Grid3DHelper.APIDemo.Pathfinding
                 tile.Z = Mathf.RoundToInt(tile.transform.position.z);
                 _map[tile.Y, tile.X, tile.Z] = tile;
             }
-            _targetTile = _map[1, 8, 13];
+            _targetTile = _map[1, 8, 9];
             _targetTile.TileMode = TileMode.TARGET;
-            _stopTile = _map[1, 2, 2];
+            _sliderStartY.SetValueWithoutNotify(1);
+            _sliderStartCountY.text = "1";
+            _sliderStartX.SetValueWithoutNotify(8);
+            _sliderStartCountX.text = "8";
+            _sliderStartZ.SetValueWithoutNotify(9);
+            _sliderStartCountZ.text = "9";
+            _stopTile = _map[4, 2, 9];
             _stopTile.TileMode = TileMode.STOP;
+            _sliderStopY.SetValueWithoutNotify(4);
+            _sliderStopCountY.text = "4";
+            _sliderStopX.SetValueWithoutNotify(2);
+            _sliderStopCountX.text = "2";
+            _sliderStopZ.SetValueWithoutNotify(9);
+            _sliderStopCountZ.text = "9";
+            _horizontalEdgesDiagonalsPolicyDropdown.SetValueWithoutNotify((int)_pathfindingPolicy.HorizontalEdgesDiagonalsPolicy);
+            _horizontalEdgesDiagonalsWeightCount.text = _pathfindingPolicy.HorizontalEdgesDiagonalsWeight.ToString("F2");
+            _verticalEdgesDiagonalsPolicyDropdown.SetValueWithoutNotify((int)_pathfindingPolicy.VerticalEdgesDiagonalsPolicy);
+            _verticalEdgesDiagonalsWeightCount.text = _pathfindingPolicy.VerticalEdgesDiagonalsWeight.ToString("F2");
+            _verticesDiagonalsPolicyDropdown.SetValueWithoutNotify((int)_pathfindingPolicy.VerticesDiagonalsPolicy);
+            _horizontalEdgesDiagonalsWeightSlider.SetValueWithoutNotify(_pathfindingPolicy.HorizontalEdgesDiagonalsWeight);
+            _verticalEdgesDiagonalsWeightSlider.SetValueWithoutNotify(_pathfindingPolicy.VerticalEdgesDiagonalsWeight);
+            _verticesDiagonalsWeightCount.text = _pathfindingPolicy.VerticesDiagonalsWeight.ToString("F2");
+            _verticesDiagonalsWeightSlider.SetValueWithoutNotify(_pathfindingPolicy.VerticesDiagonalsWeight);
             CalculatePathMap();
             ShowAccessibleTiles();
             ShowPath();
@@ -337,7 +361,7 @@ namespace Grid3DHelper.APIDemo.Pathfinding
         {
             ClearAccessibleTiles();
             ClearPath();
-            _targetTile.TileMode = _pathMap.IsTileAccessible(_targetTile) ? TileMode.ACCESSIBLE : TileMode.AIR;
+            _targetTile.TileMode = TileMode.AIR;
             _targetTile = tile;
             _targetTile.TileMode = TileMode.TARGET;
             CalculatePathMap();
@@ -347,7 +371,7 @@ namespace Grid3DHelper.APIDemo.Pathfinding
 
         private void CalculatePathMap()
         {
-            _pathMap = Pathfinding3D.GeneratePathMap(_map, _targetTile, _maxDistance, new Pathfinding3DPolicy(_horizontalEdgesDiagoPolicy, _horizontalEdgesDiagoWeight, _verticalEdgesDiagoPolicy, _verticalEdgesDiagoWeight, _verticesDiagoPolicy, _verticesDiagoWeight, _movementPolicy));
+            _pathMap = Pathfinding3D.GeneratePathMap(_map, _targetTile, _maxDistance, _pathfindingPolicy);
         }
 
         private void ClearAccessibleTiles()
@@ -381,7 +405,7 @@ namespace Grid3DHelper.APIDemo.Pathfinding
             {
                 foreach (Tile tile in _path)
                 {
-                    tile.TileMode = _pathMap.IsTileAccessible(tile) ? TileMode.ACCESSIBLE : TileMode.AIR;
+                    tile.TileMode = TileMode.AIR;
                 }
             }
         }

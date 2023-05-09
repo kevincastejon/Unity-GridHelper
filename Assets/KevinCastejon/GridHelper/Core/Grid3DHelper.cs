@@ -42,15 +42,15 @@ namespace KevinCastejon.GridHelper3D
         WALL_ABOVE = 4,
     }
     [System.Serializable]
-    public class Pathfinding3DPolicy
+    public struct Pathfinding3DPolicy
     {
-        [SerializeField] private EdgesDiagonalsPolicy _horizontalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE;
-        [SerializeField] private float _horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f;
-        [SerializeField] private EdgesDiagonalsPolicy _verticalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE;
-        [SerializeField] private float _verticalEdgesDiagonalsWeight = 1.7320508075688772935274463415059f;
-        [SerializeField] private VerticesDiagonalsPolicy _verticesDiagonalsPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE;
-        [SerializeField] private float _verticesDiagonalsWeight = (Vector3Int.right + Vector3Int.up + Vector3Int.forward).magnitude;
-        [SerializeField] private MovementPolicy _movementPolicy = MovementPolicy.WALL_BELOW;
+        [SerializeField] private EdgesDiagonalsPolicy _horizontalEdgesDiagonalsPolicy;
+        [SerializeField] private float _horizontalEdgesDiagonalsWeight;
+        [SerializeField] private EdgesDiagonalsPolicy _verticalEdgesDiagonalsPolicy;
+        [SerializeField] private float _verticalEdgesDiagonalsWeight;
+        [SerializeField] private VerticesDiagonalsPolicy _verticesDiagonalsPolicy;
+        [SerializeField] private float _verticesDiagonalsWeight;
+        [SerializeField] private MovementPolicy _movementPolicy;
 
         public Pathfinding3DPolicy(EdgesDiagonalsPolicy horizontalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE, float horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, EdgesDiagonalsPolicy verticalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE, float verticalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, VerticesDiagonalsPolicy verticesDiagonalsPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE, float verticesDiagonalsWeight = 1.7320508075688772935274463415059f, MovementPolicy movementPolicy = MovementPolicy.WALL_BELOW)
         {
@@ -63,13 +63,24 @@ namespace KevinCastejon.GridHelper3D
             _movementPolicy = movementPolicy;
         }
 
-        public EdgesDiagonalsPolicy HorizontalEdgesDiagonalsPolicy { get => _horizontalEdgesDiagonalsPolicy; }
-        public float HorizontalEdgesDiagonalsWeight { get => _horizontalEdgesDiagonalsWeight; }
-        public EdgesDiagonalsPolicy VerticalEdgesDiagonalsPolicy { get => _verticalEdgesDiagonalsPolicy; }
-        public float VerticalEdgesDiagonalsWeight { get => _verticalEdgesDiagonalsWeight; }
-        public VerticesDiagonalsPolicy VerticesDiagonalsPolicy { get => _verticesDiagonalsPolicy; }
-        public float VerticesDiagonalsWeight { get => _verticesDiagonalsWeight; }
-        public MovementPolicy MovementPolicy { get => _movementPolicy; }
+        public EdgesDiagonalsPolicy HorizontalEdgesDiagonalsPolicy { get => _horizontalEdgesDiagonalsPolicy; set => _horizontalEdgesDiagonalsPolicy = value; }
+        public float HorizontalEdgesDiagonalsWeight { get => _horizontalEdgesDiagonalsWeight; set => _horizontalEdgesDiagonalsWeight = value; }
+        public EdgesDiagonalsPolicy VerticalEdgesDiagonalsPolicy { get => _verticalEdgesDiagonalsPolicy; set => _verticalEdgesDiagonalsPolicy = value; }
+        public float VerticalEdgesDiagonalsWeight { get => _verticalEdgesDiagonalsWeight; set => _verticalEdgesDiagonalsWeight = value; }
+        public VerticesDiagonalsPolicy VerticesDiagonalsPolicy { get => _verticesDiagonalsPolicy; set => _verticesDiagonalsPolicy = value; }
+        public float VerticesDiagonalsWeight { get => _verticesDiagonalsWeight; set => _verticesDiagonalsWeight = value; }
+        public MovementPolicy MovementPolicy { get => _movementPolicy; set => _movementPolicy = value; }
+
+        public void Reset()
+        {
+            _horizontalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE;
+            _horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f;
+            _verticalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE;
+            _verticalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f;
+            _verticesDiagonalsPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE;
+            _verticesDiagonalsWeight = 1.7320508075688772935274463415059f;
+            _movementPolicy = MovementPolicy.WALL_BELOW;
+        }
     }
     /// <summary>
     /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods
@@ -143,13 +154,15 @@ namespace KevinCastejon.GridHelper3D
         private readonly List<T> _accessibleTiles;
         private readonly T _target;
         private readonly float _maxDistance;
+        private readonly Pathfinding3DPolicy _pathfindingPolicy;
 
-        internal PathMap3D(Dictionary<T, Node3D<T>> accessibleTilesDico, List<T> accessibleTiles, T target, float maxDistance)
+        internal PathMap3D(Dictionary<T, Node3D<T>> accessibleTilesDico, List<T> accessibleTiles, T target, float maxDistance, Pathfinding3DPolicy pathfindingPolicy)
         {
             _dico = accessibleTilesDico;
             _accessibleTiles = accessibleTiles;
             _target = target;
             _maxDistance = maxDistance;
+            _pathfindingPolicy = pathfindingPolicy;
         }
         /// <summary>
         /// The tile that has been used as the target to generate this PathMap
@@ -159,6 +172,10 @@ namespace KevinCastejon.GridHelper3D
         /// The maxDistance parameter value that has been used to generate this PathMap
         /// </summary>
         public float MaxDistance { get => _maxDistance; }
+        /// <summary>
+        /// The Pathfinding3DPolicy parameter value that has been used to generate this PathMap
+        /// </summary>
+        public Pathfinding3DPolicy PathfindingPolicy { get => _pathfindingPolicy; }
         /// <summary>
         /// Is the tile is accessible from the target into this this PathMap. Usefull to check if the tile is usable as a parameter for this PathMap's methods.
         /// </summary>
@@ -365,8 +382,8 @@ namespace KevinCastejon.GridHelper3D
         }
         private static T[] ExtractSphereOutline<T>(T[,,] map, T center, int radius, bool includeWalls) where T : ITile3D
         {
-            int bottom = Mathf.Max(center.Y - radius, 0),
-      top = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
+            int bottom = Mathf.Max(center.Y - radius, 0);
+            int top = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
             List<T> list = new List<T>();
             for (int y = bottom; y < top; y++)
             {
@@ -1446,7 +1463,7 @@ namespace KevinCastejon.GridHelper3D
         }
 
         /// <summary>
-        /// Generates a PathMap object that will contain all the precalculated paths data for the entire grid
+        /// Generates a PathMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
@@ -1454,19 +1471,15 @@ namespace KevinCastejon.GridHelper3D
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
         /// <returns>A PathMap object</returns>
-        public static PathMap3D<T> GeneratePathMap<T>(T[,,] map, T targetTile, float maxDistance = 0f, Pathfinding3DPolicy pathfindingPolicy = null) where T : ITile3D
+        public static PathMap3D<T> GeneratePathMap<T>(T[,,] map, T targetTile, float maxDistance = 0f, Pathfinding3DPolicy pathfindingPolicy = default) where T : ITile3D
         {
             if (!targetTile.IsWalkable)
             {
                 throw new System.Exception("Do not try to generate a PathMap with an unwalkable tile as the target");
             }
-            if (pathfindingPolicy == null)
-            {
-                pathfindingPolicy = new Pathfinding3DPolicy();
-            }
-            Node3D<T> targetNode = new Node3D<T>(targetTile);
-            Dictionary<T, Node3D<T>> accessibleTilesDico = new Dictionary<T, Node3D<T>>() { { targetTile, targetNode } };
-            List<T> accessibleTiles = new List<T>() { targetTile };
+            Node3D<T> targetNode = new(targetTile);
+            Dictionary<T, Node3D<T>> accessibleTilesDico = new() { { targetTile, targetNode } };
+            List<T> accessibleTiles = new() { targetTile };
             PriorityQueueUnityPort.PriorityQueue<Node3D<T>, float> frontier = new();
             frontier.Enqueue(targetNode, 0);
             targetNode.NextNode = targetNode;
@@ -1483,7 +1496,7 @@ namespace KevinCastejon.GridHelper3D
                     bool isVerticalEdgeDiagonal = IsVerticalEdgeDiagonal(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, current, nei);
                     bool isVerticeDiagonal = IsVerticeDiagonal(pathfindingPolicy.VerticesDiagonalsPolicy, current, nei);
                     float newDistance = current.DistanceToTarget + (nei.Tile.Weight * (isVerticeDiagonal ? pathfindingPolicy.VerticesDiagonalsWeight : (isHorizontalEdgeDiagonal ? pathfindingPolicy.HorizontalEdgesDiagonalsWeight : (isVerticalEdgeDiagonal ? pathfindingPolicy.VerticalEdgesDiagonalsWeight : 1f))));
-                   
+
                     if (maxDistance > 0f && newDistance > maxDistance)
                     {
                         continue;
@@ -1502,7 +1515,7 @@ namespace KevinCastejon.GridHelper3D
                     }
                 }
             }
-            return new PathMap3D<T>(accessibleTilesDico, accessibleTiles, targetTile, maxDistance);
+            return new PathMap3D<T>(accessibleTilesDico, accessibleTiles, targetTile, maxDistance, pathfindingPolicy);
         }
 
     }
