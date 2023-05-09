@@ -41,6 +41,36 @@ namespace KevinCastejon.GridHelper3D
         WALL_ASIDE = 2,
         WALL_ABOVE = 4,
     }
+    [System.Serializable]
+    public class Pathfinding3DPolicy
+    {
+        [SerializeField] private EdgesDiagonalsPolicy _horizontalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE;
+        [SerializeField] private float _horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f;
+        [SerializeField] private EdgesDiagonalsPolicy _verticalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE;
+        [SerializeField] private float _verticalEdgesDiagonalsWeight = 1.7320508075688772935274463415059f;
+        [SerializeField] private VerticesDiagonalsPolicy _verticesDiagonalsPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE;
+        [SerializeField] private float _verticesDiagonalsWeight = (Vector3Int.right + Vector3Int.up + Vector3Int.forward).magnitude;
+        [SerializeField] private MovementPolicy _movementPolicy = MovementPolicy.WALL_BELOW;
+
+        public Pathfinding3DPolicy(EdgesDiagonalsPolicy horizontalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE, float horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, EdgesDiagonalsPolicy verticalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE, float verticalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, VerticesDiagonalsPolicy verticesDiagonalsPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE, float verticesDiagonalsWeight = 1.7320508075688772935274463415059f, MovementPolicy movementPolicy = MovementPolicy.WALL_BELOW)
+        {
+            _horizontalEdgesDiagonalsPolicy = horizontalEdgesDiagonalsPolicy;
+            _horizontalEdgesDiagonalsWeight = horizontalEdgesDiagonalsWeight;
+            _verticalEdgesDiagonalsPolicy = verticalEdgesDiagonalsPolicy;
+            _verticalEdgesDiagonalsWeight = verticalEdgesDiagonalsWeight;
+            _verticesDiagonalsPolicy = verticesDiagonalsPolicy;
+            _verticesDiagonalsWeight = verticesDiagonalsWeight;
+            _movementPolicy = movementPolicy;
+        }
+
+        public EdgesDiagonalsPolicy HorizontalEdgesDiagonalsPolicy { get => _horizontalEdgesDiagonalsPolicy; }
+        public float HorizontalEdgesDiagonalsWeight { get => _horizontalEdgesDiagonalsWeight; }
+        public EdgesDiagonalsPolicy VerticalEdgesDiagonalsPolicy { get => _verticalEdgesDiagonalsPolicy; }
+        public float VerticalEdgesDiagonalsWeight { get => _verticalEdgesDiagonalsWeight; }
+        public VerticesDiagonalsPolicy VerticesDiagonalsPolicy { get => _verticesDiagonalsPolicy; }
+        public float VerticesDiagonalsWeight { get => _verticesDiagonalsWeight; }
+        public MovementPolicy MovementPolicy { get => _movementPolicy; }
+    }
     /// <summary>
     /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods
     /// </summary>
@@ -1245,152 +1275,144 @@ namespace KevinCastejon.GridHelper3D
             }
             return true;
         }
-        private static List<T> GetTileNeighbours<T>(T[,,] map, int x, int y, int z, EdgesDiagonalsPolicy edgesPolicy, VerticesDiagonalsPolicy verticesPolicy, MovementPolicy movementPolicy) where T : ITile3D
+        private static List<T> GetTileNeighbours<T>(T[,,] map, int x, int y, int z, Pathfinding3DPolicy pathfindingPolicy) where T : ITile3D
         {
             List<T> nodes = new List<T>();
-            bool leftWalkable = false;
-            bool rightWalkable = false;
-            bool topWalkable = false;
-            bool bottomWalkable = false;
-            bool backWalkable = false;
-            bool frontWalkable = false;
-
-            bool bottomBackWalkable = false;
-            bool topBackWalkable = false;
-            bool bottomFrontWalkable = false;
-            bool topFrontWalkable = false;
-            bool leftBackWalkable = false;
-            bool rightBackWalkable = false;
-            bool leftFrontWalkable = false;
-            bool rightFrontWalkable = false;
-            bool leftBottomWalkable = false;
-            bool rightBottomWalkable = false;
-            bool leftTopWalkable = false;
-            bool rightTopWalkable = false;
-
             T nei;
             // 6
-            if (GetLeftNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool leftWalkable = GetLeftNeighbour(map, x, y, z, out nei, false);
+            if (leftWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
-                leftWalkable = true;
             }
-            if (GetRightNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool rightWalkable = GetRightNeighbour(map, x, y, z, out nei, false);
+            if (rightWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
-                rightWalkable = true;
             }
-            if (GetBottomNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool bottomWalkable = GetBottomNeighbour(map, x, y, z, out nei, false);
+            if (bottomWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
-                bottomWalkable = true;
             }
-            if (GetTopNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool topWalkable = GetTopNeighbour(map, x, y, z, out nei, false);
+            if (topWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
-                topWalkable = true;
             }
-            if (GetBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool backWalkable = GetBackNeighbour(map, x, y, z, out nei, false);
+            if (backWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
-                backWalkable = true;
             }
-            if (GetFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool frontWalkable = GetFrontNeighbour(map, x, y, z, out nei, false);
+            if (frontWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
-                frontWalkable = true;
             }
             //18
-            if (CheckEDP(edgesPolicy, leftWalkable, backWalkable) && GetLeftBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool leftBackWalkable = GetLeftBackNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.HorizontalEdgesDiagonalsPolicy, leftWalkable, backWalkable) && leftBackWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 leftBackWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, rightWalkable, backWalkable) && GetRightBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool rightBackWalkable = GetRightBackNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.HorizontalEdgesDiagonalsPolicy, rightWalkable, backWalkable) && rightBackWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 rightBackWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, leftWalkable, frontWalkable) && GetLeftFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool leftFrontWalkable = GetLeftFrontNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.HorizontalEdgesDiagonalsPolicy, leftWalkable, frontWalkable) && leftFrontWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 leftFrontWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, rightWalkable, frontWalkable) && GetRightFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool rightFrontWalkable = GetRightFrontNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.HorizontalEdgesDiagonalsPolicy, rightWalkable, frontWalkable) && rightFrontWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 rightFrontWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, leftWalkable, bottomWalkable) && GetLeftBottomNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool leftBottomWalkable = GetLeftBottomNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, leftWalkable, bottomWalkable) && leftBottomWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 leftBottomWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, rightWalkable, bottomWalkable) && GetRightBottomNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool rightBottomWalkable = GetRightBottomNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, rightWalkable, bottomWalkable) && rightBottomWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 rightBottomWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, leftWalkable, topWalkable) && GetLeftTopNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool leftTopWalkable = GetLeftTopNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, leftWalkable, topWalkable) && leftTopWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 leftTopWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, rightWalkable, topWalkable) && GetRightTopNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool rightTopWalkable = GetRightTopNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, rightWalkable, topWalkable) && rightTopWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 rightTopWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, bottomWalkable, backWalkable) && GetBottomBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool bottomBackWalkable = GetBottomBackNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, bottomWalkable, backWalkable) && bottomBackWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 bottomBackWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, topWalkable, backWalkable) && GetTopBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool topBackWalkable = GetTopBackNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, topWalkable, backWalkable) && topBackWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 topBackWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, bottomWalkable, frontWalkable) && GetBottomFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool bottomFrontWalkable = GetBottomFrontNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, bottomWalkable, frontWalkable) && bottomFrontWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 bottomFrontWalkable = true;
             }
-            if (CheckEDP(edgesPolicy, topWalkable, frontWalkable) && GetTopFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            bool topFrontWalkable = GetTopFrontNeighbour(map, x, y, z, out nei, false);
+            if (CheckEDP(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, topWalkable, frontWalkable) && topFrontWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
                 topFrontWalkable = true;
             }
             // 26
-            if (CheckVDP(verticesPolicy, bottomBackWalkable, backWalkable, leftBottomWalkable, leftWalkable, bottomWalkable, leftBackWalkable) && GetLeftBottomBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, bottomBackWalkable, backWalkable, leftBottomWalkable, leftWalkable, bottomWalkable, leftBackWalkable) && GetLeftBottomBackNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
-            if (CheckVDP(verticesPolicy, bottomBackWalkable, backWalkable, rightBottomWalkable, rightWalkable, bottomWalkable, rightBackWalkable) && GetRightBottomBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, bottomBackWalkable, backWalkable, rightBottomWalkable, rightWalkable, bottomWalkable, rightBackWalkable) && GetRightBottomBackNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
-            if (CheckVDP(verticesPolicy, bottomFrontWalkable, frontWalkable, leftBottomWalkable, leftWalkable, bottomWalkable, leftFrontWalkable) && GetLeftBottomFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, bottomFrontWalkable, frontWalkable, leftBottomWalkable, leftWalkable, bottomWalkable, leftFrontWalkable) && GetLeftBottomFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
-            if (CheckVDP(verticesPolicy, bottomFrontWalkable, frontWalkable, rightBottomWalkable, rightWalkable, bottomWalkable, rightFrontWalkable) && GetRightBottomFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, bottomFrontWalkable, frontWalkable, rightBottomWalkable, rightWalkable, bottomWalkable, rightFrontWalkable) && GetRightBottomFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
-            if (CheckVDP(verticesPolicy, topBackWalkable, backWalkable, leftTopWalkable, leftWalkable, topWalkable, leftBackWalkable) && GetLeftTopBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, topBackWalkable, backWalkable, leftTopWalkable, leftWalkable, topWalkable, leftBackWalkable) && GetLeftTopBackNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
-            if (CheckVDP(verticesPolicy, topBackWalkable, backWalkable, rightTopWalkable, rightWalkable, topWalkable, rightBackWalkable) && GetRightTopBackNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, topBackWalkable, backWalkable, rightTopWalkable, rightWalkable, topWalkable, rightBackWalkable) && GetRightTopBackNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
-            if (CheckVDP(verticesPolicy, topFrontWalkable, frontWalkable, leftTopWalkable, leftWalkable, topWalkable, leftFrontWalkable) && GetLeftTopFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, topFrontWalkable, frontWalkable, leftTopWalkable, leftWalkable, topWalkable, leftFrontWalkable) && GetLeftTopFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
-            if (CheckVDP(verticesPolicy, topFrontWalkable, frontWalkable, rightTopWalkable, rightWalkable, topWalkable, rightFrontWalkable) && GetRightTopFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(movementPolicy, map, nei))
+            if (CheckVDP(pathfindingPolicy.VerticesDiagonalsPolicy, topFrontWalkable, frontWalkable, rightTopWalkable, rightWalkable, topWalkable, rightFrontWalkable) && GetRightTopFrontNeighbour(map, x, y, z, out nei, false) && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
                 nodes.Add(nei);
             }
@@ -1398,14 +1420,21 @@ namespace KevinCastejon.GridHelper3D
 
             return nodes;
         }
-        private static bool IsEdgeDiagonal<T>(EdgesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
+        private static bool IsHorizontalEdgeDiagonal<T>(EdgesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
         {
             if (policy == EdgesDiagonalsPolicy.NONE)
             {
                 return false;
             }
-            float magnitude = (new Vector3Int(next.Tile.X, next.Tile.Y, next.Tile.Z) - new Vector3Int(current.Tile.X, current.Tile.Y, current.Tile.Z)).magnitude;
-            return magnitude > 1.1f && magnitude < 1.5f;
+            return current.Tile.X != next.Tile.X && current.Tile.Y == next.Tile.Y && current.Tile.Z != next.Tile.Z;
+        }
+        private static bool IsVerticalEdgeDiagonal<T>(EdgesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
+        {
+            if (policy == EdgesDiagonalsPolicy.NONE)
+            {
+                return false;
+            }
+            return current.Tile.Y != next.Tile.Y && (current.Tile.Z != next.Tile.Z || current.Tile.X != next.Tile.X);
         }
         private static bool IsVerticeDiagonal<T>(VerticesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
         {
@@ -1413,7 +1442,7 @@ namespace KevinCastejon.GridHelper3D
             {
                 return false;
             }
-            return (new Vector3Int(next.Tile.X, next.Tile.Y, next.Tile.Z) - new Vector3Int(current.Tile.X, current.Tile.Y, current.Tile.Z)).magnitude > 1.6f;
+            return current.Tile.X != next.Tile.X && current.Tile.Y != next.Tile.Y && current.Tile.Z != next.Tile.Z;
         }
 
         /// <summary>
@@ -1425,11 +1454,15 @@ namespace KevinCastejon.GridHelper3D
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
         /// <returns>A PathMap object</returns>
-        public static PathMap3D<T> GeneratePathMap<T>(T[,,] map, T targetTile, float maxDistance = 0f, EdgesDiagonalsPolicy edgesPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE, float edgeDiagonalWeightRatio = 1.5f, VerticesDiagonalsPolicy verticesPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE, float verticeDiagonalWeightRatio = 1.75f, MovementPolicy movementPolicy = MovementPolicy.WALL_BELOW) where T : ITile3D
+        public static PathMap3D<T> GeneratePathMap<T>(T[,,] map, T targetTile, float maxDistance = 0f, Pathfinding3DPolicy pathfindingPolicy = null) where T : ITile3D
         {
             if (!targetTile.IsWalkable)
             {
                 throw new System.Exception("Do not try to generate a PathMap with an unwalkable tile as the target");
+            }
+            if (pathfindingPolicy == null)
+            {
+                pathfindingPolicy = new Pathfinding3DPolicy();
             }
             Node3D<T> targetNode = new Node3D<T>(targetTile);
             Dictionary<T, Node3D<T>> accessibleTilesDico = new Dictionary<T, Node3D<T>>() { { targetTile, targetNode } };
@@ -1442,14 +1475,15 @@ namespace KevinCastejon.GridHelper3D
             while (frontier.Count > 0)
             {
                 Node3D<T> current = frontier.Dequeue();
-                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, current.Tile.Z, edgesPolicy, verticesPolicy, movementPolicy);
+                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, current.Tile.Z, pathfindingPolicy);
                 foreach (T neiTile in neighbourgs)
                 {
                     Node3D<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node3D<T>(neiTile);
-                    bool isEdgeDiagonal = IsEdgeDiagonal(edgesPolicy, current, nei);
-                    bool isVerticeDiagonal = IsVerticeDiagonal(verticesPolicy, current, nei);
-                    float newDistance = current.DistanceToTarget + (nei.Tile.Weight * (isVerticeDiagonal ? verticeDiagonalWeightRatio : (isEdgeDiagonal ? edgeDiagonalWeightRatio : 1f)));
-                    //Debug.Log(neiTile.X+" "+neiTile.Y+"    "+newDistance+" / "+maxDistance);
+                    bool isHorizontalEdgeDiagonal = IsHorizontalEdgeDiagonal(pathfindingPolicy.HorizontalEdgesDiagonalsPolicy, current, nei);
+                    bool isVerticalEdgeDiagonal = IsVerticalEdgeDiagonal(pathfindingPolicy.VerticalEdgesDiagonalsPolicy, current, nei);
+                    bool isVerticeDiagonal = IsVerticeDiagonal(pathfindingPolicy.VerticesDiagonalsPolicy, current, nei);
+                    float newDistance = current.DistanceToTarget + (nei.Tile.Weight * (isVerticeDiagonal ? pathfindingPolicy.VerticesDiagonalsWeight : (isHorizontalEdgeDiagonal ? pathfindingPolicy.HorizontalEdgesDiagonalsWeight : (isVerticalEdgeDiagonal ? pathfindingPolicy.VerticalEdgesDiagonalsWeight : 1f))));
+                   
                     if (maxDistance > 0f && newDistance > maxDistance)
                     {
                         continue;
