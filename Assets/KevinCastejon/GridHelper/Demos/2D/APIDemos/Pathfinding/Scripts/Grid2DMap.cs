@@ -10,18 +10,49 @@ namespace Grid2DHelper.APIDemo.PathfindingDemo
 {
     public class Grid2DMap : MonoBehaviour
     {
-
+        [SerializeField] private Toggle _flyToggle;
+        [SerializeField] private Toggle _wallBelowToggle;
+        [SerializeField] private Toggle _wallAsideToggle;
+        [SerializeField] private Toggle _wallAboveToggle;
         private Camera _camera;
         private Tile[,] _map = new Tile[21, 24];
         private Tile[] _accessibleTiles = new Tile[0];
         private Tile[] _path = new Tile[0];
         private PathMap<Tile> _pathMap;
         private DiagonalsPolicy _diagonalsPolicy;
+        private MovementPolicy _movementPolicy;
         private Tile _startTile;
         private Tile _targetTile;
         private float _maxDistance = 0f;
         private float _diagonalsWeight = 1.4142135623730950488016887242097f;
         private bool _lastDragValue;
+        public void SetMovementPolicy()
+        {
+            int value = 0;
+            if (!_flyToggle.isOn)
+            {
+                if (!_wallBelowToggle.isOn && !_wallAsideToggle.isOn && !_wallAboveToggle.isOn)
+                {
+                    _flyToggle.isOn = true;
+                }
+                else
+                {
+                    if (_wallBelowToggle.isOn)
+                    {
+                        value += 1;
+                    }
+                    if (_wallAsideToggle.isOn)
+                    {
+                        value += 2;
+                    }
+                    if (_wallAboveToggle.isOn)
+                    {
+                        value += 4;
+                    }
+                }
+            }
+            MovementPolicy = (MovementPolicy)value;
+        }
         public float MaxDistance
         {
             get
@@ -68,6 +99,24 @@ namespace Grid2DHelper.APIDemo.PathfindingDemo
             set
             {
                 _diagonalsWeight = value;
+                _startTile = null;
+                ClearPathTiles();
+                ClearAccessibleTiles();
+                GetPathMap();
+                ShowAccessibleTiles();
+            }
+        }
+
+        public MovementPolicy MovementPolicy
+        {
+            get
+            {
+                return _movementPolicy;
+            }
+
+            set
+            {
+                _movementPolicy = value;
                 _startTile = null;
                 ClearPathTiles();
                 ClearAccessibleTiles();
@@ -205,7 +254,7 @@ namespace Grid2DHelper.APIDemo.PathfindingDemo
         }
         private void GetPathMap()
         {
-            _pathMap = Pathfinding.GeneratePathMap(_map, _targetTile, _maxDistance, _diagonalsPolicy, _diagonalsWeight);
+            _pathMap = Pathfinding.GeneratePathMap(_map, _targetTile, _maxDistance, new PathfindingPolicy(_diagonalsPolicy, _diagonalsWeight, _movementPolicy));
         }
         private void ClearPathTiles()
         {

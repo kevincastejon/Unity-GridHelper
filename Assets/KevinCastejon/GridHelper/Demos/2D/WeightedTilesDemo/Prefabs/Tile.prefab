@@ -316,7 +316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _renderer: {fileID: 8503812521847971309}
-  _dirtMat: {fileID: 2100000, guid: 6a956cff30380934ba026b9a26a72b48, type: 2}
+  _dirtMat: {fileID: 2100000, guid: 732d12d579dd5f94da4c8a0eb06d3338, type: 2}
   _sandMat: {fileID: 2100000, guid: a0670583c5a12eb41994939290743e44, type: 2}
   _label: {fileID: 2023283590774794196}
   _tileState: 0

@@ -41,6 +41,9 @@ namespace KevinCastejon.GridHelper3D
         WALL_ASIDE = 2,
         WALL_ABOVE = 4,
     }
+    /// <summary>
+    /// Set of parameters to use for the pathfinding
+    /// </summary>
     [System.Serializable]
     public struct Pathfinding3DPolicy
     {
@@ -70,17 +73,6 @@ namespace KevinCastejon.GridHelper3D
         public VerticesDiagonalsPolicy VerticesDiagonalsPolicy { get => _verticesDiagonalsPolicy; set => _verticesDiagonalsPolicy = value; }
         public float VerticesDiagonalsWeight { get => _verticesDiagonalsWeight; set => _verticesDiagonalsWeight = value; }
         public MovementPolicy MovementPolicy { get => _movementPolicy; set => _movementPolicy = value; }
-
-        public void Reset()
-        {
-            _horizontalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE;
-            _horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f;
-            _verticalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE;
-            _verticalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f;
-            _verticesDiagonalsPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE;
-            _verticesDiagonalsWeight = 1.7320508075688772935274463415059f;
-            _movementPolicy = MovementPolicy.WALL_BELOW;
-        }
     }
     /// <summary>
     /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods

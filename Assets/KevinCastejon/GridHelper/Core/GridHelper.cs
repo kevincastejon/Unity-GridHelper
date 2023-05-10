@@ -17,6 +17,38 @@ namespace KevinCastejon.GridHelper
         ALL_DIAGONALS,
     }
     /// <summary>
+    /// Represents the movements permissiveness
+    /// </summary>
+    [System.Flags]
+    public enum MovementPolicy
+    {
+        FLY = 0,
+        WALL_BELOW = 1,
+        WALL_ASIDE = 2,
+        WALL_ABOVE = 4,
+    }
+    /// <summary>
+    /// Set of parameters to use for the pathfinding
+    /// </summary>
+    [System.Serializable]
+    public struct PathfindingPolicy
+    {
+        [SerializeField] private DiagonalsPolicy _diagonalsPolicy;
+        [SerializeField] private float _diagonalsWeight;
+        [SerializeField] private MovementPolicy _movementPolicy;
+
+        public PathfindingPolicy(DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.DIAGONAL_2FREE, float diagonalsWeight = 1.4142135623730950488016887242097f, MovementPolicy movementPolicy = MovementPolicy.FLY)
+        {
+            _diagonalsPolicy = diagonalsPolicy;
+            _diagonalsWeight = diagonalsWeight;
+            _movementPolicy = movementPolicy;
+        }
+
+        public DiagonalsPolicy DiagonalsPolicy { get => _diagonalsPolicy; set => _diagonalsPolicy = value; }
+        public float DiagonalsWeight { get => _diagonalsWeight; set => _diagonalsWeight = value; }
+        public MovementPolicy MovementPolicy { get => _movementPolicy; set => _movementPolicy = value; }
+    }
+    /// <summary>
     /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods
     /// </summary>
     public interface ITile
@@ -712,85 +744,192 @@ namespace KevinCastejon.GridHelper
             tile = default;
             return false;
         }
-        private static List<T> GetTileNeighbours<T>(T[,] map, int x, int y, DiagonalsPolicy diagonalsPolicy) where T : ITile
+        private static bool GetLeftNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x - 1, y, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetRightNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x + 1, y, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetBottomNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x, y - 1, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetTopNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x, y + 1, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetLeftBottomNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x - 1, y - 1, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetLeftTopNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x - 1, y + 1, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetRightBottomNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x + 1, y - 1, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool GetRightTopNeighbour<T>(T[,] map, int x, int y, out T nei, bool lookForWall) where T : ITile
+        {
+            if (GetTile(map, x + 1, y + 1, out nei))
+            {
+                if (nei != null && (lookForWall != nei.IsWalkable))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private static bool CheckDP(DiagonalsPolicy policy, bool valueA, bool valueB)
+        {
+            switch (policy)
+            {
+                case DiagonalsPolicy.NONE:
+                    return false;
+                case DiagonalsPolicy.DIAGONAL_2FREE:
+                    return valueA && valueB;
+                case DiagonalsPolicy.DIAGONAL_1FREE:
+                    return valueA || valueB;
+                case DiagonalsPolicy.ALL_DIAGONALS:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        private static bool CheckMP<T>(MovementPolicy policy, T[,] map, T tile) where T : ITile
+        {
+            int polCase = (int)policy;
+            if (polCase == 0)
+            {
+                return true;
+            }
+            else if (polCase == 1)
+            {
+                return GetBottomNeighbour(map, tile.X, tile.Y, out T nei, true);
+            }
+            else if (polCase == 2)
+            {
+                return GetLeftNeighbour(map, tile.X, tile.Y, out T neiL, true) || GetRightNeighbour(map, tile.X, tile.Y, out T neiR, true);
+            }
+            else if (polCase == 3)
+            {
+                return GetBottomNeighbour(map, tile.X, tile.Y, out T nei, true) || GetLeftNeighbour(map, tile.X, tile.Y, out T neiL, true) || GetRightNeighbour(map, tile.X, tile.Y, out T neiR, true);
+            }
+            else if (polCase == 4)
+            {
+                return GetTopNeighbour(map, tile.X, tile.Y, out T nei, true);
+            }
+            else if (polCase == 5)
+            {
+                return GetTopNeighbour(map, tile.X, tile.Y, out T nei, true) || GetBottomNeighbour(map, tile.X, tile.Y, out T neiB, true);
+            }
+            else if (polCase == 6)
+            {
+                return GetTopNeighbour(map, tile.X, tile.Y, out T nei, true) || GetLeftNeighbour(map, tile.X, tile.Y, out T neiL, true) || GetRightNeighbour(map, tile.X, tile.Y, out T neiR, true);
+            }
+            else if (polCase == 7)
+            {
+                return GetBottomNeighbour(map, tile.X, tile.Y, out T nei, true) || GetTopNeighbour(map, tile.X, tile.Y, out T neiT, true) || GetLeftNeighbour(map, tile.X, tile.Y, out T neiL, true) || GetRightNeighbour(map, tile.X, tile.Y, out T neiR, true);
+            }
+            return true;
+        }
+        private static List<T> GetTileNeighbours<T>(T[,] map, int x, int y, PathfindingPolicy pathfindingPolicy) where T : ITile
         {
             List<T> nodes = new List<T>();
             T nei;
-            bool leftWalkable = false;
-            bool rightWalkable = false;
-            bool topWalkable = false;
-            bool bottomWalkable = false;
-            if (GetTile(map, x - 1, y, out nei))
+
+            bool leftWalkable = GetLeftNeighbour(map, x, y, out nei, false);
+            if (leftWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
-                leftWalkable = nei != null && nei.IsWalkable;
-                if (nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
+                nodes.Add(nei);
             }
-            if (GetTile(map, x, y - 1, out nei))
+            bool rightWalkable = GetRightNeighbour(map, x, y, out nei, false);
+            if (rightWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
-                bottomWalkable = nei != null && nei.IsWalkable;
-                if (nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
+                nodes.Add(nei);
             }
-            if (GetTile(map, x, y + 1, out nei))
+            bool bottomWalkable = GetBottomNeighbour(map, x, y, out nei, false);
+            if (bottomWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
-                topWalkable = nei != null && nei.IsWalkable;
-                if (nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
+                nodes.Add(nei);
             }
-            if (GetTile(map, x + 1, y, out nei))
+            bool topWalkable = GetTopNeighbour(map, x, y, out nei, false);
+            if (topWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
-                rightWalkable = nei != null && nei.IsWalkable;
-                if (nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
+                nodes.Add(nei);
+            }            
+
+            bool leftBottomWalkable = GetLeftBottomNeighbour(map, x, y, out nei, false);
+            if (CheckDP(pathfindingPolicy.DiagonalsPolicy, leftWalkable, bottomWalkable) && leftBottomWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
+            {
+                nodes.Add(nei);
             }
-            if (GetTile(map, x - 1, y - 1, out nei))
+            bool rightBottomWalkable = GetRightBottomNeighbour(map, x, y, out nei, false);
+            if (CheckDP(pathfindingPolicy.DiagonalsPolicy, rightWalkable, bottomWalkable) && rightBottomWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
-                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true : 
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? leftWalkable && bottomWalkable :
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? leftWalkable || bottomWalkable : false))) && 
-                    nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
+                nodes.Add(nei);
             }
-            if (GetTile(map, x - 1, y + 1, out nei))
+            bool leftTopWalkable = GetLeftTopNeighbour(map, x, y, out nei, false);
+            if (CheckDP(pathfindingPolicy.DiagonalsPolicy, leftWalkable, topWalkable) && leftTopWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
-                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true :
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? leftWalkable && topWalkable :
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? leftWalkable || topWalkable : false))) &&
-                    nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
+                nodes.Add(nei);
             }
-            if (GetTile(map, x + 1, y + 1, out nei))
+            bool rightTopWalkable = GetRightTopNeighbour(map, x, y, out nei, false);
+            if (CheckDP(pathfindingPolicy.DiagonalsPolicy, rightWalkable, topWalkable) && rightTopWalkable && CheckMP(pathfindingPolicy.MovementPolicy, map, nei))
             {
-                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true :
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? rightWalkable && topWalkable :
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? rightWalkable || topWalkable : false))) &&
-                    nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
-            }
-            if (GetTile(map, x + 1, y - 1, out nei))
-            {
-                if ((diagonalsPolicy == DiagonalsPolicy.ALL_DIAGONALS ? true :
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_2FREE ? rightWalkable && bottomWalkable :
-                    (diagonalsPolicy == DiagonalsPolicy.DIAGONAL_1FREE ? rightWalkable || bottomWalkable : false))) &&
-                    nei != null && nei.IsWalkable)
-                {
-                    nodes.Add(nei);
-                }
+                nodes.Add(nei);
             }
 
             return nodes;
@@ -805,7 +944,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
         /// <returns>A PathMap object</returns>
-        public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.DIAGONAL_2FREE, float diagonalWeightRatio = 1.4142135623730950488016887242097f) where T : ITile
+        public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, PathfindingPolicy pathfindingPolicy = default) where T : ITile
         {
             if (!targetTile.IsWalkable)
             {
@@ -821,12 +960,12 @@ namespace KevinCastejon.GridHelper
             while (frontier.Count > 0)
             {
                 Node<T> current = frontier.Dequeue();
-                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, diagonalsPolicy);
+                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, pathfindingPolicy);
                 foreach (T neiTile in neighbourgs)
                 {
                     Node<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node<T>(neiTile);
                     bool isDiagonal = current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
-                    float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? diagonalWeightRatio : 1f);
+                    float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? pathfindingPolicy.DiagonalsWeight : 1f);
                     if (maxDistance > 0f && newDistance > maxDistance)
                     {
                         continue;

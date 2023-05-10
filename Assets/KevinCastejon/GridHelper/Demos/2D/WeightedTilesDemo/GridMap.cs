@@ -178,7 +178,7 @@ namespace WeightedTilesDemo
         private void GenerateGlobalPathMap()
         {
             // Generating a path map
-            _globalPathMap = Pathfinding.GeneratePathMap(_map, _targetTile, 0f, DiagonalsPolicy.NONE);
+            _globalPathMap = Pathfinding.GeneratePathMap(_map, _targetTile, 0f, new PathfindingPolicy(DiagonalsPolicy.NONE));
         }
         public void ShowDistances()
         {
