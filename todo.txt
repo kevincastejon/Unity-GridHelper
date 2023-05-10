@@ -1,3 +1,5 @@
+more 3D demos
+3D documentation
 add "direct" Pathfinding strategies without PathMap (A* and BFS with early exit)
 add Raycasting strategies (Interpolation, Orthogonal ,SuperCovering)
 add settings for row/column major orders (and so on in 3D...)
