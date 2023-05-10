@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 /// <summary>
-/// Helper static classes for 2D grid operations
+/// Helper static classes for 3D grid operations
 /// </summary>
 namespace KevinCastejon.GridHelper3D
 {
     /// <summary>
-    /// Represents the diagonals permissiveness
+    /// Represents the edges diagonals permissiveness
     /// </summary>
     public enum EdgesDiagonalsPolicy
     {
@@ -196,10 +196,6 @@ namespace KevinCastejon.GridHelper3D
         /// <returns>A tile object</returns>
         public T GetNextTileFromTile(T tile)
         {
-            if (!tile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetNextTileFromTile() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(tile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
@@ -213,10 +209,6 @@ namespace KevinCastejon.GridHelper3D
         /// <returns>A Vector3Int direction</returns>
         public Vector3Int GetNextTileDirectionFromTile(T tile)
         {
-            if (!tile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetNextTileDirectionFromTile() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(tile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
@@ -230,10 +222,6 @@ namespace KevinCastejon.GridHelper3D
         /// <returns>The distance to the target</returns>
         public float GetDistanceToTargetFromTile(T tile)
         {
-            if (!tile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(tile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
@@ -262,10 +250,6 @@ namespace KevinCastejon.GridHelper3D
         /// <returns>An array of tiles</returns>
         public T[] GetPathToTarget(T startTile, bool includeStart = true, bool includeTarget = true)
         {
-            if (!startTile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetPathToTarget() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(startTile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
@@ -670,33 +654,7 @@ namespace KevinCastejon.GridHelper3D
         /// <returns>A boolean that is true if the tile on a radius outline , false otherwise</returns>
         public static bool IsTileOnASphereOutline<T>(T center, T tile, int radius) where T : ITile3D
         {
-            throw new System.NotImplementedException("This method is not available yet");
-            //int bottom = center.Y - radius;
-            //int top = center.Y + radius + 1;
-            //for (int y = bottom; y < top; y++)
-            //{
-            //    for (int r = 0; r <= Mathf.FloorToInt(radius * Mathf.Sqrt(0.5f)); r++)
-            //    {
-            //        int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
-            //        Vector3Int a = new Vector3Int(center.X - dd, center.Y + r);
-            //        if (a.y == tile.Y && a.x == tile.X) return true;
-            //        Vector3Int b = new Vector3Int(center.X + dd, center.Y + r);
-            //        if (b.y == tile.Y && b.x == tile.X) return true;
-            //        Vector3Int c = new Vector3Int(center.X - dd, center.Y - r);
-            //        if (c.y == tile.Y && c.x == tile.X) return true;
-            //        Vector3Int d = new Vector3Int(center.X + dd, center.Y - r);
-            //        if (d.y == tile.Y && d.x == tile.X) return true;
-            //        Vector3Int e = new Vector3Int(center.X + r, center.Y - dd);
-            //        if (e.y == tile.Y && e.x == tile.X) return true;
-            //        Vector3Int f = new Vector3Int(center.X + r, center.Y + dd);
-            //        if (f.y == tile.Y && f.x == tile.X) return true;
-            //        Vector3Int g = new Vector3Int(center.X - r, center.Y - dd);
-            //        if (g.y == tile.Y && g.x == tile.X) return true;
-            //        Vector3Int h = new Vector3Int(center.X - r, center.Y + dd);
-            //        if (h.y == tile.Y && h.x == tile.X) return true;
-            //    }
-            //}
-            //return false;
+            return IsOnSphereOutline(center.X, center.Y, center.Z, radius, tile.X, tile.Y, tile.Z);
         }
     }
     /// <summary>

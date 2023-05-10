@@ -117,10 +117,6 @@ namespace KevinCastejon.GridHelper
         /// <returns>A tile object</returns>
         public T GetNextTileFromTile(T tile)
         {
-            if (!tile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetNextTileFromTile() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(tile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
@@ -134,10 +130,6 @@ namespace KevinCastejon.GridHelper
         /// <returns>A Vector2Int direction</returns>
         public Vector2Int GetNextTileDirectionFromTile(T tile)
         {
-            if (!tile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetNextTileDirectionFromTile() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(tile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
@@ -151,10 +143,6 @@ namespace KevinCastejon.GridHelper
         /// <returns>The distance to the target</returns>
         public float GetDistanceToTargetFromTile(T tile)
         {
-            if (!tile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetDistanceToTargetFromTile() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(tile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
@@ -183,20 +171,20 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public T[] GetPathToTarget(T startTile, bool includeStart = true, bool includeTarget = true)
         {
-            if (!startTile.IsWalkable)
-            {
-                throw new System.Exception("Do not call GetPathToTarget() method with unwalkable tile as parameter");
-            }
             if (!IsTileAccessible(startTile))
             {
                 throw new System.Exception("Do not call PathMap method with an inaccessible tile");
             }
-            Node<T> node = _dico[startTile];
+            Node<T> node = includeStart ? _dico[startTile] : _dico[startTile].NextNode;
+            if (!includeTarget && EqualityComparer<T>.Default.Equals(node.Tile, _target))
+            {
+                return new T[0];
+            }
             List<T> tiles = new List<T>() { node.Tile };
             while (!EqualityComparer<T>.Default.Equals(node.Tile, _target))
             {
                 node = node.NextNode;
-                if (includeStart || !EqualityComparer<T>.Default.Equals(node.Tile, startTile) && includeTarget || !EqualityComparer<T>.Default.Equals(node.Tile, _target))
+                if (includeTarget || !EqualityComparer<T>.Default.Equals(node.Tile, _target))
                 {
                     tiles.Add(node.Tile);
                 }
@@ -262,7 +250,7 @@ namespace KevinCastejon.GridHelper
             }
             return list.ToArray();
         }
-        private static T[] ExtractRadius<T>(T[,] map, T center, int radius, bool includeCenter, bool includeWalls) where T : ITile
+        private static T[] ExtractCircle<T>(T[,] map, T center, int radius, bool includeCenter, bool includeWalls) where T : ITile
         {
             int bottom = Mathf.Max(center.Y - radius, 0),
                 top = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
@@ -283,7 +271,7 @@ namespace KevinCastejon.GridHelper
             }
             return list.ToArray();
         }
-        private static T[] ExtractRadiusOutline<T>(T[,] map, T center, int radius, bool includeWalls) where T : ITile
+        private static T[] ExtractCircleOutline<T>(T[,] map, T center, int radius, bool includeWalls) where T : ITile
         {
             int bottom = Mathf.Max(center.Y - radius, 0),
                 top = Mathf.Min(center.Y + radius + 1, map.GetLength(0));
@@ -419,7 +407,7 @@ namespace KevinCastejon.GridHelper
             return ExtractRectangleOutline(map, center, rectangleSizeX, rectangleSizeY, false);
         }
         /// <summary>
-        /// Get all tiles contained into a radius around a tile
+        /// Get all tiles contained into a circle around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
@@ -427,24 +415,24 @@ namespace KevinCastejon.GridHelper
         /// <param name="radius">The radius</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInARadius<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
+        public static T[] GetTilesInACircle<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
         {
-            return ExtractRadius(map, center, radius, includeCenter, true);
+            return ExtractCircle(map, center, radius, includeCenter, true);
         }
         /// <summary>
-        /// Get all tiles on a radius outline around a tile
+        /// Get all tiles on a circle outline around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile </param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnARadiusOutline<T>(T[,] map, T center, int radius) where T : ITile
+        public static T[] GetTilesOnACircleOutline<T>(T[,] map, T center, int radius) where T : ITile
         {
-            return ExtractRadiusOutline(map, center, radius, true);
+            return ExtractCircleOutline(map, center, radius, true);
         }
         /// <summary>
-        /// Get all walkable tiles contained into a radius around a tile
+        /// Get all walkable tiles contained into a circle around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
@@ -452,21 +440,21 @@ namespace KevinCastejon.GridHelper
         /// <param name="radius">The radius</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesInARadius<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
+        public static T[] GetWalkableTilesInACircle<T>(T[,] map, T center, int radius, bool includeCenter = true) where T : ITile
         {
-            return ExtractRadius(map, center, radius, includeCenter, false);
+            return ExtractCircle(map, center, radius, includeCenter, false);
         }
         /// <summary>
-        /// Get all walkable tiles on a radius outline around a tile
+        /// Get all walkable tiles on a circle outline around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesOnARadiusOutline<T>(T[,] map, T center, int radius) where T : ITile
+        public static T[] GetWalkableTilesOnACircleOutline<T>(T[,] map, T center, int radius) where T : ITile
         {
-            return ExtractRadiusOutline(map, center, radius, false);
+            return ExtractCircleOutline(map, center, radius, false);
         }
         /// <summary>
         /// Is this tile contained into a rectangle or not.
@@ -527,14 +515,14 @@ namespace KevinCastejon.GridHelper
             return (tile.X == left && tile.Y <= top && tile.Y >= bottom) || (tile.X == right && tile.Y <= top && tile.Y >= bottom) || (tile.Y == bottom && tile.X <= right && tile.X >= left) || (tile.Y == top && tile.X <= right && tile.X >= left);
         }
         /// <summary>
-        /// Is this tile contained into a radius or not.
+        /// Is this tile contained into a circle or not.
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="center">The center tile</param>
         /// <param name="tile">To tile to check</param>
         /// <param name="radius">The radius</param>
         /// <returns>A boolean that is true if the tile is contained into the radius, false otherwise</returns>
-        public static bool IsTileInARadius<T>(T center, T tile, int radius) where T : ITile
+        public static bool IsTileInACircle<T>(T center, T tile, int radius) where T : ITile
         {
             int bottom = center.Y - radius;
             int top = center.Y + radius + 1;
@@ -543,14 +531,14 @@ namespace KevinCastejon.GridHelper
             return tile.X >= left && tile.X <= right && tile.Y >= bottom && tile.Y <= top && Vector2Int.Distance(new Vector2Int(center.X, center.Y), new Vector2Int(tile.X, tile.Y)) <= radius;
         }
         /// <summary>
-        /// Is this tile on a radius outline or not.
+        /// Is this tile on a circle outline or not.
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="center">The center tile</param>
         /// <param name="tile">To tile to check</param>
         /// <param name="radius">The radius</param>
-        /// <returns>A boolean that is true if the tile on a radius outline , false otherwise</returns>
-        public static bool IsTileOnARadiusOutline<T>(T center, T tile, int radius) where T : ITile
+        /// <returns>A boolean that is true if the tile on a circle outline , false otherwise</returns>
+        public static bool IsTileOnACircleOutline<T>(T center, T tile, int radius) where T : ITile
         {
             int bottom = center.Y - radius;
             int top = center.Y + radius + 1;
@@ -817,7 +805,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
         /// <returns>A PathMap object</returns>
-        public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.DIAGONAL_2FREE, float diagonalWeightRatio = 1.5f) where T : ITile
+        public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.DIAGONAL_2FREE, float diagonalWeightRatio = 1.4142135623730950488016887242097f) where T : ITile
         {
             if (!targetTile.IsWalkable)
             {
