@@ -380,7 +380,7 @@ namespace KevinCastejon.GridHelper3D
                             continue;
                         }
 
-                        if (IsOnSphereOutline(center.X, center.Y, center.Z, radius, x, y, z))
+                        if (!EqualityComparer<T>.Default.Equals(tile, center) && IsOnSphereOutline(center.X, center.Y, center.Z, radius, x, y, z))
                         {
                             list.Add(tile);
                         }
@@ -552,6 +552,37 @@ namespace KevinCastejon.GridHelper3D
         public static T[] GetWalkableTilesOnASphereOutline<T>(T[,,] map, T center, int radius) where T : ITile3D
         {
             return ExtractSphereOutline(map, center, radius, false);
+        }
+        /// <summary>
+        /// Get neighbour of a tile if it exists
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <param name="neighbour">The neighbour of a tile</param>
+        /// <returns></returns>
+        public static bool GetTileNeighbour<T>(T[,,] map, T tile, Vector3Int neighbourDirection, out T neighbour) where T : ITile3D
+        {
+            int x = neighbourDirection.x > 0 ? tile.X + 1 : (neighbourDirection.x < 0 ? tile.X - 1 : tile.X);
+            int y = neighbourDirection.y > 0 ? tile.Y + 1 : (neighbourDirection.y < 0 ? tile.Y - 1 : tile.Y);
+            int z = neighbourDirection.z > 0 ? tile.Z + 1 : (neighbourDirection.z < 0 ? tile.Z - 1 : tile.Z);
+            if (neighbourDirection.x < 0 && tile.X - 1 < 0 || neighbourDirection.x > 0 && tile.X + 1 >= map.GetLength(1))
+            {
+                neighbour = default;
+                return false;
+            }
+            if (neighbourDirection.y < 0 && tile.Y - 1 < 0 || neighbourDirection.y > 0 && tile.Y + 1 >= map.GetLength(0))
+            {
+                neighbour = default;
+                return false;
+            }
+            if (neighbourDirection.z < 0 && tile.Z - 1 < 0 || neighbourDirection.z > 0 && tile.Z + 1 >= map.GetLength(2))
+            {
+                neighbour = default;
+                return false;
+            }
+            neighbour = map[y, x, z];
+            return true;
         }
         /// <summary>
         /// Is this tile contained into a cuboid or not.

@@ -58,22 +58,6 @@ namespace TD_Demo
         {
             RefreshVisual();
         }
-        private void OnMouseOver()
-        {
-            if (_isWalkable && !_isGoal)
-            {
-                _renderer.material = _hoverMat;
-            }
-        }
-
-        private void OnMouseExit()
-        {
-            if (_isWalkable && !_isGoal)
-            {
-                _renderer.material = _floorMat;
-            }
-        }
-
         private void OnValidate()
         {
             RefreshVisual();

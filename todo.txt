@@ -1,5 +1,6 @@
 more 3D demos
 3D documentation
+add settings to decide to treat null tiles as walkable or not
 add settings for row/column major orders (and so on in 3D...)
 add GetConeOfSight Raycasting method
 add "direct" Pathfinding strategies without PathMap (A* and BFS with early exit)
