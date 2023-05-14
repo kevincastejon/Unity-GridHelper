@@ -7,9 +7,14 @@ using UnityEngine;
 namespace KevinCastejon.GridHelper3D
 {
     /// <summary>
-    /// Major order rule
+    /// XYZ
+    /// XZY
+    /// YXZ
+    /// YZX
+    /// ZXY
+    /// ZYX
     /// </summary>
-    public enum MajorOrder
+    public enum MajorOrder3D
     {
         XYZ,
         XZY,
@@ -20,8 +25,12 @@ namespace KevinCastejon.GridHelper3D
     }
     /// <summary>
     /// Represents the edges diagonals permissiveness
+    /// NONE : no diagonal movement allowed
+    /// DIAGONAL_2FREE : only diagonal movements with two walkable common face neighbours of the start and destination tiles are allowed
+    /// DIAGONAL_1FREE : only diagonal movements with one walkable common face neighbour of the start and destination tiles are allowed
+    /// ALL_DIAGONALS : all diagonal movements allowed
     /// </summary>
-    public enum EdgesDiagonalsPolicy
+    public enum EdgesDiagonals3DPolicy
     {
         NONE,
         DIAGONAL_2FREE,
@@ -29,9 +38,17 @@ namespace KevinCastejon.GridHelper3D
         ALL_DIAGONALS,
     }
     /// <summary>
-    /// Represents the vertice diagonals permissiveness
+    /// Represents the vertices diagonals permissiveness
+    /// NONE : no diagonal movement allowed
+    /// DIAGONAL_6FREE : only diagonal movements with six walkable common neighbours of the start and destination tiles are allowed
+    /// DIAGONAL_5FREE : only diagonal movements with five walkable common neighbours of the start and destination tiles are allowed
+    /// DIAGONAL_4FREE : only diagonal movements with four walkable common neighbours of the start and destination tiles are allowed
+    /// DIAGONAL_3FREE : only diagonal movements with three walkable common neighbours of the start and destination tiles are allowed
+    /// DIAGONAL_2FREE : only diagonal movements with two walkable common neighbours of the start and destination tiles are allowed
+    /// DIAGONAL_1FREE : only diagonal movements with one walkable common neighbour of the start and destination tiles are allowed
+    /// ALL_DIAGONALS : all diagonal movements allowed
     /// </summary>
-    public enum VerticesDiagonalsPolicy
+    public enum VerticesDiagonals3DPolicy
     {
         NONE,
         DIAGONAL_6FREE,
@@ -44,9 +61,13 @@ namespace KevinCastejon.GridHelper3D
     }
     /// <summary>
     /// Represents the movements permissiveness
+    /// FLY : all walkable tiles can be walk thought
+    /// WALL_BELOW : only walkable tiles that has a not-walkable lower neighbour can be walk thought
+    /// WALL_ASIDE : only walkable tiles that has a not-walkable side neighbour can be walk thought
+    /// WALL_ABOVE : only walkable tiles that has a not-walkable upper neighbour can be walk thought
     /// </summary>
     [System.Flags]
-    public enum MovementPolicy
+    public enum Movement3DPolicy
     {
         FLY = 0,
         WALL_BELOW = 1,
@@ -59,15 +80,25 @@ namespace KevinCastejon.GridHelper3D
     [System.Serializable]
     public struct Pathfinding3DPolicy
     {
-        [SerializeField] private EdgesDiagonalsPolicy _horizontalEdgesDiagonalsPolicy;
+        [SerializeField] private EdgesDiagonals3DPolicy _horizontalEdgesDiagonalsPolicy;
         [SerializeField] private float _horizontalEdgesDiagonalsWeight;
-        [SerializeField] private EdgesDiagonalsPolicy _verticalEdgesDiagonalsPolicy;
+        [SerializeField] private EdgesDiagonals3DPolicy _verticalEdgesDiagonalsPolicy;
         [SerializeField] private float _verticalEdgesDiagonalsWeight;
-        [SerializeField] private VerticesDiagonalsPolicy _verticesDiagonalsPolicy;
+        [SerializeField] private VerticesDiagonals3DPolicy _verticesDiagonalsPolicy;
         [SerializeField] private float _verticesDiagonalsWeight;
-        [SerializeField] private MovementPolicy _movementPolicy;
+        [SerializeField] private Movement3DPolicy _movementPolicy;
 
-        public Pathfinding3DPolicy(EdgesDiagonalsPolicy horizontalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_2FREE, float horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, EdgesDiagonalsPolicy verticalEdgesDiagonalsPolicy = EdgesDiagonalsPolicy.DIAGONAL_1FREE, float verticalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, VerticesDiagonalsPolicy verticesDiagonalsPolicy = VerticesDiagonalsPolicy.DIAGONAL_6FREE, float verticesDiagonalsWeight = 1.7320508075688772935274463415059f, MovementPolicy movementPolicy = MovementPolicy.WALL_BELOW)
+        /// <summary>
+        /// Set of parameters to use for the pathfinding.
+        /// </summary>
+        /// <param name="horizontalEdgesDiagonalsPolicy">The HorizontalEdgesDiagonalsPolicy</param>
+        /// <param name="horizontalEdgesDiagonalsWeight">The horizontal edges diagonals weight ratio</param>
+        /// <param name="verticalEdgesDiagonalsPolicy">The VerticalEdgesDiagonalsPolicy</param>
+        /// <param name="verticalEdgesDiagonalsWeight">The vertical edges diagonals weight ratio</param>
+        /// <param name="verticesDiagonalsPolicy">The VerticesDiagonalsPolicy</param>
+        /// <param name="verticesDiagonalsWeight">The vertices diagonals weight ratio</param>
+        /// <param name="movementPolicy">The MovementPolicy</param>
+        public Pathfinding3DPolicy(EdgesDiagonals3DPolicy horizontalEdgesDiagonalsPolicy = EdgesDiagonals3DPolicy.DIAGONAL_2FREE, float horizontalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, EdgesDiagonals3DPolicy verticalEdgesDiagonalsPolicy = EdgesDiagonals3DPolicy.DIAGONAL_1FREE, float verticalEdgesDiagonalsWeight = 1.4142135623730950488016887242097f, VerticesDiagonals3DPolicy verticesDiagonalsPolicy = VerticesDiagonals3DPolicy.DIAGONAL_6FREE, float verticesDiagonalsWeight = 1.7320508075688772935274463415059f, Movement3DPolicy movementPolicy = Movement3DPolicy.WALL_BELOW)
         {
             _horizontalEdgesDiagonalsPolicy = horizontalEdgesDiagonalsPolicy;
             _horizontalEdgesDiagonalsWeight = horizontalEdgesDiagonalsWeight;
@@ -78,13 +109,13 @@ namespace KevinCastejon.GridHelper3D
             _movementPolicy = movementPolicy;
         }
 
-        public EdgesDiagonalsPolicy HorizontalEdgesDiagonalsPolicy { get => _horizontalEdgesDiagonalsPolicy; set => _horizontalEdgesDiagonalsPolicy = value; }
+        public EdgesDiagonals3DPolicy HorizontalEdgesDiagonalsPolicy { get => _horizontalEdgesDiagonalsPolicy; set => _horizontalEdgesDiagonalsPolicy = value; }
         public float HorizontalEdgesDiagonalsWeight { get => _horizontalEdgesDiagonalsWeight; set => _horizontalEdgesDiagonalsWeight = value; }
-        public EdgesDiagonalsPolicy VerticalEdgesDiagonalsPolicy { get => _verticalEdgesDiagonalsPolicy; set => _verticalEdgesDiagonalsPolicy = value; }
+        public EdgesDiagonals3DPolicy VerticalEdgesDiagonalsPolicy { get => _verticalEdgesDiagonalsPolicy; set => _verticalEdgesDiagonalsPolicy = value; }
         public float VerticalEdgesDiagonalsWeight { get => _verticalEdgesDiagonalsWeight; set => _verticalEdgesDiagonalsWeight = value; }
-        public VerticesDiagonalsPolicy VerticesDiagonalsPolicy { get => _verticesDiagonalsPolicy; set => _verticesDiagonalsPolicy = value; }
+        public VerticesDiagonals3DPolicy VerticesDiagonalsPolicy { get => _verticesDiagonalsPolicy; set => _verticesDiagonalsPolicy = value; }
         public float VerticesDiagonalsWeight { get => _verticesDiagonalsWeight; set => _verticesDiagonalsWeight = value; }
-        public MovementPolicy MovementPolicy { get => _movementPolicy; set => _movementPolicy = value; }
+        public Movement3DPolicy MovementPolicy { get => _movementPolicy; set => _movementPolicy = value; }
     }
     /// <summary>
     /// An interface that the user-defined tile object has to implement in order to work with most of this library's methods
@@ -149,7 +180,7 @@ namespace KevinCastejon.GridHelper3D
         internal float Weight { get; set; }
     }
     /// <summary>
-    /// An object containing all the calculated paths data of a tile grid
+    /// An object containing all the calculated paths data from a target tile and all the others accessible tiles.
     /// </summary>
     /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
     public class PathMap3D<T> where T : ITile3D
@@ -287,18 +318,18 @@ namespace KevinCastejon.GridHelper3D
         }
     }
     /// <summary>
-    /// Allows you to extract tiles on a grid using rectangular or circular shapes
+    /// Allows you to extract tiles on a grid
     /// </summary>
     public class Extraction3D
     {
-        private static T[] ExtractCuboid<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeCenter, bool includeWalls, MajorOrder majorOrder) where T : ITile3D
+        private static T[] ExtractCuboid<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeCenter, bool includeWalls, MajorOrder3D majorOrder) where T : ITile3D
         {
             int bottom = Mathf.Max(center.Y - cuboidSizeY, 0),
-                top = Mathf.Min(center.Y + cuboidSizeY + 1, Utils.GetYLength(map, majorOrder)),
+                top = Mathf.Min(center.Y + cuboidSizeY + 1, Utils3D.GetYLength(map, majorOrder)),
                 left = Mathf.Max(center.X - cuboidSizeX, 0),
-                right = Mathf.Min(center.X + cuboidSizeX + 1, Utils.GetXLength(map, majorOrder)),
+                right = Mathf.Min(center.X + cuboidSizeX + 1, Utils3D.GetXLength(map, majorOrder)),
                 back = Mathf.Max(center.Z - cuboidSizeZ, 0),
-                front = Mathf.Min(center.Z + cuboidSizeZ + 1, Utils.GetZLength(map, majorOrder));
+                front = Mathf.Min(center.Z + cuboidSizeZ + 1, Utils3D.GetZLength(map, majorOrder));
             List<T> list = new List<T>();
             for (int i = bottom; i < top; i++)
             {
@@ -306,7 +337,7 @@ namespace KevinCastejon.GridHelper3D
                 {
                     for (int k = back; k < front; k++)
                     {
-                        T tile = Utils.GetTile(map, j, i, k, majorOrder);
+                        T tile = Utils3D.GetTile(map, j, i, k, majorOrder);
                         if (tile != null && (includeWalls || tile.IsWalkable) && (includeCenter || !EqualityComparer<T>.Default.Equals(tile, center)))
                         {
                             list.Add(tile);
@@ -316,7 +347,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return list.ToArray();
         }
-        private static T[] ExtractCuboidOutline<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeWalls, MajorOrder majorOrder) where T : ITile3D
+        private static T[] ExtractCuboidOutline<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeWalls, MajorOrder3D majorOrder) where T : ITile3D
         {
             int bottom = center.Y - cuboidSizeY,
                 top = center.Y + cuboidSizeY + 1,
@@ -331,11 +362,11 @@ namespace KevinCastejon.GridHelper3D
                 {
                     for (int k = back; k < front; k++)
                     {
-                        if (i < 0 || i >= Utils.GetYLength(map, majorOrder) || j < 0 || j >= Utils.GetXLength(map, majorOrder) || k < 0 || k >= Utils.GetZLength(map, majorOrder))
+                        if (i < 0 || i >= Utils3D.GetYLength(map, majorOrder) || j < 0 || j >= Utils3D.GetXLength(map, majorOrder) || k < 0 || k >= Utils3D.GetZLength(map, majorOrder))
                         {
                             continue;
                         }
-                        T tile = Utils.GetTile(map, j, i, k, majorOrder);
+                        T tile = Utils3D.GetTile(map, j, i, k, majorOrder);
                         if (tile != null && (includeWalls || tile.IsWalkable) && (i == top - 1 || i == bottom || j == left || j == right - 1 || k == back || k == front - 1))
                         {
                             list.Add(tile);
@@ -345,14 +376,14 @@ namespace KevinCastejon.GridHelper3D
             }
             return list.ToArray();
         }
-        private static T[] ExtractSphere<T>(T[,,] map, T center, int radius, bool includeCenter, bool includeWalls, MajorOrder majorOrder) where T : ITile3D
+        private static T[] ExtractSphere<T>(T[,,] map, T center, int radius, bool includeCenter, bool includeWalls, MajorOrder3D majorOrder) where T : ITile3D
         {
             int bottom = Mathf.Max(center.Y - radius, 0),
-                top = Mathf.Min(center.Y + radius + 1, Utils.GetYLength(map, majorOrder)),
+                top = Mathf.Min(center.Y + radius + 1, Utils3D.GetYLength(map, majorOrder)),
                 left = Mathf.Max(center.X - radius, 0),
-                right = Mathf.Min(center.X + radius + 1, Utils.GetXLength(map, majorOrder)),
+                right = Mathf.Min(center.X + radius + 1, Utils3D.GetXLength(map, majorOrder)),
                 back = Mathf.Max(center.Z - radius, 0),
-                front = Mathf.Min(center.Z + radius + 1, Utils.GetZLength(map, majorOrder));
+                front = Mathf.Min(center.Z + radius + 1, Utils3D.GetZLength(map, majorOrder));
 
             List<T> list = new List<T>();
             for (int y = bottom; y < top; y++)
@@ -361,7 +392,7 @@ namespace KevinCastejon.GridHelper3D
                 {
                     for (int z = back; z < front; z++)
                     {
-                        T tile = Utils.GetTile(map, x, y, z, majorOrder);
+                        T tile = Utils3D.GetTile(map, x, y, z, majorOrder);
                         if (tile != null && Vector3Int.Distance(new Vector3Int(center.X, center.Y, center.Z), new Vector3Int(tile.X, tile.Y, tile.Z)) <= radius && (includeWalls || tile.IsWalkable) && (includeCenter || !EqualityComparer<T>.Default.Equals(tile, center)))
                         {
                             list.Add(tile);
@@ -371,10 +402,10 @@ namespace KevinCastejon.GridHelper3D
             }
             return list.ToArray();
         }
-        private static T[] ExtractSphereOutline<T>(T[,,] map, T center, int radius, bool includeWalls, MajorOrder majorOrder) where T : ITile3D
+        private static T[] ExtractSphereOutline<T>(T[,,] map, T center, int radius, bool includeWalls, MajorOrder3D majorOrder) where T : ITile3D
         {
             int bottom = Mathf.Max(center.Y - radius, 0);
-            int top = Mathf.Min(center.Y + radius + 1, Utils.GetYLength(map, majorOrder));
+            int top = Mathf.Min(center.Y + radius + 1, Utils3D.GetYLength(map, majorOrder));
             List<T> list = new List<T>();
             for (int y = bottom; y < top; y++)
             {
@@ -382,9 +413,9 @@ namespace KevinCastejon.GridHelper3D
                 {
                     for (int z = center.Z - radius; z <= center.Z + radius; z++)
                     {
-                        if (x < 0 || x >= Utils.GetXLength(map, majorOrder) ||
+                        if (x < 0 || x >= Utils3D.GetXLength(map, majorOrder) ||
                             y < 0 || y >= top ||
-                            z < 0 || z >= Utils.GetZLength(map, majorOrder))
+                            z < 0 || z >= Utils3D.GetZLength(map, majorOrder))
                         {
                             continue;
                         }
@@ -418,12 +449,12 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles contained into a cuboid around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
-        /// <param name="map">A two-dimensional array of any objects</param>
+        /// <param name="map">A three-dimensional array of any objects</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSize">The Vector3Int representing cuboid size</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACuboid<T>(T[,,] map, T center, Vector3Int cuboidSize, bool includeCenter = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetTilesInACuboid<T>(T[,,] map, T center, Vector3Int cuboidSize, bool includeCenter = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return GetTilesInACuboid(map, center, cuboidSize.x, cuboidSize.y, cuboidSize.z, includeCenter);
         }
@@ -431,13 +462,13 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles contained into a cuboid around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
-        /// <param name="map">A two-dimensional array of any objects</param>
+        /// <param name="map">A three-dimensional array of any objects</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSizeX">The cuboid horizontal size</param>
         /// <param name="cuboidSizeY">The cuboid vertical size</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInACuboid<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeCenter = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetTilesInACuboid<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeCenter = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractCuboid(map, center, cuboidSizeX, cuboidSizeY, cuboidSizeZ, includeCenter, true, majorOrder);
         }
@@ -445,12 +476,12 @@ namespace KevinCastejon.GridHelper3D
         /// Get all walkable tiles contained into a cuboid around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSize">The Vector3Int representing cuboid size</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesInACuboid<T>(T[,,] map, T center, Vector3Int cuboidSize, bool includeCenter = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetWalkableTilesInACuboid<T>(T[,,] map, T center, Vector3Int cuboidSize, bool includeCenter = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return GetWalkableTilesInACuboid(map, center, cuboidSize.x, cuboidSize.y, cuboidSize.z, includeCenter, majorOrder);
         }
@@ -458,13 +489,13 @@ namespace KevinCastejon.GridHelper3D
         /// Get all walkable tiles contained into a cuboid around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSizeX">The cuboid horizontal size</param>
         /// <param name="cuboidSizeY">The cuboid vertical size</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesInACuboid<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeCenter = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetWalkableTilesInACuboid<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, bool includeCenter = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractCuboid(map, center, cuboidSizeX, cuboidSizeY, cuboidSizeZ, includeCenter, false, majorOrder);
         }
@@ -472,11 +503,11 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles on a cuboid outline around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
-        /// <param name="map">A two-dimensional array of any objects</param>
+        /// <param name="map">A three-dimensional array of any objects</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSize">The Vector3Int representing cuboid size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnACuboidOutline<T>(T[,,] map, T center, Vector3Int cuboidSize, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetTilesOnACuboidOutline<T>(T[,,] map, T center, Vector3Int cuboidSize, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return GetTilesOnACuboidOutline(map, center, cuboidSize.x, cuboidSize.y, cuboidSize.z, majorOrder);
         }
@@ -484,12 +515,12 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles on a cuboid outline around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
-        /// <param name="map">A two-dimensional array of any objects</param>
+        /// <param name="map">A three-dimensional array of any objects</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSizeX">The cuboid horizontal size</param>
         /// <param name="cuboidSizeY">The cuboid vertical size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnACuboidOutline<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetTilesOnACuboidOutline<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractCuboidOutline(map, center, cuboidSizeX, cuboidSizeY, cuboidSizeZ, true, majorOrder);
         }
@@ -497,11 +528,11 @@ namespace KevinCastejon.GridHelper3D
         /// Get all walkable tiles on a cuboid outline around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSize">The Vector3Int representing cuboid size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesOnACuboidOutline<T>(T[,,] map, T center, Vector3Int cuboidSize, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetWalkableTilesOnACuboidOutline<T>(T[,,] map, T center, Vector3Int cuboidSize, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return GetWalkableTilesOnACuboidOutline(map, center, cuboidSize.x, cuboidSize.y, cuboidSize.z, majorOrder);
         }
@@ -509,12 +540,12 @@ namespace KevinCastejon.GridHelper3D
         /// Get all walkable tiles on a cuboid outline around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="cuboidSizeX">The cuboid horizontal size</param>
         /// <param name="cuboidSizeY">The cuboid vertical size</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesOnACuboidOutline<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetWalkableTilesOnACuboidOutline<T>(T[,,] map, T center, int cuboidSizeX, int cuboidSizeY, int cuboidSizeZ, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractCuboidOutline(map, center, cuboidSizeX, cuboidSizeY, cuboidSizeZ, false, majorOrder);
         }
@@ -522,12 +553,12 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles contained into a radius around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesInASphere<T>(T[,,] map, T center, int radius, bool includeCenter = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetTilesInASphere<T>(T[,,] map, T center, int radius, bool includeCenter = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractSphere(map, center, radius, includeCenter, true, majorOrder);
         }
@@ -535,11 +566,11 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles on a radius outline around a tile
         /// </summary>
         /// <typeparam name="T">Any object type</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile </param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnASphereOutline<T>(T[,,] map, T center, int radius, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetTilesOnASphereOutline<T>(T[,,] map, T center, int radius, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractSphereOutline(map, center, radius, true, majorOrder);
         }
@@ -547,12 +578,12 @@ namespace KevinCastejon.GridHelper3D
         /// Get all walkable tiles contained into a radius around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
         /// <param name="includeCenter">Include the center tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesInASphere<T>(T[,,] map, T center, int radius, bool includeCenter = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetWalkableTilesInASphere<T>(T[,,] map, T center, int radius, bool includeCenter = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractSphere(map, center, radius, includeCenter, false, majorOrder);
         }
@@ -560,11 +591,11 @@ namespace KevinCastejon.GridHelper3D
         /// Get all walkable tiles on a radius outline around a tile
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="center">The center tile</param>
         /// <param name="radius">The radius</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesOnASphereOutline<T>(T[,,] map, T center, int radius, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetWalkableTilesOnASphereOutline<T>(T[,,] map, T center, int radius, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return ExtractSphereOutline(map, center, radius, false, majorOrder);
         }
@@ -572,32 +603,32 @@ namespace KevinCastejon.GridHelper3D
         /// Get neighbour of a tile if it exists
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="neighbourDirection">The direction from the tile to the desired neighbour</param>
         /// <param name="neighbour">The neighbour of a tile</param>
         /// <returns></returns>
-        public static bool GetTileNeighbour<T>(T[,,] map, T tile, Vector3Int neighbourDirection, out T neighbour, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static bool GetTileNeighbour<T>(T[,,] map, T tile, Vector3Int neighbourDirection, out T neighbour, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             int x = neighbourDirection.x > 0 ? tile.X + 1 : (neighbourDirection.x < 0 ? tile.X - 1 : tile.X);
             int y = neighbourDirection.y > 0 ? tile.Y + 1 : (neighbourDirection.y < 0 ? tile.Y - 1 : tile.Y);
             int z = neighbourDirection.z > 0 ? tile.Z + 1 : (neighbourDirection.z < 0 ? tile.Z - 1 : tile.Z);
-            if (neighbourDirection.x < 0 && tile.X - 1 < 0 || neighbourDirection.x > 0 && tile.X + 1 >= Utils.GetXLength(map, majorOrder))
+            if (neighbourDirection.x < 0 && tile.X - 1 < 0 || neighbourDirection.x > 0 && tile.X + 1 >= Utils3D.GetXLength(map, majorOrder))
             {
                 neighbour = default;
                 return false;
             }
-            if (neighbourDirection.y < 0 && tile.Y - 1 < 0 || neighbourDirection.y > 0 && tile.Y + 1 >= Utils.GetYLength(map, majorOrder))
+            if (neighbourDirection.y < 0 && tile.Y - 1 < 0 || neighbourDirection.y > 0 && tile.Y + 1 >= Utils3D.GetYLength(map, majorOrder))
             {
                 neighbour = default;
                 return false;
             }
-            if (neighbourDirection.z < 0 && tile.Z - 1 < 0 || neighbourDirection.z > 0 && tile.Z + 1 >= Utils.GetZLength(map, majorOrder))
+            if (neighbourDirection.z < 0 && tile.Z - 1 < 0 || neighbourDirection.z > 0 && tile.Z + 1 >= Utils3D.GetZLength(map, majorOrder))
             {
                 neighbour = default;
                 return false;
             }
-            neighbour = Utils.GetTile(map, x, y, z, majorOrder);
+            neighbour = Utils3D.GetTile(map, x, y, z, majorOrder);
             return true;
         }
         /// <summary>
@@ -701,7 +732,7 @@ namespace KevinCastejon.GridHelper3D
     /// </summary>
     public class Raycasting3D
     {
-        private static T[] Raycast<T>(T[,,] map, T startTile, T destinationTile, float maxDistance, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder) where T : ITile3D
+        private static T[] Raycast<T>(T[,,] map, T startTile, T destinationTile, float maxDistance, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder3D majorOrder) where T : ITile3D
         {
             Vector3Int p0 = new Vector3Int(startTile.X, startTile.Y, startTile.Z);
             Vector3Int p1 = new Vector3Int(destinationTile.X, destinationTile.Y, destinationTile.Z);
@@ -713,7 +744,7 @@ namespace KevinCastejon.GridHelper3D
             List<T> points = new List<T>();
             if (includeStart)
             {
-                points.Add(Utils.GetTile(map, p.x, p.y, p.z, majorOrder));
+                points.Add(Utils3D.GetTile(map, p.x, p.y, p.z, majorOrder));
             }
             isLineClear = true;
             for (int ix = 0, iy = 0, iz = 0; ix < nx || iy < ny || iz < nz;)
@@ -737,7 +768,7 @@ namespace KevinCastejon.GridHelper3D
                     iz++;
                 }
                 bool breakIt = false;
-                T tile = Utils.GetTile(map, p.x, p.y, p.z, majorOrder);
+                T tile = Utils3D.GetTile(map, p.x, p.y, p.z, majorOrder);
                 breakIt = breakIt ? true : breakOnWalls && (tile == null || !tile.IsWalkable);
                 isLineClear = !breakIt;
                 breakIt = breakIt ? true : (maxDistance > 0f && Vector3Int.Distance(new Vector3Int(p.x, p.y, p.z), new Vector3Int(startTile.X, startTile.Y, startTile.Z)) > maxDistance);
@@ -762,14 +793,14 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles on a line between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The stop tile</param>
         /// <param name="maxDistance">The maximum distance from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetTilesOnALine<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, false, true, out bool isclear, majorOrder);
         }
@@ -777,14 +808,14 @@ namespace KevinCastejon.GridHelper3D
         /// Get all walkable tiles on a line between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The stop tile</param>
         /// <param name="maxDistance">The maximum distance from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetWalkableTilesOnALine<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetWalkableTilesOnALine<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, false, false, out bool isclear, majorOrder);
         }
@@ -792,11 +823,11 @@ namespace KevinCastejon.GridHelper3D
         /// Is the line of sight clear between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The stop tile</param>
         /// <returns>An array of tiles</returns>
-        public static bool IsLineOfSightClear<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static bool IsLineOfSightClear<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, true, false, out bool isclear, majorOrder);
             return isclear;
@@ -805,14 +836,14 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles on a line between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The stop tile</param>
         /// <param name="maxDistance">The maximum distance from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetLineOfSight<T>(T[,,] map, T startTile, T destinationTile, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, true, false, out bool isclear, majorOrder);
         }
@@ -820,14 +851,14 @@ namespace KevinCastejon.GridHelper3D
         /// Get all tiles on a line between two tiles
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The stop tile</param>
         /// <param name="maxDistance">The maximum distance from the start tile</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,,] map, T startTile, T destinationTile, out bool isLineClear, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static T[] GetLineOfSight<T>(T[,,] map, T startTile, T destinationTile, out bool isLineClear, float maxDistance = 0f, bool includeStart = true, bool includeDestination = true, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             return Raycast(map, startTile, destinationTile, maxDistance, includeStart, includeDestination, true, false, out isLineClear, majorOrder);
         }
@@ -837,17 +868,17 @@ namespace KevinCastejon.GridHelper3D
     /// </summary>
     public class Pathfinding3D
     {
-        private static bool GetTile<T>(T[,,] map, int x, int y, int z, out T tile, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetTile<T>(T[,,] map, int x, int y, int z, out T tile, MajorOrder3D majorOrder) where T : ITile3D
         {
-            if (x > -1 && x < Utils.GetXLength(map, majorOrder) && y > -1 && y < Utils.GetYLength(map, majorOrder) && z > -1 && z < Utils.GetZLength(map, majorOrder))
+            if (x > -1 && x < Utils3D.GetXLength(map, majorOrder) && y > -1 && y < Utils3D.GetYLength(map, majorOrder) && z > -1 && z < Utils3D.GetZLength(map, majorOrder))
             {
-                tile = Utils.GetTile(map, x, y, z, majorOrder);
+                tile = Utils3D.GetTile(map, x, y, z, majorOrder);
                 return true;
             }
             tile = default;
             return false;
         }
-        private static bool GetLeftNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y, z, out nei, majorOrder))
             {
@@ -858,7 +889,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y, z, out nei, majorOrder))
             {
@@ -869,7 +900,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetBottomNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetBottomNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y - 1, z, out nei, majorOrder))
             {
@@ -880,7 +911,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetTopNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetTopNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y + 1, z, out nei, majorOrder))
             {
@@ -891,7 +922,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y, z - 1, out nei, majorOrder))
             {
@@ -902,7 +933,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y, z + 1, out nei, majorOrder))
             {
@@ -913,7 +944,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftBottomNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftBottomNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y - 1, z, out nei, majorOrder))
             {
@@ -924,7 +955,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftTopNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftTopNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y + 1, z, out nei, majorOrder))
             {
@@ -935,7 +966,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightBottomNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightBottomNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y - 1, z, out nei, majorOrder))
             {
@@ -946,7 +977,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightTopNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightTopNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y + 1, z, out nei, majorOrder))
             {
@@ -957,7 +988,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetBottomBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetBottomBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y - 1, z - 1, out nei, majorOrder))
             {
@@ -968,7 +999,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetTopBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetTopBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y + 1, z - 1, out nei, majorOrder))
             {
@@ -979,7 +1010,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetBottomFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetBottomFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y - 1, z + 1, out nei, majorOrder))
             {
@@ -990,7 +1021,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetTopFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetTopFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x, y + 1, z + 1, out nei, majorOrder))
             {
@@ -1001,7 +1032,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y, z - 1, out nei, majorOrder))
             {
@@ -1012,7 +1043,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y, z - 1, out nei, majorOrder))
             {
@@ -1023,7 +1054,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y, z + 1, out nei, majorOrder))
             {
@@ -1034,7 +1065,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y, z + 1, out nei, majorOrder))
             {
@@ -1045,7 +1076,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftBottomBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftBottomBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y - 1, z - 1, out nei, majorOrder))
             {
@@ -1056,7 +1087,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightBottomBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightBottomBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y - 1, z - 1, out nei, majorOrder))
             {
@@ -1067,7 +1098,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftBottomFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftBottomFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y - 1, z + 1, out nei, majorOrder))
             {
@@ -1078,7 +1109,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightBottomFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightBottomFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y - 1, z + 1, out nei, majorOrder))
             {
@@ -1089,7 +1120,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftTopBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftTopBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y + 1, z - 1, out nei, majorOrder))
             {
@@ -1100,7 +1131,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightTopBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightTopBackNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y + 1, z - 1, out nei, majorOrder))
             {
@@ -1111,7 +1142,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetLeftTopFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetLeftTopFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x - 1, y + 1, z + 1, out nei, majorOrder))
             {
@@ -1122,7 +1153,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool GetRightTopFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder majorOrder) where T : ITile3D
+        private static bool GetRightTopFrontNeighbour<T>(T[,,] map, int x, int y, int z, out T nei, bool lookForWall, MajorOrder3D majorOrder) where T : ITile3D
         {
             if (GetTile(map, x + 1, y + 1, z + 1, out nei, majorOrder))
             {
@@ -1133,48 +1164,48 @@ namespace KevinCastejon.GridHelper3D
             }
             return false;
         }
-        private static bool CheckVDP(VerticesDiagonalsPolicy policy, bool valueA, bool valueB, bool valueC, bool valueD, bool valueE, bool valueF)
+        private static bool CheckVDP(VerticesDiagonals3DPolicy policy, bool valueA, bool valueB, bool valueC, bool valueD, bool valueE, bool valueF)
         {
             int count = (valueA ? 1 : 0) + (valueB ? 1 : 0) + (valueC ? 1 : 0) + (valueD ? 1 : 0) + (valueE ? 1 : 0) + (valueF ? 1 : 0);
             switch (policy)
             {
-                case VerticesDiagonalsPolicy.NONE:
+                case VerticesDiagonals3DPolicy.NONE:
                     return false;
-                case VerticesDiagonalsPolicy.DIAGONAL_6FREE:
+                case VerticesDiagonals3DPolicy.DIAGONAL_6FREE:
                     return count == 6;
-                case VerticesDiagonalsPolicy.DIAGONAL_5FREE:
+                case VerticesDiagonals3DPolicy.DIAGONAL_5FREE:
                     return count >= 5;
-                case VerticesDiagonalsPolicy.DIAGONAL_4FREE:
+                case VerticesDiagonals3DPolicy.DIAGONAL_4FREE:
                     return count >= 4;
-                case VerticesDiagonalsPolicy.DIAGONAL_3FREE:
+                case VerticesDiagonals3DPolicy.DIAGONAL_3FREE:
                     return count >= 3;
-                case VerticesDiagonalsPolicy.DIAGONAL_2FREE:
+                case VerticesDiagonals3DPolicy.DIAGONAL_2FREE:
                     return count >= 2;
-                case VerticesDiagonalsPolicy.DIAGONAL_1FREE:
+                case VerticesDiagonals3DPolicy.DIAGONAL_1FREE:
                     return count >= 1;
-                case VerticesDiagonalsPolicy.ALL_DIAGONALS:
+                case VerticesDiagonals3DPolicy.ALL_DIAGONALS:
                     return true;
                 default:
                     return false;
             }
         }
-        private static bool CheckEDP(EdgesDiagonalsPolicy policy, bool valueA, bool valueB)
+        private static bool CheckEDP(EdgesDiagonals3DPolicy policy, bool valueA, bool valueB)
         {
             switch (policy)
             {
-                case EdgesDiagonalsPolicy.NONE:
+                case EdgesDiagonals3DPolicy.NONE:
                     return false;
-                case EdgesDiagonalsPolicy.DIAGONAL_2FREE:
+                case EdgesDiagonals3DPolicy.DIAGONAL_2FREE:
                     return valueA && valueB;
-                case EdgesDiagonalsPolicy.DIAGONAL_1FREE:
+                case EdgesDiagonals3DPolicy.DIAGONAL_1FREE:
                     return valueA || valueB;
-                case EdgesDiagonalsPolicy.ALL_DIAGONALS:
+                case EdgesDiagonals3DPolicy.ALL_DIAGONALS:
                     return true;
                 default:
                     return false;
             }
         }
-        private static bool CheckMP<T>(MovementPolicy policy, T[,,] map, T tile, MajorOrder majorOrder) where T : ITile3D
+        private static bool CheckMP<T>(Movement3DPolicy policy, T[,,] map, T tile, MajorOrder3D majorOrder) where T : ITile3D
         {
             int polCase = (int)policy;
             if (polCase == 0)
@@ -1211,7 +1242,7 @@ namespace KevinCastejon.GridHelper3D
             }
             return true;
         }
-        private static List<T> GetTileNeighbours<T>(T[,,] map, int x, int y, int z, Pathfinding3DPolicy pathfindingPolicy, MajorOrder majorOrder) where T : ITile3D
+        private static List<T> GetTileNeighbours<T>(T[,,] map, int x, int y, int z, Pathfinding3DPolicy pathfindingPolicy, MajorOrder3D majorOrder) where T : ITile3D
         {
             List<T> nodes = new List<T>();
             T nei;
@@ -1356,25 +1387,25 @@ namespace KevinCastejon.GridHelper3D
 
             return nodes;
         }
-        private static bool IsHorizontalEdgeDiagonal<T>(EdgesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
+        private static bool IsHorizontalEdgeDiagonal<T>(EdgesDiagonals3DPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
         {
-            if (policy == EdgesDiagonalsPolicy.NONE)
+            if (policy == EdgesDiagonals3DPolicy.NONE)
             {
                 return false;
             }
             return current.Tile.X != next.Tile.X && current.Tile.Y == next.Tile.Y && current.Tile.Z != next.Tile.Z;
         }
-        private static bool IsVerticalEdgeDiagonal<T>(EdgesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
+        private static bool IsVerticalEdgeDiagonal<T>(EdgesDiagonals3DPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
         {
-            if (policy == EdgesDiagonalsPolicy.NONE)
+            if (policy == EdgesDiagonals3DPolicy.NONE)
             {
                 return false;
             }
             return current.Tile.Y != next.Tile.Y && (current.Tile.Z != next.Tile.Z || current.Tile.X != next.Tile.X);
         }
-        private static bool IsVerticeDiagonal<T>(VerticesDiagonalsPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
+        private static bool IsVerticeDiagonal<T>(VerticesDiagonals3DPolicy policy, Node3D<T> current, Node3D<T> next) where T : ITile3D
         {
-            if (policy == VerticesDiagonalsPolicy.NONE)
+            if (policy == VerticesDiagonals3DPolicy.NONE)
             {
                 return false;
             }
@@ -1382,15 +1413,15 @@ namespace KevinCastejon.GridHelper3D
         }
 
         /// <summary>
-        /// Generates a PathMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
+        /// Generates a PathMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target  
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
-        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="map">A three-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
         /// <param name="allowDiagonals">Allow diagonals movements</param>
         /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
         /// <returns>A PathMap object</returns>
-        public static PathMap3D<T> GeneratePathMap<T>(T[,,] map, T targetTile, float maxDistance = 0f, Pathfinding3DPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.YXZ) where T : ITile3D
+        public static PathMap3D<T> GeneratePathMap<T>(T[,,] map, T targetTile, float maxDistance = 0f, Pathfinding3DPolicy pathfindingPolicy = default, MajorOrder3D majorOrder = MajorOrder3D.YXZ) where T : ITile3D
         {
             if (!targetTile.IsWalkable)
             {
@@ -1438,27 +1469,27 @@ namespace KevinCastejon.GridHelper3D
         }
 
     }
-    internal static class Utils
+    internal static class Utils3D
     {
-        internal static T GetTile<T>(T[,,] map, int x, int y, int z, MajorOrder majorOrder) where T : ITile3D
+        internal static T GetTile<T>(T[,,] map, int x, int y, int z, MajorOrder3D majorOrder) where T : ITile3D
         {
-            if (majorOrder == MajorOrder.XYZ)
+            if (majorOrder == MajorOrder3D.XYZ)
             {
                 return map[x, y, z];
             }
-            else if (majorOrder == MajorOrder.XZY)
+            else if (majorOrder == MajorOrder3D.XZY)
             {
                 return map[x, z, y];
             }
-            else if (majorOrder == MajorOrder.YXZ)
+            else if (majorOrder == MajorOrder3D.YXZ)
             {
                 return map[y, x, z];
             }
-            else if (majorOrder == MajorOrder.YZX)
+            else if (majorOrder == MajorOrder3D.YZX)
             {
                 return map[y, z, x];
             }
-            else if (majorOrder == MajorOrder.ZXY)
+            else if (majorOrder == MajorOrder3D.ZXY)
             {
                 return map[z, x, y];
             }
@@ -1467,13 +1498,13 @@ namespace KevinCastejon.GridHelper3D
                 return map[z, y, x];
             }
         }
-        internal static int GetXLength<T>(T[,,] map, MajorOrder majorOrder) where T : ITile3D
+        internal static int GetXLength<T>(T[,,] map, MajorOrder3D majorOrder) where T : ITile3D
         {
-            if (majorOrder == MajorOrder.XYZ || majorOrder == MajorOrder.XZY)
+            if (majorOrder == MajorOrder3D.XYZ || majorOrder == MajorOrder3D.XZY)
             {
                 return map.GetLength(0);
             }
-            else if (majorOrder == MajorOrder.YXZ || majorOrder == MajorOrder.ZXY)
+            else if (majorOrder == MajorOrder3D.YXZ || majorOrder == MajorOrder3D.ZXY)
             {
                 return map.GetLength(1);
             }
@@ -1482,13 +1513,13 @@ namespace KevinCastejon.GridHelper3D
                 return map.GetLength(2);
             }
         }
-        internal static int GetYLength<T>(T[,,] map, MajorOrder majorOrder) where T : ITile3D
+        internal static int GetYLength<T>(T[,,] map, MajorOrder3D majorOrder) where T : ITile3D
         {
-            if (majorOrder == MajorOrder.XZY || majorOrder == MajorOrder.ZXY)
+            if (majorOrder == MajorOrder3D.XZY || majorOrder == MajorOrder3D.ZXY)
             {
                 return map.GetLength(2);
             }
-            else if (majorOrder == MajorOrder.YXZ || majorOrder == MajorOrder.YZX)
+            else if (majorOrder == MajorOrder3D.YXZ || majorOrder == MajorOrder3D.YZX)
             {
                 return map.GetLength(0);
             }
@@ -1497,13 +1528,13 @@ namespace KevinCastejon.GridHelper3D
                 return map.GetLength(1);
             }
         }
-        internal static int GetZLength<T>(T[,,] map, MajorOrder majorOrder) where T : ITile3D
+        internal static int GetZLength<T>(T[,,] map, MajorOrder3D majorOrder) where T : ITile3D
         {
-            if (majorOrder == MajorOrder.XYZ || majorOrder == MajorOrder.YXZ)
+            if (majorOrder == MajorOrder3D.XYZ || majorOrder == MajorOrder3D.YXZ)
             {
                 return map.GetLength(2);
             }
-            else if (majorOrder == MajorOrder.XZY || majorOrder == MajorOrder.YZX)
+            else if (majorOrder == MajorOrder3D.XZY || majorOrder == MajorOrder3D.YZX)
             {
                 return map.GetLength(1);
             }

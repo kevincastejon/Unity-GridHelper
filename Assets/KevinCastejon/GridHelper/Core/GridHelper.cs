@@ -8,6 +8,8 @@ namespace KevinCastejon.GridHelper
 {
     /// <summary>
     /// Major order rule
+    /// ROW_MAJOR_ORDER : YX
+    /// COLUMN_MAJOR_ORDER : XY
     /// </summary>
     public enum MajorOrder
     {
@@ -16,6 +18,10 @@ namespace KevinCastejon.GridHelper
     }
     /// <summary>
     /// Represents the diagonals permissiveness
+    /// NONE : no diagonal movement allowed
+    /// DIAGONAL_2FREE : only diagonal movements with two walkable common face neighbours of the start and destination tiles are allowed
+    /// DIAGONAL_1FREE : only diagonal movements with one walkable common face neighbour of the start and destination tiles are allowed
+    /// ALL_DIAGONALS : all diagonal movements allowed
     /// </summary>
     public enum DiagonalsPolicy
     {
@@ -26,6 +32,10 @@ namespace KevinCastejon.GridHelper
     }
     /// <summary>
     /// Represents the movements permissiveness
+    /// FLY : all walkable tiles can be walk thought
+    /// WALL_BELOW : only walkable tiles that has a not-walkable lower neighbour can be walk thought
+    /// WALL_ASIDE : only walkable tiles that has a not-walkable side neighbour can be walk thought
+    /// WALL_ABOVE : only walkable tiles that has a not-walkable upper neighbour can be walk thought
     /// </summary>
     [System.Flags]
     public enum MovementPolicy
@@ -45,6 +55,12 @@ namespace KevinCastejon.GridHelper
         [SerializeField] private float _diagonalsWeight;
         [SerializeField] private MovementPolicy _movementPolicy;
 
+        /// <summary>
+        /// Set of parameters to use for the pathfinding.
+        /// </summary>
+        /// <param name="diagonalsPolicy">The DiagonalsPolicy</param>
+        /// <param name="diagonalsWeight">The diagonals weight ratio</param>
+        /// <param name="movementPolicy">The MovementPolicy</param>
         public PathfindingPolicy(DiagonalsPolicy diagonalsPolicy = DiagonalsPolicy.DIAGONAL_2FREE, float diagonalsWeight = 1.4142135623730950488016887242097f, MovementPolicy movementPolicy = MovementPolicy.FLY)
         {
             _diagonalsPolicy = diagonalsPolicy;
@@ -112,7 +128,7 @@ namespace KevinCastejon.GridHelper
         internal float Weight { get; set; }
     }
     /// <summary>
-    /// An object containing all the calculated paths data of a tile grid
+    /// An object containing all the calculated paths data from a target tile and all the others accessible tiles.
     /// </summary>
     /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
     public class PathMap<T> where T : ITile
@@ -251,7 +267,7 @@ namespace KevinCastejon.GridHelper
         }
     }
     /// <summary>
-    /// Allows you to extract tiles on a grid using rectangular or circular shapes
+    /// Allows you to extract tiles on a grid
     /// </summary>
     public class Extraction
     {
@@ -981,14 +997,14 @@ namespace KevinCastejon.GridHelper
         }
 
         /// <summary>
-        /// Generates a PathMap object that will contain all the precalculated paths data for the entire grid
+        /// Generates a PathMap object that will contain all the pre-calculated paths data between a target tile and all the accessible tiles from this target
         /// </summary>
         /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="targetTile">The target tile for the paths calculation</param>
-        /// <param name="allowDiagonals">Allow diagonals movements</param>
-        /// <param name="diagonalWeightRatio">Diagonal movement weight</param>
-        /// <returns>A PathMap object</returns>
+        /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
+        /// <param name="majorOrder">The MajorOrder to use</param>
+        /// <returns></returns>
         public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.ROW_MAJOR_ORDER) where T : ITile
         {
             if (!targetTile.IsWalkable)

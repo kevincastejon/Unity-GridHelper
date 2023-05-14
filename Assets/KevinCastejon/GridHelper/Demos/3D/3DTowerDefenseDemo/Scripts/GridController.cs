@@ -40,7 +40,7 @@ namespace Grid3DHelper.Demos3D.TowerDefenseDemo3D
         {
             // Referencing the camera
             _camera = Camera.main;
-            _pathMap = Pathfinding3D.GeneratePathMap(_map, _goalTile, 0f, new Pathfinding3DPolicy(EdgesDiagonalsPolicy.DIAGONAL_2FREE, 1.41421354f, EdgesDiagonalsPolicy.DIAGONAL_1FREE, 1.14121354f, VerticesDiagonalsPolicy.DIAGONAL_6FREE, 1.73205078f, MovementPolicy.WALL_BELOW));
+            _pathMap = Pathfinding3D.GeneratePathMap(_map, _goalTile, 0f, new Pathfinding3DPolicy(EdgesDiagonals3DPolicy.DIAGONAL_2FREE, 1.41421354f, EdgesDiagonals3DPolicy.DIAGONAL_1FREE, 1.14121354f, VerticesDiagonals3DPolicy.DIAGONAL_6FREE, 1.73205078f, Movement3DPolicy.WALL_BELOW));
         }
         private void Update()
         {

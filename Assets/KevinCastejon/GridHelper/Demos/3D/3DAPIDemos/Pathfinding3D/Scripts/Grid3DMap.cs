@@ -120,7 +120,7 @@ namespace Grid3DHelper.APIDemos.Pathfinding
                 ShowPath();
             }
         }
-        public EdgesDiagonalsPolicy HorizontalEdgesDiagonalsPolicy
+        public EdgesDiagonals3DPolicy HorizontalEdgesDiagonalsPolicy
         {
             get
             {
@@ -137,7 +137,7 @@ namespace Grid3DHelper.APIDemos.Pathfinding
                 ShowPath();
             }
         }
-        public EdgesDiagonalsPolicy VerticalEdgesDiagonalsPolicy
+        public EdgesDiagonals3DPolicy VerticalEdgesDiagonalsPolicy
         {
             get
             {
@@ -154,7 +154,7 @@ namespace Grid3DHelper.APIDemos.Pathfinding
                 ShowPath();
             }
         }
-        public VerticesDiagonalsPolicy VerticesDiagonalsPolicy
+        public VerticesDiagonals3DPolicy VerticesDiagonalsPolicy
         {
             get
             {
@@ -171,7 +171,7 @@ namespace Grid3DHelper.APIDemos.Pathfinding
                 ShowPath();
             }
         }
-        public MovementPolicy MovementPolicy
+        public Movement3DPolicy MovementPolicy
         {
             get
             {
@@ -191,15 +191,15 @@ namespace Grid3DHelper.APIDemos.Pathfinding
 
         public void SetHorizontalEdgesDiagonalsPolicy(int enumIndex)
         {
-            HorizontalEdgesDiagonalsPolicy = (EdgesDiagonalsPolicy)enumIndex;
+            HorizontalEdgesDiagonalsPolicy = (EdgesDiagonals3DPolicy)enumIndex;
         }
         public void SetVerticalEdgesDiagonalsPolicy(int enumIndex)
         {
-            VerticalEdgesDiagonalsPolicy = (EdgesDiagonalsPolicy)enumIndex;
+            VerticalEdgesDiagonalsPolicy = (EdgesDiagonals3DPolicy)enumIndex;
         }
         public void SetVerticesDiagonalsPolicy(int enumIndex)
         {
-            VerticesDiagonalsPolicy = (VerticesDiagonalsPolicy)enumIndex;
+            VerticesDiagonalsPolicy = (VerticesDiagonals3DPolicy)enumIndex;
         }
         public void SetMovementPolicy()
         {
@@ -226,7 +226,7 @@ namespace Grid3DHelper.APIDemos.Pathfinding
                     }
                 }
             }
-            MovementPolicy = (MovementPolicy)value;
+            MovementPolicy = (Movement3DPolicy)value;
         }
 
         public void MoveStartX(int value)
