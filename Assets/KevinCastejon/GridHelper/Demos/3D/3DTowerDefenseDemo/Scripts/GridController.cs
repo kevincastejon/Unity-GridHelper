@@ -12,7 +12,7 @@ namespace Grid3DHelper.Demos3D.TowerDefenseDemo3D
     public class GridController : MonoBehaviour
     {
         [SerializeField] private Character _charPrefab;
-        private Tile[,,] _map = new Tile[4, 11, 12];
+        private Tile[,,] _map = new Tile[5, 11, 15];
         private Tile _goalTile;
         private Camera _camera;
         PathMap3D<Tile> _pathMap;
@@ -46,14 +46,14 @@ namespace Grid3DHelper.Demos3D.TowerDefenseDemo3D
         {
             // Detecting click on tile
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity) && Input.GetMouseButton(0))
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity) && Input.GetMouseButtonDown(0))
             {
                 // Retrieving the Floor component
                 Tile hitFloor = hit.collider.GetComponent<Tile>();
                 Extraction3D.GetTileNeighbour(_map, hitFloor, Vector3Int.up, out Tile targetFloor);
                 if (_pathMap.IsTileAccessible(targetFloor))
                 {
-                    Character ch = Instantiate(_charPrefab, new Vector3(targetFloor.transform.position.x, targetFloor.transform.position.y + 0.5f, targetFloor.transform.position.z), Quaternion.identity);
+                    Character ch = Instantiate(_charPrefab, new Vector3(targetFloor.transform.position.x, targetFloor.transform.position.y, targetFloor.transform.position.z), Quaternion.identity);
                     ch.Init(targetFloor, _pathMap);
                 }
             }

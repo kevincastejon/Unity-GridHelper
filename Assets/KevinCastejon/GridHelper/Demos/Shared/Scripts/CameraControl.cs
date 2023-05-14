@@ -1,6 +1,7 @@
 using UnityEngine;
 public class CameraControl : MonoBehaviour
 {
+    [SerializeField] private bool _enableFreeRotation = true; // mouse look sensitivity
     [SerializeField] private float _lookSensitivity = 1; // mouse look sensitivity
     private Quaternion _initialRotation;
 
@@ -18,7 +19,7 @@ public class CameraControl : MonoBehaviour
         {
             transform.rotation = _initialRotation;
         }
-        else if (rightClick)
+        else if (_enableFreeRotation && rightClick)
         {
             FreeRotate();
         }
