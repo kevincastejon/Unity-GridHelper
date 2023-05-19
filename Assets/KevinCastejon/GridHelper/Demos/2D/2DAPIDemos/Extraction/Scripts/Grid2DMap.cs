@@ -185,7 +185,7 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
         }
         private void ExtractCircleOutline()
         {
-            _extractedTiles = Extraction.GetWalkableTilesOnACircleOutline(_map, _targetTile, _radius);
+            _extractedTiles = Extraction.BresenhamGetWalkableTilesOnACircleOutline(_map, _targetTile, _radius);
             foreach (Tile tile in _extractedTiles)
             {
                 tile.TileMode = TileMode.EXTRACTED;

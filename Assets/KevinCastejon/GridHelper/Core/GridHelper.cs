@@ -276,15 +276,15 @@ namespace KevinCastejon.GridHelper
         private static T[] ExtractRectangle<T>(T[,] map, T center, int rectangleSizeX, int rectangleSizeY, bool includeCenter, bool includeWalls, MajorOrder majorOrder) where T : ITile
         {
             int bottom = Mathf.Max(center.Y - rectangleSizeY, 0),
-                top = Mathf.Min(center.Y + rectangleSizeY + 1, Utils.GetYLength(map, majorOrder)),
+                top = Mathf.Min(center.Y + rectangleSizeY + 1, GridUtils.GetYLength(map, majorOrder)),
                 left = Mathf.Max(center.X - rectangleSizeX, 0),
-                right = Mathf.Min(center.X + rectangleSizeX + 1, Utils.GetXLength(map, majorOrder));
+                right = Mathf.Min(center.X + rectangleSizeX + 1, GridUtils.GetXLength(map, majorOrder));
             List<T> list = new List<T>();
             for (int i = bottom; i < top; i++)
             {
                 for (int j = left; j < right; j++)
                 {
-                    T tile = Utils.GetTile(map, j, i, majorOrder);
+                    T tile = GridUtils.GetTile(map, j, i, majorOrder);
                     if (tile != null && (includeWalls || tile.IsWalkable) && (includeCenter || !EqualityComparer<T>.Default.Equals(tile, center)))
                     {
                         list.Add(tile);
@@ -304,11 +304,11 @@ namespace KevinCastejon.GridHelper
             {
                 for (int j = left; j < right; j++)
                 {
-                    if (i < 0 || i >= Utils.GetYLength(map, majorOrder) || j < 0 || j >= Utils.GetXLength(map, majorOrder))
+                    if (i < 0 || i >= GridUtils.GetYLength(map, majorOrder) || j < 0 || j >= GridUtils.GetXLength(map, majorOrder))
                     {
                         continue;
                     }
-                    T tile = Utils.GetTile(map, j, i, majorOrder);
+                    T tile = GridUtils.GetTile(map, j, i, majorOrder);
                     if (tile != null && (includeWalls || tile.IsWalkable) && (i == top - 1 || i == bottom || j == left || j == right - 1))
                     {
                         list.Add(tile);
@@ -320,17 +320,17 @@ namespace KevinCastejon.GridHelper
         private static T[] ExtractCircleArc<T>(T[,] map, T center, float radius, bool includeCenter, bool includeWalls, MajorOrder majorOrder, float angle, Vector2 direction) where T : ITile
         {
             int bottom = Mathf.RoundToInt(Mathf.Max(center.Y - radius, 0)),
-                top = Mathf.RoundToInt(Mathf.Min(center.Y + radius + 1, Utils.GetYLength(map, majorOrder)));
+                top = Mathf.RoundToInt(Mathf.Min(center.Y + radius + 1, GridUtils.GetYLength(map, majorOrder)));
             List<T> list = new List<T>();
             for (int y = bottom; y < top; y++)
             {
                 int dy = y - center.Y;
                 float dx = Mathf.Sqrt((float)radius * radius - (float)dy * dy);
                 int left = Mathf.Max(Mathf.CeilToInt(center.X - dx), 0),
-                    right = Mathf.Min(Mathf.FloorToInt(center.X + dx + 1), Utils.GetXLength(map, majorOrder));
+                    right = Mathf.Min(Mathf.FloorToInt(center.X + dx + 1), GridUtils.GetXLength(map, majorOrder));
                 for (int x = left; x < right; x++)
                 {
-                    T tile = Utils.GetTile(map, x, y, majorOrder);
+                    T tile = GridUtils.GetTile(map, x, y, majorOrder);
                     if (tile != null && IsIntoAngle(center.X, center.Y, tile.X, tile.Y, angle, direction) && (includeWalls || tile.IsWalkable) && (includeCenter || !EqualityComparer<T>.Default.Equals(tile, center)))
                     {
                         list.Add(tile);
@@ -339,11 +339,11 @@ namespace KevinCastejon.GridHelper
             }
             return list.ToArray();
         }
-        public static T[] ExtractCircleArcOutline<T>(T[,] map, T center, float radius, bool includeWalls, MajorOrder majorOrder, float angle, Vector2 direction) where T : ITile
+        private static T[] ExtractCircleArcOutline<T>(T[,] map, T center, float radius, bool includeWalls, MajorOrder majorOrder, float angle, Vector2 direction) where T : ITile
         {
             int bottom = Mathf.RoundToInt(Mathf.Max(center.Y - radius, 0)),
-                top = Mathf.RoundToInt(Mathf.Min(center.Y + radius + 1, Utils.GetYLength(map, majorOrder)));
-            int right = Utils.GetXLength(map, majorOrder);
+                top = Mathf.RoundToInt(Mathf.Min(center.Y + radius + 1, GridUtils.GetYLength(map, majorOrder)));
+            int right = GridUtils.GetXLength(map, majorOrder);
             List<T> list = new List<T>();
             for (int y = bottom; y < top; y++)
             {
@@ -351,26 +351,58 @@ namespace KevinCastejon.GridHelper
                 {
                     int dd = Mathf.FloorToInt(Mathf.Sqrt(radius * radius - r * r));
                     Vector2Int a = new Vector2Int(center.X - dd, center.Y + r);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                     a = new Vector2Int(center.X + dd, center.Y + r);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                     a = new Vector2Int(center.X - dd, center.Y - r);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                     a = new Vector2Int(center.X + dd, center.Y - r);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                     a = new Vector2Int(center.X + r, center.Y - dd);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                     a = new Vector2Int(center.X + r, center.Y + dd);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                     a = new Vector2Int(center.X - r, center.Y - dd);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                     a = new Vector2Int(center.X - r, center.Y + dd);
-                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && Utils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, Utils.GetTile(map, a.x, a.y, majorOrder).X, Utils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || Utils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(Utils.GetTile(map, a.x, a.y, majorOrder))) list.Add(Utils.GetTile(map, a.x, a.y, majorOrder));
+                    if (a.y >= 0 && a.y < top && a.x >= 0 && a.x < right && GridUtils.GetTile(map, a.x, a.y, majorOrder) != null && IsIntoAngle(center.X, center.Y, GridUtils.GetTile(map, a.x, a.y, majorOrder).X, GridUtils.GetTile(map, a.x, a.y, majorOrder).Y, angle, direction) && (includeWalls || GridUtils.GetTile(map, a.x, a.y, majorOrder).IsWalkable) && !list.Contains(GridUtils.GetTile(map, a.x, a.y, majorOrder))) list.Add(GridUtils.GetTile(map, a.x, a.y, majorOrder));
                 }
             }
             return list.ToArray();
         }
-        public static bool IsIntoAngle(int tileAX, int tileAY, int tileBX, int tileBY, float directionAngle, Vector2 direction)
+        private static T[] BresenhamExtractCircleArcOutline<T>(T[,] map, T center, float radius, bool includeWalls, MajorOrder majorOrder, float angle, Vector2 direction) where T : ITile
+        {
+            int intRadius = Mathf.RoundToInt(radius);
+            List<T> points = new List<T>();
+            int x = 0;
+            int y = -intRadius;
+            int F_M = 1 - intRadius;
+            int d_e = 3;
+            int d_ne = -(intRadius << 1) + 5;
+            points = points.Concat(GetTileNeighbours(map, center, includeWalls, majorOrder)).ToList();
+            while (x < -y)
+            {
+                if (F_M <= 0)
+                {
+                    F_M += d_e;
+                }
+                else
+                {
+                    F_M += d_ne;
+                    d_ne += 2;
+                    y += 1;
+                }
+                d_e += 2;
+                d_ne += 2;
+                x += 1;
+                if (GridUtils.AreCoordsIntoGrid(map, x, y, majorOrder))
+                {
+                    points = points.Concat(GetTileNeighbours(map, GridUtils.GetTile(map, x, y, majorOrder), includeWalls, majorOrder)).ToList();
+                }
+            }
+            return points.ToArray();
+        }
+        internal static bool IsIntoAngle(int tileAX, int tileAY, int tileBX, int tileBY, float directionAngle, Vector2 direction)
         {
             Vector2 realDirection = (new Vector2(tileBX, tileBY) - new Vector2(tileAX, tileAY)).normalized;
             float angleDiff = Vector2.Angle(realDirection, direction.normalized);
@@ -505,6 +537,10 @@ namespace KevinCastejon.GridHelper
         public static T[] GetTilesOnACircleOutline<T>(T[,] map, T center, float radius, MajorOrder majorOrder = MajorOrder.ROW_MAJOR_ORDER) where T : ITile
         {
             return ExtractCircleArcOutline(map, center, radius, true, majorOrder, 360f, Vector2.right);
+        }
+        public static T[] BresenhamGetWalkableTilesOnACircleOutline<T>(T[,] map, T center, float radius, MajorOrder majorOrder = MajorOrder.ROW_MAJOR_ORDER) where T : ITile
+        {
+            return BresenhamExtractCircleArcOutline(map, center, radius, false, majorOrder, 360f, Vector2.right);
         }
         /// <summary>
         /// Get all walkable tiles contained into a circle around a tile
@@ -680,18 +716,140 @@ namespace KevinCastejon.GridHelper
         {
             int x = neighbourDirection.x > 0 ? tile.X + 1 : (neighbourDirection.x < 0 ? tile.X - 1 : tile.X);
             int y = neighbourDirection.y > 0 ? tile.Y + 1 : (neighbourDirection.y < 0 ? tile.Y - 1 : tile.Y);
-            if (neighbourDirection.x < 0 && tile.X - 1 < 0 || neighbourDirection.x > 0 && tile.X + 1 >= Utils.GetXLength(map, majorOrder))
+            if (neighbourDirection.x < 0 && tile.X - 1 < 0 || neighbourDirection.x > 0 && tile.X + 1 >= GridUtils.GetXLength(map, majorOrder))
             {
                 neighbour = default;
                 return false;
             }
-            if (neighbourDirection.y < 0 && tile.Y - 1 < 0 || neighbourDirection.y > 0 && tile.Y + 1 >= Utils.GetYLength(map, majorOrder))
+            if (neighbourDirection.y < 0 && tile.Y - 1 < 0 || neighbourDirection.y > 0 && tile.Y + 1 >= GridUtils.GetYLength(map, majorOrder))
             {
                 neighbour = default;
                 return false;
             }
-            neighbour = Utils.GetTile(map, x, y, majorOrder);
+            neighbour = GridUtils.GetTile(map, x, y, majorOrder);
             return true;
+        }
+        /// <summary>
+        /// Get neighbour of a tile if it exists
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <param name="neighbour">The neighbour of a tile</param>
+        /// <returns></returns>
+        public static T[] GetTileNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.ROW_MAJOR_ORDER) where T : ITile
+        {
+            List<T> neis = new List<T>();
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    if (i == 0 && j == 0)
+                    {
+                        continue;
+                    }
+                    if (GridUtils.AreCoordsIntoGrid(map, tile.X + i, tile.Y + j, majorOrder))
+                    {
+                        T nei = GridUtils.GetTile(map, tile.X + i, tile.Y + j, majorOrder);
+                        if (includeWalls || nei.IsWalkable)
+                        {
+                            neis.Add(GridUtils.GetTile(map, tile.X + i, tile.Y + j, majorOrder));
+                        }
+                    }
+                }
+            }
+            return neis.ToArray();
+        }
+        /// <summary>
+        /// Get neighbour of a tile if it exists
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <param name="neighbour">The neighbour of a tile</param>
+        /// <returns></returns>
+        public static T[] GetTileFacesNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.ROW_MAJOR_ORDER) where T : ITile
+        {
+            List<T> neis = new List<T>();
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 0, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 0, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 0, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 0, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y - 1, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y - 1, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 0, tile.Y + 1, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X + 0, tile.Y + 1, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            return neis.ToArray();
+        }
+        /// <summary>
+        /// Get neighbour of a tile if it exists
+        /// </summary>
+        /// <typeparam name="T">The user-defined tile type that implements the ITile interface</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="tile">A tile</param>
+        /// <param name="neighbour">The neighbour of a tile</param>
+        /// <returns></returns>
+        public static T[] GetTileDiagonalsNeighbours<T>(T[,] map, T tile, bool includeWalls, MajorOrder majorOrder = MajorOrder.ROW_MAJOR_ORDER) where T : ITile
+        {
+            List<T> neis = new List<T>();
+
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y - 1, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y - 1, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X - 1, tile.Y + 1, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X - 1, tile.Y + 1, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y - 1, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y - 1, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            if (GridUtils.AreCoordsIntoGrid(map, tile.X + 1, tile.Y + 1, majorOrder))
+            {
+                T nei = GridUtils.GetTile(map, tile.X + 1, tile.Y + 1, majorOrder);
+                if (includeWalls || nei.IsWalkable)
+                {
+                    neis.Add(nei);
+                }
+            }
+            return neis.ToArray();
         }
         /// <summary>
         /// Is this tile contained into a rectangle or not.
@@ -853,7 +1011,7 @@ namespace KevinCastejon.GridHelper
             List<T> points = new List<T>();
             if (includeStart)
             {
-                points.Add(Utils.GetTile(map, p.x, p.y, majorOrder));
+                points.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
             }
             isLineClear = true;
             for (int ix = 0, iy = 0; ix < nx || iy < ny;)
@@ -871,8 +1029,8 @@ namespace KevinCastejon.GridHelper
                     iy++;
                 }
                 bool breakIt = false;
-                breakIt = breakIt ? true : p.x < 0 || p.x >= Utils.GetXLength(map, majorOrder) || p.y < 0 || p.y >= Utils.GetYLength(map, majorOrder);
-                T tile = breakIt ? default : Utils.GetTile(map, p.x, p.y, majorOrder);
+                breakIt = breakIt ? true : p.x < 0 || p.x >= GridUtils.GetXLength(map, majorOrder) || p.y < 0 || p.y >= GridUtils.GetYLength(map, majorOrder);
+                T tile = breakIt ? default : GridUtils.GetTile(map, p.x, p.y, majorOrder);
                 breakIt = breakIt ? true : breakOnWalls && (tile == null || !tile.IsWalkable);
                 breakIt = breakIt ? true : !includeDestination && new Vector2Int(p.x, p.y) == p1;
                 breakIt = breakIt ? true : (Vector2Int.Distance(new Vector2Int(p.x, p.y), new Vector2Int(startTile.X, startTile.Y)) > maxDistance);
@@ -888,7 +1046,7 @@ namespace KevinCastejon.GridHelper
                 {
                     continue;
                 }
-                points.Add(Utils.GetTile(map, p.x, p.y, majorOrder));
+                points.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
             }
             return points.ToArray();
         }
@@ -1127,7 +1285,6 @@ namespace KevinCastejon.GridHelper
         {
             Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
             maxDistance = Mathf.Max(maxDistance, Vector2Int.Distance(new Vector2Int(startTile.X, startTile.Y), endPos));
-            Debug.Log(maxDistance);
             return GetConeOfVision(map, startTile, openingAngle, endPos - new Vector2(startTile.X, startTile.Y), maxDistance, includeStart, majorOrder);
         }
         /// <summary>
@@ -1290,9 +1447,9 @@ namespace KevinCastejon.GridHelper
     {
         private static bool GetTile<T>(T[,] map, int x, int y, out T tile, MajorOrder majorOrder) where T : ITile
         {
-            if (x > -1 && y > -1 && x < Utils.GetXLength(map, majorOrder) && y < Utils.GetYLength(map, majorOrder))
+            if (x > -1 && y > -1 && x < GridUtils.GetXLength(map, majorOrder) && y < GridUtils.GetYLength(map, majorOrder))
             {
-                tile = Utils.GetTile(map, x, y, majorOrder);
+                tile = GridUtils.GetTile(map, x, y, majorOrder);
                 return true;
             }
             tile = default;
@@ -1541,8 +1698,12 @@ namespace KevinCastejon.GridHelper
             return new PathMap<T>(accessibleTilesDico, accessibleTiles, targetTile, maxDistance, majorOrder);
         }
     }
-    internal static class Utils
+    internal static class GridUtils
     {
+        internal static bool AreCoordsIntoGrid<T>(T[,] map, int x, int y, MajorOrder majorOrder) where T : ITile
+        {
+            return x - 1 >= 0 && x + 1 < GetXLength(map, majorOrder) && y - 1 >= 0 && y + 1 < GetYLength(map, majorOrder);
+        }
         internal static T GetTile<T>(T[,] map, int x, int y, MajorOrder majorOrder) where T : ITile
         {
             if (majorOrder == MajorOrder.ROW_MAJOR_ORDER)
