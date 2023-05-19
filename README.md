@@ -12,6 +12,7 @@ Comes with several demo examples.
 
 **[Complete API Documentation](https://kevincastejon.fr/demos/Documentations/Unity-GridHelper/)**
 
+---
 ## Usages
 
 All you need to use this API is a two-dimensional array (three-dimensional for 3D API) of tiles.
@@ -31,10 +32,13 @@ or for the 3D API:
 ```cs
 using KevinCastejon.GridHelper3D;
 ```
+---
+---
 ## 2D API
-
+---
+---
 ### - <u>Extraction</u>
-
+---
 You can always specify a *majorOrder* parameter that tells which indexes order to use for the grid. Default is ROW_MAJOR_ORDER (YX)
 
 You can extract tiles in a circle, or in a rectangle, around a tile.
@@ -81,12 +85,16 @@ YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnARectangleOutline(grid
 YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnACircleOutline(grid, centerTile, radius);
 ```
 
+---
+
 You can get neighbour of a tile (if it exists).
 
 - **GetTileNeighbour**
 ```cs
 YourCustomTileType upperNeighbour = Extraction.GetTileNeighbour(tile, Vector2Int.up);
 ```
+
+---
 
 Besides from extracting tiles, you can know if a specific tile is contained into a circle/rectangle or not. Same with the outlines.
 
@@ -107,8 +115,9 @@ bool isTileInACircle = Extraction3D.IsTileInACircle(centerTile, tile, radius);
 bool isTileInACircleOutline = Extraction3D.IsTileInACircleOutline(centerTile, tile, radius);
 ```
 
+---
 ### - <u>Raycasting</u>
-
+---
 You can always specify a *majorOrder* parameter that tells which indexes order to use for the grid. Default is ROW_MAJOR_ORDER (YX)
 
 You can get all the tiles on a line between two tiles
@@ -125,6 +134,8 @@ You can also get only the walkable tiles on a line between two tiles
 YourCustomTileType[] tiles = Raycasting.GetWalkableTilesOnALine(grid, startTile, destinationTile);
 ```
 
+---
+
 You can get the line of sight between two tiles (a line that "stops" at the first encountered unwalkable tile)
 
 - **GetLineOfSight**
@@ -139,8 +150,9 @@ You can know if the line of sight between two tiles is clear (has not encountere
 bool isLineClear = Raycasting.IsLineOfSightClear(grid, startTile, destinationTile);
 ```
 
+---
 ### - <u>Pathfinding</u>
-
+---
 The pathfinding part of this library generates a **PathMap** object that holds all the calculated paths data.
 
 This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the others accessible tiles. (The **PathMap** generation uses **Dijkstra** algorithm).
@@ -157,9 +169,12 @@ You can specify a *majorOrder* parameter that tells which indexes order to use f
 PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(grid, targetTile);
 ```
 
+---
 ### - <u>PathMap</u>
-
+---
 Once the **PathMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
+
+---
 
 You can retrieve the tile that has been used as the target to generate this **PathMap**
 
@@ -181,7 +196,7 @@ You can retrieve the **majorOrder** parameter value that has been used to genera
 ```cs
 MajorOrder majorOrder = pathMap.MajorOrder;
 ```
-
+---
 You can get all the accessible tiles from the target tile.
 
 - **GetAccessibleTiles**
@@ -203,8 +218,9 @@ Or you can get all the tiles on the path from the target to a tile.
 YourCustomTileType[] tiles = pathMap.GetPathFromTarget(destinationTile);
 ```
 
+---
 ### - <u>PathMap</u> - other features
-
+---
 You can get info on a specific tile through some **PathMap** methods.
 
 
@@ -236,9 +252,56 @@ You can get the next tile direction on the path between the target and a tile (i
 Vector2 nextTileDirection = pathMap.GetNextTileDirectionFromTile(tile);
 ```
 
+---
+### - <u>PathfindingPolicy</u>
 
+The **PathfindingPolicy** object holds settings relating to diagonals and allowed movements.
+
+You can set the **DiagonalsPolicy** that represents the diagonals permissiveness. When going diagonally from a tile A to tile B in 2D grid, there are two more tile involved, the ones that are both facing neighbours of the A and B tiles. You can allow diagonals movement depending on the walkable status of these tiles.
+- **DiagonalsPolicy**
+```cs
+pathfindingPolicy.DiagonalsPolicy = DiagonalsPolicy.ALL_DIAGONALS;
+```
+  - **NONE** : no diagonal movement allowed
+  - **DIAGONAL_2FREE** : only diagonal movements, with two walkable facing neighbours common to the start and destination tiles, are allowed
+  - **DIAGONAL_1FREE** : only diagonal movements, with one walkable facing neighbour common to the start and destination tiles, are allowed
+  - **ALL_DIAGONALS** : all diagonal movements allowed
+
+![DiagonalsPolicySchema](Assets/KevinCastejon/GridHelper/Documentation/DiagonalsPolicySchema.png)
+
+---
+
+You can set the diagonals weight ratio multiplier that will increase the tile's weight when moving to it diagonally.
+
+Minimum is 1. Default is 1.4142135623730950488016887242097.
+
+Note that setting diagonals weight to 1 can lead to unpredictable behaviours on pathfinding as a diagonal move has same cost than orthogonal one so the paths could become "serrated" (but still the shortests!).
+- **DiagonalsWeight**
+```cs
+pathfindingPolicy.DiagonalsWeight = 1.5f;
+```
+
+---
+
+You can set the **MovementPolicy** that represents the movement permissiveness. It is useful to allow special movement, especially for side-view games, such as spiders that can walk on walls or roofs, or flying characters. Default is FLY. Top-down view grid based games should not use other value than the default as they do not hold concept of "gravity" nor "up-and-down".
+
+Note that this parameter is a flag enumeration, so you can cumulate multiple states, the FLY state being the most permissive and making useless its combination with any other one.
+- **MovementPolicy**
+```cs
+pathfindingPolicy.MovementPolicy = MovementPolicy.ALL_DIAGONALS;
+```
+  - **FLY** : all walkable tiles can be walk thought
+  - **WALL_BELOW** : the walkable tiles that has a not-walkable lower neighbour can be walk thought
+  - **WALL_ASIDE** : the walkable tiles that has a not-walkable side neighbour can be walk thought
+  - **WALL_ABOVE** : the walkable tiles that has a not-walkable upper neighbour can be walk thought
+
+![MovementPolicySchema](Assets/KevinCastejon/GridHelper/Documentation/MovementsPolicySchema.png)
+
+
+---
 ## 3D API
 
+---
 ### - <u>Extraction3D</u>
 
 You can always specify a *majorOrder* parameter that tells which indexes order to use for the grid. Default is YXZ
@@ -313,6 +376,7 @@ bool isTileInASphere = Extraction3D.IsTileInASphere(centerTile, tile, radius);
 bool isTileInASphereOutline = Extraction3D.IsTileInASphereOutline(centerTile, tile, radius);
 ```
 
+---
 ### - <u>Raycasting3D</u>
 
 You can always specify a *majorOrder* parameter that tells which indexes order to use for the grid. Default is YXZ
@@ -345,6 +409,7 @@ You can know if the line of sight between two tiles is clear (has not encountere
 bool isLineClear = Raycasting3D.IsLineOfSightClear(grid, startTile, destinationTile);
 ```
 
+---
 ### - <u>Pathfinding3D</u>
 
 The pathfinding part of this library generates a **PathMap3D** object that holds all the calculated paths data.
@@ -363,6 +428,7 @@ You can specify a *majorOrder* parameter that tells which indexes order to use f
 PathMap3D<YourCustomTileType> pathMap = Pathfinding3D.GeneratePathMap(grid, targetTile, maxDistance);
 ```
 
+---
 ### - <u>PathMap3D</u>
 
 Once the **PathMap3D** object is generated, you can use its several and almost "*cost free*" methods and properties.
@@ -409,6 +475,7 @@ Or you can get all the tiles on the path from the target to a tile.
 YourCustomTileType[] tiles = pathMap.GetPathFromTarget(destinationTile);
 ```
 
+---
 ### - <u>PathMap3D</u> - other features
 
 You can get info on a specific tile through some **PathMap3D** methods.

@@ -14,10 +14,14 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
         EXTRACT_CIRCLE_OUTLINE,
         EXTRACT_RECTANGLE,
         EXTRACT_RECTANGLE_OUTLINE,
+        EXTRACT_CONE,
+        EXTRACT_CONE_OUTLINE,
     }
     public class Grid2DMap : MonoBehaviour
     {
-        [SerializeField] private int _radius = 2;
+        [SerializeField] private float _radius = 2;
+        [SerializeField] private float _direction = 0f;
+        [SerializeField] private float _angle = 180f;
         [SerializeField] private Vector2Int _size = Vector2Int.one * 2;
 
         private Camera _camera;
@@ -42,7 +46,7 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                 Extract();
             }
         }
-        public int Radius
+        public float Radius
         {
             get
             {
@@ -55,6 +59,34 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                 Extract();
             }
         }
+
+        public float Direction
+        {
+            get
+            {
+                return _direction;
+            }
+
+            set
+            {
+                _direction = value;
+                Extract();
+            }
+        }
+        public float Angle
+        {
+            get
+            {
+                return _angle;
+            }
+
+            set
+            {
+                _angle = value;
+                Extract();
+            }
+        }
+
         public void SetDemoType(int demoType)
         {
             DemoType = (DemoType)demoType;
@@ -121,7 +153,13 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                     ExtractRectangle();
                     break;
                 case DemoType.EXTRACT_RECTANGLE_OUTLINE:
-                    ExtractCuboidOutline();
+                    ExtractRectangleOutline();
+                    break;
+                case DemoType.EXTRACT_CONE:
+                    ExtractCone();
+                    break;
+                case DemoType.EXTRACT_CONE_OUTLINE:
+                    ExtractConeOutline();
                     break;
                 default:
                     break;
@@ -161,9 +199,25 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                 tile.TileMode = TileMode.EXTRACTED;
             }
         }
-        private void ExtractCuboidOutline()
+        private void ExtractRectangleOutline()
         {
             _extractedTiles = Extraction.GetWalkableTilesOnARectangleOutline(_map, _targetTile, _size);
+            foreach (Tile tile in _extractedTiles)
+            {
+                tile.TileMode = TileMode.EXTRACTED;
+            }
+        }
+        private void ExtractCone()
+        {
+            //_extractedTiles = Extraction.GetWalkableTilesInACone(_map, _targetTile, _radius, false, MajorOrder.ROW_MAJOR_ORDER, _angle, _direction);
+            foreach (Tile tile in _extractedTiles)
+            {
+                tile.TileMode = TileMode.EXTRACTED;
+            }
+        }
+        private void ExtractConeOutline()
+        {
+            //_extractedTiles = Extraction.GetWalkableTilesOnAConeOutline(_map, _targetTile, _radius, MajorOrder.ROW_MAJOR_ORDER, _angle, _direction);
             foreach (Tile tile in _extractedTiles)
             {
                 tile.TileMode = TileMode.EXTRACTED;

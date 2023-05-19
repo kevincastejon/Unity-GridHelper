@@ -12,12 +12,13 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
     {
         LINE_OF_TILES,
         LINE_OF_SIGHT,
+        CONE_OF_VISION,
     }
     public class Grid2DMap : MonoBehaviour
     {
-
+        [SerializeField] private float _openingAngle = 90f;
         private Camera _camera;
-        private Tile[,] _map = new Tile[21, 24];
+        private Tile[,] _map = new Tile[60, 70];
         private Tile[] _line = new Tile[0];
         private Tile _stopTile;
         private Tile _targetTile;
@@ -38,6 +39,18 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                     return;
                 }
                 _demoType = value;
+            }
+        }
+        public float OpeningAngle
+        {
+            get
+            {
+                return _openingAngle;
+            }
+
+            set
+            {
+                _openingAngle = value;
             }
         }
         public float MaxDistance
@@ -174,6 +187,9 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                 case DemoType.LINE_OF_SIGHT:
                     GetLineOfSight();
                     break;
+                case DemoType.CONE_OF_VISION:
+                    GetConeOfVision();
+                    break;
                 default:
                     break;
             }
@@ -200,6 +216,15 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
         private void GetLineOfSight()
         {
             _line = Raycasting.GetLineOfSight(_map, _targetTile, _stopTile, _maxDistance, false);
+            foreach (Tile tile in _line)
+            {
+                tile.TileMode = TileMode.LINE;
+            }
+        }
+
+        private void GetConeOfVision()
+        {
+            _line = Raycasting.GetConeOfVision(_map, _targetTile, _openingAngle, _stopTile, _maxDistance, false);
             foreach (Tile tile in _line)
             {
                 tile.TileMode = TileMode.LINE;
