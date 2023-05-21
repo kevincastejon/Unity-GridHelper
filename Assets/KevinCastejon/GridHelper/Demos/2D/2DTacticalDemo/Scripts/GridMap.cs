@@ -72,7 +72,7 @@ namespace TacticalDemo
         {
             _modeLabel.text = "Attack";
             _description.text = "Click a visible opponent tile to attack\nor press Enter to skip";
-            Tile[] tilesOnRadius = Extraction.GetWalkableTilesInACircle(_map, CurrentCharacterTile, Mathf.FloorToInt(_maxDistanceAttack), false);
+            Tile[] tilesOnRadius = Extraction.GetTilesInACircle(_map, CurrentCharacterTile, Mathf.FloorToInt(_maxDistanceAttack), false, false);
             SetPathTiles(tilesOnRadius);
         }
         void Update()
@@ -162,7 +162,7 @@ namespace TacticalDemo
             }
             else
             {
-                if (Extraction.IsTileInACircle(CurrentCharacterTile, _hoveredTile, Mathf.FloorToInt(_maxDistanceAttack)))
+                if (Extraction.IsTileInACircle(_map,CurrentCharacterTile, _hoveredTile, Mathf.FloorToInt(_maxDistanceAttack)))
                 {
                     _lineRenderer.positionCount = 2;
                     Tile[] lineOfSight = Raycasting.GetLineOfSight(_map, CurrentCharacterTile, _hoveredTile, out bool isLineClear, _maxDistanceAttack, false);
