@@ -18,7 +18,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
     {
         [SerializeField] private float _openingAngle = 90f;
         private Camera _camera;
-        private Tile[,] _map = new Tile[60, 70];
+        private Tile[,] _map = new Tile[31, 75];
         private Tile[] _line = new Tile[0];
         private Tile _stopTile;
         private Tile _targetTile;
@@ -207,7 +207,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
         }
         private void GetLineOfTiles()
         {
-            _line = Raycasting.GetWalkableTilesOnALine(_map, _targetTile, _stopTile, _maxDistance, false);
+            _line = Raycasting.GetTilesOnALine(_map, _targetTile, _stopTile, true, false, false, true, false);
             foreach (Tile tile in _line)
             {
                 tile.TileMode = TileMode.LINE;
@@ -215,7 +215,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
         }
         private void GetLineOfSight()
         {
-            _line = Raycasting.GetLineOfSight(_map, _targetTile, _stopTile, _maxDistance, false);
+            _line = Raycasting.GetLineOfSight(_map, _targetTile, _stopTile, true, false, false, true);
             foreach (Tile tile in _line)
             {
                 tile.TileMode = TileMode.LINE;
@@ -224,7 +224,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
 
         private void GetConeOfVision()
         {
-            _line = Raycasting.GetConeOfVision(_map, _targetTile, _openingAngle, _stopTile, _maxDistance, false);
+            _line = Raycasting.GetConeOfVision(_map, _targetTile, _openingAngle, _stopTile, false);
             foreach (Tile tile in _line)
             {
                 tile.TileMode = TileMode.LINE;
