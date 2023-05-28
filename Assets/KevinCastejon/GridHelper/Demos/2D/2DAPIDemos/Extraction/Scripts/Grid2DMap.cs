@@ -36,7 +36,7 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
         private float _angle = 90f;
         private Vector2Int _size = Vector2Int.one * 5;
         private Camera _camera;
-        private Tile[,] _map = new Tile[31, 35];
+        private Tile[,] _map = new Tile[65, 71];
         private Tile[] _extractedTiles;
         private Tile _targetTile;
         private Tile _hoveredTile;
@@ -151,6 +151,11 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                 }
 
             }
+            else
+            {
+                _hoveredTile = null;
+                ClearLED();
+            }
         }
 
         private void SetStart(Tile tile)
@@ -195,6 +200,41 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                     break;
                 case DemoType.NEIGHBORS_ALL:
                     _neiAnyLED.color = Extraction.IsTileAnyNeighbor(_targetTile, _hoveredTile) ? Color.green : Color.red;
+                    break;
+                default:
+                    break;
+            }
+        }
+        private void ClearLED()
+        {
+            switch (_demoType)
+            {
+                case DemoType.EXTRACT_CIRCLE:
+                    _circleLED.color = Color.red;
+                    break;
+                case DemoType.EXTRACT_CIRCLE_OUTLINE:
+                    _circleOutlineLED.color = Color.red;
+                    break;
+                case DemoType.EXTRACT_RECTANGLE:
+                    _rectangleLED.color = Color.red;
+                    break;
+                case DemoType.EXTRACT_RECTANGLE_OUTLINE:
+                    _rectangleOutlineLED.color = Color.red;
+                    break;
+                case DemoType.EXTRACT_CONE:
+                    _coneLED.color = Color.red;
+                    break;
+                case DemoType.NEIGHBOR:
+                    _neiLED.color = Color.red;
+                    break;
+                case DemoType.NEIGHBORS_ORTHO:
+                    _neiOrthoLED.color = Color.red;
+                    break;
+                case DemoType.NEIGHBORS_DIAGONALS:
+                    _neiDiagoLED.color = Color.red;
+                    break;
+                case DemoType.NEIGHBORS_ALL:
+                    _neiAnyLED.color = Color.red;
                     break;
                 default:
                     break;

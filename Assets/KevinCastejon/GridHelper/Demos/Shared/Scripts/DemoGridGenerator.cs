@@ -9,8 +9,8 @@ namespace GridHelperDemoMisc
     {
         [SerializeField] private GameObject _tilePrefab;
         [SerializeField] private bool _3D;
-        [SerializeField] [Min(1)] private int _width;
-        [SerializeField] [Min(1)] private int _height;
-        [SerializeField] [Min(1)] private int _depth;
+        [SerializeField] [Min(1)] private int _width = 71;
+        [SerializeField] [Min(1)] private int _height = 65;
+        [SerializeField] [Min(1)] private int _depth = 61;
     }
 }

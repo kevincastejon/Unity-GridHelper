@@ -76,9 +76,17 @@ namespace KevinCastejon.GridHelper
             _diagonalsWeight = diagonalsWeight;
             _movementPolicy = movementPolicy;
         }
-
+        /// <summary>
+        /// The DiagonalsPolicy
+        /// </summary>
         public DiagonalsPolicy DiagonalsPolicy { get => _diagonalsPolicy; set => _diagonalsPolicy = value; }
+        /// <summary>
+        /// The diagonals weight ratio
+        /// </summary>
         public float DiagonalsWeight { get => _diagonalsWeight; set => _diagonalsWeight = value; }
+        /// <summary>
+        /// The MovementPolicy
+        /// </summary>
         public MovementPolicy MovementPolicy { get => _movementPolicy; set => _movementPolicy = value; }
     }
     /// <summary>
@@ -115,11 +123,16 @@ namespace KevinCastejon.GridHelper
             get;
         }
     }
-
+    /// <summary>
+    /// Defines globals settings of the API
+    /// </summary>
     public static class GridGlobalSettings
     {
         private static DefaultMajorOrder _defaultMajorOrder = DefaultMajorOrder.ROW_MAJOR_ORDER;
 
+        /// <summary>
+        /// The major order to use when the MajorOrder.DEFAULT is passed as a parameter. Default is ROW_MAJOR_ORDER.
+        /// </summary>
         public static DefaultMajorOrder DefaultMajorOrder { get => _defaultMajorOrder; set => _defaultMajorOrder = value; }
     }
     /// <summary>
@@ -544,7 +557,7 @@ namespace KevinCastejon.GridHelper
         }
 
         /// <summary>
-        /// Get tiles in a rectangle around a tile
+        /// Get tiles in a rectangle around a center tile
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
         /// <param name="map">A two-dimensional array of tiles</param>
@@ -608,7 +621,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="length">The cone length</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [0-360]</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="directionAngle">The cone direction angle in degrees  [0-360]. Default is 0, which represents a direction pointing to the right in 2D coordinates</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
@@ -626,7 +639,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="start">The start tile</param>
         /// <param name="length">The cone length</param>
-        /// <param name="openingAngle">The cone opening angle in degrees [0-360]</param>
+        /// <param name="openingAngle">The cone opening angle in degrees [1-360]</param>
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right which is the default value</param>
         /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
         /// <param name="includeWalls">Include the non-walkable tiles into the resulting array or not. Default is true</param>
@@ -634,7 +647,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInACone<T>(T[,] map, T start, int length, float openingAngle, Vector2 direction = new Vector2(), bool includeStart = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            openingAngle = Mathf.Clamp(openingAngle, 0f, 360f);
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             direction = direction == Vector2.zero ? Vector2.right : direction;
             return ExtractCircleArcFilled(map, start, length, includeStart, includeWalls, majorOrder, openingAngle, direction);
         }
@@ -876,6 +889,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, int radius, float openingAngle, float directionAngle = 0f, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             directionAngle = Mathf.Clamp(directionAngle, 0f, 360f);
             return IsOnCircleArcFilled(map, tile, center, radius, openingAngle, Quaternion.AngleAxis(directionAngle, Vector3.back) * Vector2.right, majorOrder);
         }
@@ -893,6 +907,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, int radius, float openingAngle, Vector2 direction = new Vector2(), MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             return IsOnCircleArcFilled(map, tile, center, radius, openingAngle, direction, majorOrder);
         }
 
@@ -961,32 +976,32 @@ namespace KevinCastejon.GridHelper
     /// </summary>
     public class Raycasting
     {
-        internal static T[] Raycast<T>(T[,] map, T startTile, float directionAngle, float maxDistance, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder) where T : ITile
-        {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
-            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
-            {
-                maxDistance = magnitude;
-            }
-            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
-            return Raycast(map, startTile, endPos, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, breakOnWalls, includeWalls, out isLineClear, majorOrder);
-        }
-        internal static T[] Raycast<T>(T[,] map, T startTile, Vector2 direction, float maxDistance, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder) where T : ITile
-        {
-            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
-            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
-            {
-                maxDistance = magnitude;
-            }
-            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * maxDistance));
-            return Raycast(map, startTile, endPos, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, breakOnWalls, includeWalls, out isLineClear, majorOrder);
-        }
-        internal static T[] Raycast<T>(T[,] map, T startTile, T endTile, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder) where T : ITile
-        {
-            Vector2Int endPos = new Vector2Int(endTile.X, endTile.Y);
-            return Raycast(map, startTile, endPos, includeStart, allowDiagonals, favorVertical, includeDestination, breakOnWalls, includeWalls, out isLineClear, majorOrder);
-        }
-        internal static T[] Raycast<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder) where T : ITile
+        //internal static void Raycast<T>(T[,] map, T startTile, float directionAngle, float maxDistance, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder, ref HashSet<T> results) where T : ITile
+        //{
+        //    float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+        //    if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+        //    {
+        //        maxDistance = magnitude;
+        //    }
+        //    Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
+        //    Raycast(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, breakOnWalls, includeWalls, out isLineClear, majorOrder, ref results);
+        //}
+        //internal static void Raycast<T>(T[,] map, T startTile, Vector2 direction, float maxDistance, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder, ref HashSet<T> results) where T : ITile
+        //{
+        //    float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+        //    if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+        //    {
+        //        maxDistance = magnitude;
+        //    }
+        //    Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * maxDistance));
+        //    Raycast(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, breakOnWalls, includeWalls, out isLineClear, majorOrder, ref results);
+        //}
+        //internal static void Raycast<T>(T[,] map, T startTile, T endTile, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder, ref HashSet<T> results) where T : ITile
+        //{
+        //    Vector2Int endPos = new Vector2Int(endTile.X, endTile.Y);
+        //    Raycast(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, breakOnWalls, includeWalls, out isLineClear, majorOrder, ref results);
+        //}
+        internal static void Raycast<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals, bool favorVertical, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder, ref HashSet<T> results) where T : ITile
         {
             Vector2Int p0 = new Vector2Int(startTile.X, startTile.Y);
             Vector2Int p1 = endPosition;
@@ -997,10 +1012,9 @@ namespace KevinCastejon.GridHelper
             int sign_x = dx > 0 ? 1 : -1, sign_y = dy > 0 ? 1 : -1;
 
             Vector2Int p = new Vector2Int(p0.x, p0.y);
-            List<T> points = new List<T>();
             if (includeStart)
             {
-                points.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
+                results.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
             }
             isLineClear = true;
             for (int ix = 0, iy = 0; ix < nx || iy < ny;)
@@ -1031,14 +1045,18 @@ namespace KevinCastejon.GridHelper
                     iy++;
                 }
                 bool breakIt = false;
-                breakIt = breakIt ? true : p.x < 0 || p.x >= GridUtils.GetXLength(map, majorOrder) || p.y < 0 || p.y >= GridUtils.GetYLength(map, majorOrder);
+                breakIt = breakIt ? true : !GridUtils.AreCoordsIntoGrid(map, p.x, p.y, majorOrder);
                 T tile = breakIt ? default : GridUtils.GetTile(map, p.x, p.y, majorOrder);
                 breakIt = breakIt ? true : breakOnWalls && (tile == null || !tile.IsWalkable);
+                if (breakIt)
+                {
+                    isLineClear = false;
+                }
                 breakIt = breakIt ? true : !includeDestination && new Vector2Int(p.x, p.y) == p1;
-                isLineClear = !breakIt;
                 bool continueIt = breakIt ? true : false;
                 continueIt = continueIt ? true : tile == null;
                 continueIt = continueIt ? true : !includeWalls && !tile.IsWalkable;
+                //continueIt = continueIt ? true : excludes != null && excludes.Contains(tile);
                 if (breakIt)
                 {
                     break;
@@ -1047,10 +1065,124 @@ namespace KevinCastejon.GridHelper
                 {
                     continue;
                 }
-                points.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
+                results.Add(GridUtils.GetTile(map, p.x, p.y, majorOrder));
             }
-            return points.ToArray();
         }
+        private static void ConeCast<T>(T[,] map, T center, int radius, float openingAngle, Vector2 direction, out bool isLineClear, bool includeStart, ref HashSet<T> resultList, MajorOrder majorOrder) where T : ITile
+        {
+            isLineClear = true;
+            bool lineClear = true;
+            direction.Normalize();
+            int x = 0;
+            int y = -radius;
+            int F_M = 1 - radius;
+            int d_e = 3;
+            int d_ne = -(radius << 1) + 5;
+            RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, out lineClear, includeStart, ref resultList, majorOrder);
+            if (!lineClear)
+            {
+                isLineClear = false;
+            }
+            while (x < -y)
+            {
+                if (F_M <= 0)
+                {
+                    F_M += d_e;
+                }
+                else
+                {
+                    F_M += d_ne;
+                    d_ne += 2;
+                    y += 1;
+                }
+                d_e += 2;
+                d_ne += 2;
+                x += 1;
+                RaycastToMirrorPositions(map, center, x, y, openingAngle, direction, out isLineClear, includeStart, ref resultList, majorOrder);
+                if (!lineClear)
+                {
+                    isLineClear = false;
+                }
+            }
+        }
+        private static void RaycastToMirrorPositions<T>(T[,] map, T centerTile, int x, int y, float openingAngle, Vector2 direction, out bool isLineClear, bool includeStart, ref HashSet<T> resultList, MajorOrder majorOrder) where T : ITile
+        {
+            isLineClear = true;
+            bool lineClear = true;
+            Vector2Int nei = new Vector2Int(centerTile.X + x, centerTile.Y + y);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+            }
+            if (!lineClear)
+            {
+                isLineClear = false;
+            }
+            nei = new Vector2Int(centerTile.X - x, centerTile.Y + y);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+            }
+            if (!lineClear)
+            {
+                isLineClear = false;
+            }
+            nei = new Vector2Int(centerTile.X + x, centerTile.Y - y);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+                if (!lineClear)
+                {
+                    isLineClear = false;
+                }
+            }
+            nei = new Vector2Int(centerTile.X - x, centerTile.Y - y);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+                if (!lineClear)
+                {
+                    isLineClear = false;
+                }
+            }
+            nei = new Vector2Int(centerTile.X + y, centerTile.Y + x);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+                if (!lineClear)
+                {
+                    isLineClear = false;
+                }
+            }
+            nei = new Vector2Int(centerTile.X - y, centerTile.Y + x);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+                if (!lineClear)
+                {
+                    isLineClear = false;
+                }
+            }
+            nei = new Vector2Int(centerTile.X + y, centerTile.Y - x);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+                if (!lineClear)
+                {
+                    isLineClear = false;
+                }
+            }
+            nei = new Vector2Int(centerTile.X - y, centerTile.Y - x);
+            if (Extraction.IsIntoAngle(centerTile.X, centerTile.Y, nei.x, nei.y, openingAngle, direction))
+            {
+                Raycast(map, centerTile, new Vector2Int(nei.x, nei.y), false, false, includeStart, true, true, false, out lineClear, majorOrder, ref resultList);
+                if (!lineClear)
+                {
+                    isLineClear = false;
+                }
+            }
+        }
+
         //internal static T[] Raycast<T>(T[,] map, T startTile, Vector2Int endPosition, float maxDistance, bool includeStart, bool includeDestination, bool breakOnWalls, bool includeWalls, out bool isLineClear, MajorOrder majorOrder) where T : ITile
         //{
         //    float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
@@ -1186,7 +1318,8 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnALine<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, destinationTile, allowDiagonals, favorVertical, includeStart, includeDestination, false, includeWalls, out bool isclear, majorOrder);
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, includeWalls, majorOrder);
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1199,9 +1332,15 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, float directionAngle, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, float directionAngle, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, directionAngle, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, false, includeWalls, out bool isclear, majorOrder);
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
+            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, includeWalls, majorOrder);
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1214,10 +1353,34 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, Vector2 direction, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, Vector2 direction, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, direction, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, false, includeWalls, out bool isclear, majorOrder);
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * maxDistance));
+            return GetTilesOnALine(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, includeWalls, majorOrder);
         }
+        /// <summary>
+        /// Get all tiles on a line between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The stop tile</param>
+        /// <param name="maxDistance">The maximum distance from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetTilesOnALine<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        {
+            HashSet<T> hashSet = new HashSet<T>();
+            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, includeDestination, false, includeWalls, out bool isclear, majorOrder, ref hashSet);
+            return hashSet.ToArray();
+        }
+
         /// <summary>
         /// Is the line of sight clear between two tiles
         /// </summary>
@@ -1228,7 +1391,9 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static bool IsLineOfSightClear<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            Raycast(map, startTile, destinationTile, allowDiagonals, favorVertical, true, true, true, true, out bool isclear, majorOrder);
+            HashSet<T> hashSet = new HashSet<T>();
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            Raycast(map, startTile, endPos, allowDiagonals, favorVertical, true, true, true, true, out bool isclear, majorOrder, ref hashSet);
             return isclear;
         }
         /// <summary>
@@ -1239,9 +1404,16 @@ namespace KevinCastejon.GridHelper
         /// <param name="startTile">The start tile</param>
         /// <param name="directionAngle">The angle of the line from the start tile</param>
         /// <returns>An array of tiles</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, float directionAngle, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, float directionAngle, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            Raycast(map, startTile, directionAngle, maxDistance, allowDiagonals, favorVertical, true, true, true, true, out bool isclear, majorOrder);
+            HashSet<T> hashSet = new HashSet<T>();
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
+            Raycast(map, startTile, endPos, allowDiagonals, favorVertical, true, true, true, true, out bool isclear, majorOrder, ref hashSet);
             return isclear;
         }
         /// <summary>
@@ -1252,11 +1424,19 @@ namespace KevinCastejon.GridHelper
         /// <param name="startTile">The start tile</param>
         /// <param name="direction">The direction of the line from the start tile</param>
         /// <returns>An array of tiles</returns>
-        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, Vector2 direction, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static bool IsLineOfSightClear<T>(T[,] map, T startTile, Vector2 direction, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            Raycast(map, startTile, direction, maxDistance, allowDiagonals, favorVertical, true, true, true, true, out bool isclear, majorOrder);
+            HashSet<T> hashSet = new HashSet<T>();
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * maxDistance));
+            Raycast(map, startTile, endPos, allowDiagonals, favorVertical, true, true, true, true, out bool isclear, majorOrder, ref hashSet);
             return isclear;
         }
+
         /// <summary>
         /// Get all tiles on a line between two tiles
         /// </summary>
@@ -1270,7 +1450,8 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, destinationTile, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out bool isclear, majorOrder);
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, majorOrder);
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1283,9 +1464,10 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, float directionAngle, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, float directionAngle, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, directionAngle, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out bool isclear, majorOrder);
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
+            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, majorOrder);
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1298,9 +1480,27 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, T startTile, Vector2 direction, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, Vector2 direction, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, direction, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out bool isclear, majorOrder);
+            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * maxDistance));
+            return GetLineOfSight(map, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, majorOrder);
+        }
+        /// <summary>
+        /// Get all tiles on a line between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The stop tile</param>
+        /// <param name="maxDistance">The maximum distance from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] map, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        {
+            HashSet<T> hashSet = new HashSet<T>();
+            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out bool isclear, majorOrder, ref hashSet);
+            return hashSet.ToArray();
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1315,7 +1515,8 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetLineOfSight<T>(T[,] map, out bool isclear, T startTile, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, destinationTile, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out isclear, majorOrder);
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            return GetLineOfSight(map, out isclear, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, majorOrder);
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1328,9 +1529,10 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isclear, T startTile, float directionAngle, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, out bool isclear, T startTile, float directionAngle, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, directionAngle, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out isclear, majorOrder);
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
+            return GetLineOfSight(map, out isclear, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, majorOrder);
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1343,10 +1545,29 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetLineOfSight<T>(T[,] map, out bool isclear, T startTile, Vector2 direction, float maxDistance = 0f, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetLineOfSight<T>(T[,] map, out bool isclear, T startTile, Vector2 direction, int maxDistance = 0, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return Raycast(map, startTile, direction, maxDistance, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out isclear, majorOrder);
+            Vector2Int endPos = Vector2Int.RoundToInt(new Vector2(startTile.X, startTile.Y) + (direction.normalized * maxDistance));
+            return GetLineOfSight(map, out isclear, startTile, endPos, allowDiagonals, favorVertical, includeStart, includeDestination, majorOrder);
         }
+        /// <summary>
+        /// Get all tiles on a line between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The stop tile</param>
+        /// <param name="maxDistance">The maximum distance from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetLineOfSight<T>(T[,] map, out bool isclear, T startTile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, bool includeStart = true, bool includeDestination = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        {
+            HashSet<T> hashSet = new HashSet<T>();
+            Raycast(map, startTile, endPosition, allowDiagonals, favorVertical, includeStart, includeDestination, true, false, out isclear, majorOrder, ref hashSet);
+            return hashSet.ToArray();
+        }
+
         /// <summary>
         /// Get all tiles on a line between two tiles
         /// </summary>
@@ -1360,9 +1581,13 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, T destinationTile, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            //Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
-            //return GetConeOfVision(map, startTile, openingAngle, endPos - new Vector2(startTile.X, startTile.Y), includeStart, majorOrder);
-            return new T[0];
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, out bool isLineClear, includeStart, ref lines, majorOrder);
+            return lines.ToArray();
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1375,10 +1600,20 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, float directionAngle, float maxDistance = 0f, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, float directionAngle, int maxDistance = 0, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
             Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
-            return GetConeOfVision(map, startTile, openingAngle, endPos - new Vector2(startTile.X, startTile.Y), maxDistance, includeStart, majorOrder);
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            ConeCast(map, startTile, maxDistance, openingAngle, direction, out bool isLineClear, includeStart, ref lines, majorOrder);
+            return lines.ToArray();
         }
         /// <summary>
         /// Get all tiles on a line between two tiles
@@ -1391,133 +1626,91 @@ namespace KevinCastejon.GridHelper
         /// <param name="includeStart">Include the start tile into the resulting array or not</param>
         /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, Vector2 direction, float maxDistance = 0f, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] GetConeOfVision<T>(T[,] map, T startTile, float openingAngle, Vector2 direction, int maxDistance = 0, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return new T[0];
-            //if (Mathf.Approximately(maxDistance, 0f))
-            //{
-            //    maxDistance = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
-            //}
-            //direction.Normalize();
-            //Vector2 o = new Vector2(startTile.X, startTile.Y);
-            //List<T> returnedArray = new List<T>();
-            //int bottom = Mathf.RoundToInt(startTile.Y - maxDistance);
-            //int top = Mathf.RoundToInt(startTile.Y + maxDistance + 1);
-            //List<Vector2Int> list = new List<Vector2Int>();
-            //for (int y = bottom; y < top; y++)
-            //{
-            //    for (int r = 0; r <= Mathf.FloorToInt(maxDistance * Mathf.Sqrt(0.5f)); r++)
-            //    {
-            //        int dd = Mathf.FloorToInt(Mathf.Sqrt(maxDistance * maxDistance - r * r));
-            //        Vector2Int a = new Vector2Int(startTile.X - dd, startTile.Y + r);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //        a = new Vector2Int(startTile.X + dd, startTile.Y + r);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //        a = new Vector2Int(startTile.X - dd, startTile.Y - r);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //        a = new Vector2Int(startTile.X + dd, startTile.Y - r);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //        a = new Vector2Int(startTile.X + r, startTile.Y - dd);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //        a = new Vector2Int(startTile.X + r, startTile.Y + dd);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //        a = new Vector2Int(startTile.X - r, startTile.Y - dd);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //        a = new Vector2Int(startTile.X - r, startTile.Y + dd);
-            //        if (Extraction.IsIntoAngle(startTile.X, startTile.Y, a.x, a.y, openingAngle, direction) && !list.Contains(a))
-            //        {
-            //            list.Add(a);
-            //            T[] line = Raycast(map, startTile, a - o, maxDistance, includeStart, true, true, false, out bool isLineClear, majorOrder);
-            //            foreach (T lineTile in line)
-            //            {
-            //                if (!returnedArray.Contains(lineTile))
-            //                {
-            //                    returnedArray.Add(lineTile);
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-            //return returnedArray.ToArray();
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            HashSet<T> lines = new HashSet<T>();
+            ConeCast(map, startTile, maxDistance, openingAngle, direction, out bool isLineClear, includeStart, ref lines, majorOrder);
+            return lines.ToArray();
+        }
+        /// <summary>
+        /// Get all tiles on a line between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The stop tile</param>
+        /// <param name="maxDistance">The maximum distance from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] map, out bool isLineClear, T startTile, float openingAngle, T destinationTile, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int endPos = new Vector2Int(destinationTile.X, destinationTile.Y);
+            int radius = Mathf.CeilToInt(Vector2Int.Distance(startPos, endPos));
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            ConeCast(map, startTile, Mathf.FloorToInt(direction.magnitude), openingAngle, direction, out isLineClear, includeStart, ref lines, majorOrder);
+            return lines.ToArray();
+        }
+        /// <summary>
+        /// Get all tiles on a line between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="openingAngle">The angle of the line from the start tile</param>
+        /// <param name="maxDistance">The maximum distance from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] map, out bool isLineClear, T startTile, float openingAngle, float directionAngle, int maxDistance = 0, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            Vector2Int startPos = new Vector2Int(startTile.X, startTile.Y);
+            Vector2Int endPos = new Vector2Int(Mathf.RoundToInt(startTile.X + Mathf.Cos(directionAngle * Mathf.Deg2Rad) * maxDistance), Mathf.RoundToInt(startTile.Y + Mathf.Sin(directionAngle * Mathf.Deg2Rad) * maxDistance));
+            Vector2 direction = endPos - startPos;
+            HashSet<T> lines = new HashSet<T>();
+            ConeCast(map, startTile, maxDistance, openingAngle, direction, out isLineClear, includeStart, ref lines, majorOrder);
+            return lines.ToArray();
+        }
+        /// <summary>
+        /// Get all tiles on a line between two tiles
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="direction">The direction of the cone from the start tile</param>
+        /// <param name="maxDistance">The maximum distance from the start tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not</param>
+        /// <param name="includeDestination">Include the destination tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public static T[] GetConeOfVision<T>(T[,] map, out bool isLineClear, T startTile, float openingAngle, Vector2 direction, int maxDistance = 0, bool includeStart = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        {
+            openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (maxDistance > magnitude || Mathf.Approximately(maxDistance, 0f))
+            {
+                maxDistance = Mathf.CeilToInt(magnitude);
+            }
+            HashSet<T> lines = new HashSet<T>();
+            ConeCast(map, startTile, maxDistance, openingAngle, direction, out isLineClear, includeStart, ref lines, majorOrder);
+            return lines.ToArray();
         }
     }
+
     /// <summary>
     /// Allows you to calculate paths on a grid
     /// </summary>
