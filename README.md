@@ -1,4 +1,4 @@
-# GridHelper
+# <u>**GridHelper**</u>
 
 This package offers utilitary API to help with operations on **2D and 3D grids** such as tile **extraction**, **raycasting**, and **pathfinding**.
 
@@ -13,7 +13,7 @@ Comes with several demo examples.
 **[Complete API Documentation](https://kevincastejon.fr/demos/Documentations/Unity-GridHelper/)**
 
 ---
-## Usages
+# **Usages**
 
 All you need to use this API is a two-dimensional array (three-dimensional for 3D API) of tiles.
 
@@ -32,16 +32,28 @@ or for the 3D API:
 ```cs
 using KevinCastejon.GridHelper3D;
 ```
----
----
-## 2D API
----
----
-### - <u>Extraction</u>
----
-You can always specify a *majorOrder* parameter that tells which indexes order to use for the grid. Default is ROW_MAJOR_ORDER (YX)
 
-You can extract tiles in a circle, or in a rectangle, around a tile.
+---
+---
+# **2D API**
+---
+---
+## **MajorOrder**
+When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.<br>
+This is called the **Major Order**, you can specify it on the last parameter of each method that uses a grid.<br>
+**DEFAULT :** Refers to the global setting **DefaultMajorOrder** value<br>
+**ROW_MAJOR_ORDER :** YX. First index is rows, second is columns<br>
+**COLUMN_MAJOR_ORDER :** XY. First index is columns, second is rows<br>
+![MajorOrderSchema](Assets/KevinCastejon/GridHelper/Documentation/MajorOrderSchema.png)
+---
+---
+## - <u>**Extraction**</u>
+---
+Allows you to extract tiles on a grid.<br>
+Provides shape extraction (rectangles, circles, cones and lines) and neighbors extraction with a lot of parameters.
+
+---
+You can extract tiles from shapes.
 
 - **GetTilesInARectangle**
 ```cs
@@ -51,127 +63,148 @@ YourCustomTileType[] tiles = Extraction.GetTilesInARectangle(grid, centerTile, r
 ```cs
 YourCustomTileType[] tiles = Extraction.GetTilesInACircle(grid, centerTile, radius);
 ```
-
-You can also get only the walkable tiles in a circle/rectangle, around a tile.
-
-- **GetWalkableTilesInARectangle**
+- **GetTilesInACone**
 ```cs
-YourCustomTileType[] tiles = Extraction.GetWalkableTilesInARectangle(grid, centerTile, rectangleSize);
+YourCustomTileType[] tiles = Extraction.GetTilesInACone(grid, startTile, length, openingAngle, direction);
 ```
-- **GetWalkableTilesInACircle**
+- **GetTilesOnALine**
 ```cs
-YourCustomTileType[] tiles = Extraction.GetWalkableTilesInACircle(grid, centerTile, radius);
-```
-
-You can also get only the tiles on the circle/rectangle outline.
-
-- **GetTilesOnARectangleOutline**
-```cs
-YourCustomTileType[] tiles = Extraction.GetTilesOnARectangleOutline(grid, centerTile, rectangleSize);
-```
-- **GetTilesOnACircleOutline**
-```cs
-YourCustomTileType[] tiles = Extraction.GetTilesOnACircleOutline(grid, centerTile, radius);
-```
-
-Finally, you can also get only the walkable tiles on the circle/rectangle outline.
-
-- **GetWalkableTilesOnARectangleOutline**
-```cs
-YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnARectangleOutline(grid, centerTile, rectangleSize);
-```
-- **GetWalkableTilesOnACircleOutline**
-```cs
-YourCustomTileType[] tiles = Extraction.GetWalkableTilesOnACircleOutline(grid, centerTile, radius);
+YourCustomTileType[] tiles = Extraction.GetTilesOnALine(grid, startTile, length, direction);
 ```
 
 ---
-
-You can get neighbour of a tile (if it exists).
+You can extract neighbors of a tile (if existing).
 
 - **GetTileNeighbour**
 ```cs
-YourCustomTileType upperNeighbour = Extraction.GetTileNeighbour(tile, Vector2Int.up);
+YourCustomTileType upperNeighbour = Extraction.GetTileNeighbour(grid, tile, Vector2Int.up);
+```
+- **GetTileNeighbours**
+```cs
+YourCustomTileType[] neighbours = Extraction.GetTileNeighbours(grid, tile);
+```
+- **GetTileOrthogonalsNeighbours**
+```cs
+YourCustomTileType[] orthogonalNeighbours = Extraction.GetTileOrthogonalsNeighbours(grid, tile);
+```
+- **GetTileDiagonalsNeighbours**
+```cs
+YourCustomTileType[] diagonalsNeighbours = Extraction.GetTileDiagonalsNeighbours(grid, tile);
 ```
 
 ---
-
-Besides from extracting tiles, you can know if a specific tile is contained into a circle/rectangle or not. Same with the outlines.
+Each extraction method has a variant to check if a specific tile would be extracted
 
 - **IsTileInARectangle**
 ```cs
-bool isTileInARectangle = Extraction3D.IsTileInARectangle(centerTile, tile, rectangleSize);
-```
-- **IsTileInARectangleOutline**
-```cs
-bool isTileInARectangleOutline = Extraction3D.IsTileInARectangleOutline(centerTile, tile, rectangleSize);
+bool isTileInARectangle = Extraction3D.IsTileInARectangle(grid, tile, centerTile, rectangleSize);
 ```
 - **IsTileInACircle**
 ```cs
-bool isTileInACircle = Extraction3D.IsTileInACircle(centerTile, tile, radius);
+bool isTileInACircle = Extraction3D.IsTileInACircle(grid, tile, centerTile, radius);
 ```
-- **IsTileInACircleOutline**
+- **IsTileInACone**
 ```cs
-bool isTileInACircleOutline = Extraction3D.IsTileInACircleOutline(centerTile, tile, radius);
+bool isTileInACone = Extraction.IsTileInACone(grid, tile, centerTile, length, openingAngle, direction);
+```
+- **IsTilesOnALine**
+```cs
+bool isTilesOnALine = Extraction.IsTilesOnALine(grid, tile, centerTile, length, direction);
+```
+- **IsTileNeighbor**
+```cs
+bool isTileRightNeighbor = Extraction.IsTileNeighbor(tile, neighbor, Vector2Int.right);
+```
+- **IsTileOrthogonalNeighbor**
+```cs
+bool isTileOrthogonalNeighbor = Extraction.IsTileOrthogonalNeighbor(tile, neighbor);
+```
+- **IsTileDiagonalNeighbor**
+```cs
+bool isTileDiagonalNeighbor = Extraction.IsTileDiagonalNeighbor(tile, neighbor);
+```
+- **IsTileAnyNeighbor**
+```cs
+bool isTileNeighbor = Extraction.IsTileAnyNeighbor(tile, neighbor);
 ```
 
 ---
-### - <u>Raycasting</u>
+## - <u>**Raycasting**</u>
 ---
-You can always specify a *majorOrder* parameter that tells which indexes order to use for the grid. Default is ROW_MAJOR_ORDER (YX)
-
-You can get all the tiles on a line between two tiles
-
-- **GetTilesOnALine**
-```cs
-YourCustomTileType[] tiles = Raycasting.GetTilesOnALine(grid, startTile, destinationTile);
-```
-
-You can also get only the walkable tiles on a line between two tiles
-
-- **GetWalkableTilesOnALine**
-```cs
-YourCustomTileType[] tiles = Raycasting.GetWalkableTilesOnALine(grid, startTile, destinationTile);
-```
+Allows you to cast lines of sight and cones of vision on a grid
 
 ---
-
-You can get the line of sight between two tiles (a line that "stops" at the first encountered unwalkable tile)
+You can get the **line of sight** from a tile (a line that "stops" at the first encountered unwalkable tile).<br>
+Many signatures are available to specify the length and direction of the line.
 
 - **GetLineOfSight**
 ```cs
-YourCustomTileType[] tiles = Raycasting.GetLineOfSight(grid, startTile, destinationTile);
+YourCustomTileType[] lineOfSight = Raycasting.GetLineOfSight(grid, startTile, destinationTile);
 ```
+---
+You can get the **cone of vision** from a tile.<br>
+Many signatures are available to specify the length and direction of the cone.
 
-You can know if the line of sight between two tiles is clear (has not encountered any unwalkable tile)
+- **GetConeOfVision**
+```cs
+YourCustomTileType[] coneOfVision = Raycasting.GetConeOfVision(grid, startTile, openingAngle, destinationTile);
+```
+---
+You can check if a line of sight or a cone of vision is clear (no non-walkable tile encountered)
 
 - **IsLineOfSightClear**
 ```cs
 bool isLineClear = Raycasting.IsLineOfSightClear(grid, startTile, destinationTile);
 ```
+- **IsConeOfVisionClear**
+```cs
+bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTile);
+```
 
 ---
-### - <u>Pathfinding</u>
+## - <u>**Pathfinding**</u>
 ---
-The pathfinding part of this library generates a **PathMap** object that holds all the calculated paths data.
+Allows you to calculate paths between tiles.<br>
+This API offers several way of doing pathfinding.<br>
+You can calculate the path directly every time you need (with the **CalculatePath** method), but this can become heavy if you do it too frequently.<br>
+Instead, you can generate objects that will hold multiple paths data that can be reused later. There is two types of objects that you can generate:<br>
+- **PathMap** - Will calculate and hold all the paths **to a specific tile from every accessible tiles**
+- **PathGrid** - Will calculate and hold all the paths **between each tiles on the entire grid**
 
-This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the others accessible tiles. (The **PathMap** generation uses **Dijkstra** algorithm).
+*Note that, obviously, any path calculation is valid as long as the walkable states of the tiles remain unchanged*
+
+---
+
+You can directly calculate the path between two tiles. If there is no path between the two tiles then an empty array will be returned.<br>
+You can specify a *pathfindingPolicy* parameter that holds parameters relating to diagonals and allowed movements. (see **PathfindingPolicy**)<br>
+
+*Note that this method uses a Djikstra algorythm which can be quite intensive*
+- **CalculatePath**
+```cs
+YourCustomTileType[] path = Pathfinding.CalculatePath(grid, startTile, destinationTile);
+```
+
+You can also calculate the path between a start tile and the closest of several destination tiles. Just pass an array of tiles instead of unique tile as third parameter.
+
+---
+
+### <u>**PathMap**</u>
+
+You can generate a **PathMap** object that holds pre-calculated paths data.<br>
+This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the accessible tiles from it. (The **PathMap** generation uses **Dijkstra** algorithm).
 
 To generate the **PathMap** object, use the **GeneratePathMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
-You can use an optional *maxDistance* parameter that limits the paths calculation to an amount of distance (movement 'cost' including the tiles weights). Default is 0 and means no distance limit (paths to all accessible tiles on the entire grid will be calculated).
+You can use an optional *maxDistance* parameter that limits the paths calculation to an amount of distance (movement 'cost' including the tiles weights). Default is 0 and means no distance limit (paths to all accessible tiles from the target will be calculated).
 
-You can specify a *pathfindingPolicy* parameter that holds parameters relating to diagonals and allowed movements. (see **PathfindingPolicy**)
+You can specify a *pathfindingPolicy* parameter that holds parameters relating to diagonals and allowed movements. (see **PathfindingPolicy**)<br>
 
-You can specify a *majorOrder* parameter that tells which indexes order to use for the grid. Default is ROW_MAJOR_ORDER (YX)
+*Note that a PathMap generation uses a Djikstra algorythm which can be quite intensive, same as the direct path calculation method but is intended to be used less often as the calculated paths hold by the PathMap can be reused with nearly "no cost"*
 
 ```cs
 PathMap<YourCustomTileType> pathMap = Pathfinding.GeneratePathMap(grid, targetTile);
 ```
 
----
-### - <u>PathMap</u>
----
 Once the **PathMap** object is generated, you can use its several and almost "*cost free*" methods and properties.
 
 ---
@@ -183,7 +216,7 @@ You can retrieve the tile that has been used as the target to generate this **Pa
 YourCustomTileType tile = pathMap.Target;
 ```
 
-You can retrieve the *maxDistance* parameter value that has been used to generate this **PathMap**
+You can retrieve the *maxDistance* parameter value that has been used to generate this **PathMap**. 0 means no distance limit
 
 - **MaxDistance**
 ```cs
@@ -218,24 +251,11 @@ Or you can get all the tiles on the path from the target to a tile.
 YourCustomTileType[] tiles = pathMap.GetPathFromTarget(destinationTile);
 ```
 
----
-### - <u>PathMap</u> - other features
----
-You can get info on a specific tile through some **PathMap** methods.
-
-
 You can know if a tile is accessible from the target tile. This is useful before calling the following **PathMap** methods that only takes an accessible tile as parameter.
 
 - **IsTileAccessible**
 ```cs
 bool isTileAccessible = pathMap.IsTileAccessible(tile);
-```
-
-Get the distance to the target from a tile.
-
-- **GetDistanceToTargetFromTile**
-```cs
-float cost = pathMap.GetDistanceToTargetFromTile(tile);
 ```
 
 You can get the next tile on the path between the target and a tile.
@@ -250,6 +270,74 @@ You can get the next tile direction on the path between the target and a tile (i
 - **GetNextTileDirectionFromTile**
 ```cs
 Vector2 nextTileDirection = pathMap.GetNextTileDirectionFromTile(tile);
+```
+
+You can get the distance to the target from a tile.
+
+- **GetDistanceToTargetFromTile**
+```cs
+float cost = pathMap.GetDistanceToTargetFromTile(tile);
+```
+
+---
+### <u>**PathGrid**</u>
+You can generate a **PathGrid** object that holds pre-calculated paths data.<br>
+This way of doing pathfinding is useful for some usages because it calculates once all the paths between each tile on the entire grid. (The **PathGrid** generation uses **Dijkstra** algorithm on each tile of the grid).
+
+To generate the **PathGrid** object, use the **GeneratePathGrid** method that needs the *grid* as parameter.
+
+You can specify a *pathfindingPolicy* parameter that holds parameters relating to diagonals and allowed movements. (see **PathfindingPolicy**)<br>
+
+*Note that a PathGrid generation uses a Djikstra algorythm on each tile of the grid which can be really intensive. Hopefully, in the future, asynchronous features will be added.*
+
+```cs
+PathGrid<YourCustomTileType> pathGrid = Pathfinding.GeneratePathGrid(grid);
+```
+
+Once the **PathGrid** object is generated, you can use its several and almost "*cost free*" methods and properties.
+
+---
+
+You can retrieve the **majorOrder** parameter value that has been used to generate this **PathMap**
+
+- **MajorOrder**
+```cs
+MajorOrder majorOrder = pathMap.MajorOrder;
+```
+---
+You can know if there is a clear path between two tiles.
+
+- **IsPath**
+```cs
+bool isPath = GridHelper.IsPath(startTile, destinationTile);
+```
+
+You can get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.
+
+- **GetPath**
+```cs
+YourCustomTileType[] path = pathMap.GetPath(startTile, destinationTile);
+```
+
+You can get the next tile on the path from a start tile to the destination tile.
+
+- **GetNextTileFromTile**
+```cs
+YourCustomTileType nextTile = pathMap.GetNextTileFromTile(startTile, destinationTile);
+```
+
+You can get the next tile direction on the path from a start tile to the destination tile (in 2D grid coordinates).
+
+- **GetNextTileDirectionFromTile**
+```cs
+Vector2 nextTileDirection = pathMap.GetNextTileDirectionFromTile(startTile, destinationTile);
+```
+
+You can get the distance (movement cost) from a start tile to the destination tile.
+
+- **GetDistanceBetweenTiles**
+```cs
+float cost = pathMap.GetDistanceBetweenTiles(startTile, destinationTile);
 ```
 
 ---
@@ -275,7 +363,7 @@ You can set the diagonals weight ratio multiplier that will increase the tile's 
 
 Minimum is 1. Default is 1.4142135623730950488016887242097.
 
-Note that setting diagonals weight to 1 can lead to unpredictable behaviours on pathfinding as a diagonal move has same cost than orthogonal one so the paths could become "serrated" (but still the shortests!).
+Note that setting diagonals weight to 1 can lead to unpredictable behaviours on pathfinding as a diagonal move would have the same cost than orthogonal one, so the paths could become "serrated" (but still the shortests!).
 - **DiagonalsWeight**
 ```cs
 pathfindingPolicy.DiagonalsWeight = 1.5f;
@@ -488,7 +576,7 @@ You can know if a tile is accessible from the target tile. This is useful before
 bool isTileAccessible = pathMap.IsTileAccessible(tile);
 ```
 
-Get the distance to the target from a tile.
+You can get the distance to the target from a tile.
 
 - **GetDistanceToTargetFromTile**
 ```cs

@@ -10,20 +10,26 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
 {
     public enum DemoType
     {
-        LINE_OF_TILES,
         LINE_OF_SIGHT,
         CONE_OF_VISION,
     }
     public class Grid2DMap : MonoBehaviour
     {
-        [SerializeField] private float _openingAngle = 90f;
+        [SerializeField] private Image _losClearLED;
+        [SerializeField] private Image _covClearLED;
+        private float _openingAngle = 90f;
+        private float _directionAngle = 0f;
         private Camera _camera;
-        private Tile[,] _map = new Tile[60, 70];
+        private Tile[,] _map = new Tile[65, 71];
         private Tile[] _line = new Tile[0];
         private Tile _stopTile;
         private Tile _targetTile;
-        private float _maxDistance = 0f;
+        private int _maxDistance = 0;
+        private bool _allowDiagonals;
+        private bool _favorVertical;
         private bool _lastDragValue;
+        private bool _directionAndDistanceMode;
+        private bool _angleDirectionMode;
         private DemoType _demoType;
         public DemoType DemoType
         {
@@ -39,6 +45,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                     return;
                 }
                 _demoType = value;
+                GetLine();
             }
         }
         public float OpeningAngle
@@ -51,9 +58,49 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
             set
             {
                 _openingAngle = value;
+                GetLine();
             }
         }
-        public float MaxDistance
+        public float DirectionAngle
+        {
+            get
+            {
+                return _directionAngle;
+            }
+
+            set
+            {
+                _directionAngle = value;
+                GetLine();
+            }
+        }
+        public bool AllowDiagonals
+        {
+            get
+            {
+                return _allowDiagonals;
+            }
+
+            set
+            {
+                _allowDiagonals = value;
+                GetLine();
+            }
+        }
+        public bool FavorVertical
+        {
+            get
+            {
+                return _favorVertical;
+            }
+
+            set
+            {
+                _favorVertical = value;
+                GetLine();
+            }
+        }
+        public int MaxDistance
         {
             get
             {
@@ -63,8 +110,37 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
             set
             {
                 _maxDistance = value;
+                GetLine();
             }
         }
+
+        public bool DirectionAndDistanceMode
+        {
+            get
+            {
+                return _directionAndDistanceMode;
+            }
+
+            set
+            {
+                _directionAndDistanceMode = value;
+                GetLine();
+            }
+        }
+        public bool AngleDirectionMode
+        {
+            get
+            {
+                return _angleDirectionMode;
+            }
+
+            set
+            {
+                _angleDirectionMode = value;
+                GetLine();
+            }
+        }
+
         public void SetDemoType(int demoType)
         {
             DemoType = (DemoType)demoType;
@@ -90,14 +166,22 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
 
             if (tileIsHit)
             {
+                bool refresh = !_directionAndDistanceMode || !_angleDirectionMode;
                 // Middle click
                 if (Input.GetMouseButton(2))
                 {
                     if (tile != _targetTile && tile.IsWalkable)
                     {
-                        _stopTile = null;
-                        ClearTiles();
+                        if (refresh)
+                        {
+                            _stopTile = null;
+                            ClearTiles();
+                        }
                         SetStart(tile);
+                        if (!refresh)
+                        {
+                            GetLine();
+                        }
                     }
                 }
                 // Just clicked
@@ -121,6 +205,10 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                         ClearTiles();
                         tile.IsWalkable = _lastDragValue;
                     }
+                    if (!refresh)
+                    {
+                        GetLine();
+                    }
                 }
                 // Keep clicking
                 else if (Input.GetMouseButton(0))
@@ -142,6 +230,10 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                         ClearTiles();
                         tile.IsWalkable = _lastDragValue;
                     }
+                    if (!refresh)
+                    {
+                        GetLine();
+                    }
                 }
                 // Hovered without click
                 else
@@ -155,7 +247,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                             GetLine();
                         }
                     }
-                    else
+                    else if (!_directionAndDistanceMode || !_angleDirectionMode)
                     {
                         _stopTile = null;
                         ClearTiles();
@@ -163,7 +255,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                 }
             }
             // No tile is hit by mouse
-            else
+            else if (!_directionAndDistanceMode || !_angleDirectionMode)
             {
                 _stopTile = null;
                 ClearTiles();
@@ -178,20 +270,21 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
         }
         private void GetLine()
         {
-            ClearTiles();
-            switch (_demoType)
+            if (_stopTile != null || (_directionAndDistanceMode && _angleDirectionMode))
             {
-                case DemoType.LINE_OF_TILES:
-                    GetLineOfTiles();
-                    break;
-                case DemoType.LINE_OF_SIGHT:
-                    GetLineOfSight();
-                    break;
-                case DemoType.CONE_OF_VISION:
-                    GetConeOfVision();
-                    break;
-                default:
-                    break;
+
+                ClearTiles();
+                switch (_demoType)
+                {
+                    case DemoType.LINE_OF_SIGHT:
+                        GetLineOfSight();
+                        break;
+                    case DemoType.CONE_OF_VISION:
+                        GetConeOfVision();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         private void ClearTiles()
@@ -200,35 +293,66 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
             {
                 foreach (Tile tile in _line)
                 {
-                    tile.TileMode = TileMode.FLOOR;
+                    if (tile != _targetTile)
+                    {
+                        tile.TileMode = TileMode.FLOOR;
+                    }
                 }
             }
             _line = new Tile[0];
+            _losClearLED.color = Color.red;
         }
-        private void GetLineOfTiles()
-        {
-            _line = Raycasting.GetWalkableTilesOnALine(_map, _targetTile, _stopTile, _maxDistance, false);
-            foreach (Tile tile in _line)
-            {
-                tile.TileMode = TileMode.LINE;
-            }
-        }
+        
         private void GetLineOfSight()
         {
-            _line = Raycasting.GetLineOfSight(_map, _targetTile, _stopTile, _maxDistance, false);
+            bool isLosClear;
+            if (_directionAndDistanceMode)
+            {
+                if (_angleDirectionMode)
+                {
+                    _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _maxDistance, _directionAngle, _allowDiagonals, _favorVertical, false);
+                }
+                else
+                {
+                    Vector2 dir = new Vector2(_stopTile.X, _stopTile.Y) - new Vector2(_targetTile.X, _targetTile.Y);
+                    _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _maxDistance, dir, _allowDiagonals, _favorVertical, false);
+                }
+            }
+            else
+            {
+                _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _stopTile, _allowDiagonals, _favorVertical, false);
+            }
             foreach (Tile tile in _line)
             {
                 tile.TileMode = TileMode.LINE;
             }
+            _losClearLED.color = isLosClear ? Color.green : Color.red;
         }
 
         private void GetConeOfVision()
         {
-            _line = Raycasting.GetConeOfVision(_map, _targetTile, _openingAngle, _stopTile, _maxDistance, false);
+            bool isCovClear;
+            if (_directionAndDistanceMode)
+            {
+                if (_angleDirectionMode)
+                {
+                    _line = Raycasting.GetConeOfVision(_map, out isCovClear, _targetTile, (int)_maxDistance, _openingAngle, _directionAngle, false);
+                }
+                else
+                {
+                    Vector2 dir = new Vector2(_stopTile.X, _stopTile.Y) - new Vector2(_targetTile.X, _targetTile.Y);
+                    _line = Raycasting.GetConeOfVision(_map, out isCovClear, _targetTile, (int)_maxDistance, _openingAngle, dir, false);
+                }
+            }
+            else
+            {
+                _line = Raycasting.GetConeOfVision(_map, out isCovClear, _targetTile, _openingAngle, _stopTile, false);
+            }
             foreach (Tile tile in _line)
             {
                 tile.TileMode = TileMode.LINE;
             }
+            _covClearLED.color = isCovClear ? Color.green : Color.red;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Grid2DHelper.APIDemo.PathfindingDemo
         private Tile[] _path = new Tile[0];
         private PathMap<Tile> _pathMap;
         private DiagonalsPolicy _diagonalsPolicy;
-        private MovementPolicy _movementPolicy;
+        private MovementsPolicy _movementPolicy;
         private Tile _startTile;
         private Tile _targetTile;
         private float _maxDistance = 0f;
@@ -51,7 +51,7 @@ namespace Grid2DHelper.APIDemo.PathfindingDemo
                     }
                 }
             }
-            MovementPolicy = (MovementPolicy)value;
+            MovementPolicy = (MovementsPolicy)value;
         }
         public float MaxDistance
         {
@@ -107,7 +107,7 @@ namespace Grid2DHelper.APIDemo.PathfindingDemo
             }
         }
 
-        public MovementPolicy MovementPolicy
+        public MovementsPolicy MovementPolicy
         {
             get
             {

@@ -72,7 +72,7 @@ namespace TacticalDemo
         {
             _modeLabel.text = "Attack";
             _description.text = "Click a visible opponent tile to attack\nor press Enter to skip";
-            Tile[] tilesOnRadius = Extraction.GetWalkableTilesInACircle(_map, CurrentCharacterTile, Mathf.FloorToInt(_maxDistanceAttack), false);
+            Tile[] tilesOnRadius = Extraction.GetTilesInACircle(_map, CurrentCharacterTile, Mathf.FloorToInt(_maxDistanceAttack), false, false);
             SetPathTiles(tilesOnRadius);
         }
         void Update()
@@ -162,10 +162,10 @@ namespace TacticalDemo
             }
             else
             {
-                if (Extraction.IsTileInACircle(CurrentCharacterTile, _hoveredTile, Mathf.FloorToInt(_maxDistanceAttack)))
+                if (Extraction.IsTileInACircle(_map,CurrentCharacterTile, _hoveredTile, Mathf.FloorToInt(_maxDistanceAttack)))
                 {
                     _lineRenderer.positionCount = 2;
-                    Tile[] lineOfSight = Raycasting.GetLineOfSight(_map, CurrentCharacterTile, _hoveredTile, out bool isLineClear, _maxDistanceAttack, false);
+                    Tile[] lineOfSight = Raycasting.GetLineOfSight(_map, out bool isLineClear, CurrentCharacterTile, _hoveredTile, true, false, false);
                     _lineRenderer.startColor = isLineClear ? Color.green : Color.red;
                     _lineRenderer.endColor = isLineClear ? Color.green : Color.red;
                     _lineRenderer.SetPositions(new Vector3[] { new Vector3(_currentCharacter.transform.position.x, 0.05f, _currentCharacter.transform.position.z), new Vector3(lineOfSight[lineOfSight.Length - 1].transform.position.x, 0.05f, lineOfSight[lineOfSight.Length - 1].transform.position.z) });
@@ -186,7 +186,7 @@ namespace TacticalDemo
             }
             if (_hoveredTile)
             {
-                if (Input.GetMouseButtonDown(0) && _hoveredTile == CurrentOpponentTile && Raycasting.IsLineOfSightClear(_map, CurrentCharacterTile, _hoveredTile, _maxDistanceAttack, false))
+                if (Input.GetMouseButtonDown(0) && _hoveredTile == CurrentOpponentTile && Raycasting.IsLineOfSightClear(_map, CurrentCharacterTile, _hoveredTile, false))
                 {
                         _lineRenderer.positionCount = 0;
                         _currentCharacter.Attack(_hoveredTile);
