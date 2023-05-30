@@ -10,7 +10,6 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
 {
     public enum DemoType
     {
-        LINE_OF_TILES,
         LINE_OF_SIGHT,
         CONE_OF_VISION,
     }
@@ -277,9 +276,6 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
                 ClearTiles();
                 switch (_demoType)
                 {
-                    case DemoType.LINE_OF_TILES:
-                        GetLineOfTiles();
-                        break;
                     case DemoType.LINE_OF_SIGHT:
                         GetLineOfSight();
                         break;
@@ -306,29 +302,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
             _line = new Tile[0];
             _losClearLED.color = Color.red;
         }
-        private void GetLineOfTiles()
-        {
-            if (_directionAndDistanceMode)
-            {
-                if (_angleDirectionMode)
-                {
-                    _line = Raycasting.GetTilesOnALine(_map, _targetTile, _directionAngle, _maxDistance, _allowDiagonals, _favorVertical, false, true, false);
-                }
-                else
-                {
-                    Vector2 dir = new Vector2(_stopTile.X, _stopTile.Y) - new Vector2(_targetTile.X, _targetTile.Y);
-                    _line = Raycasting.GetTilesOnALine(_map, _targetTile, dir, _maxDistance, _allowDiagonals, _favorVertical, false, true, false);
-                }
-            }
-            else
-            {
-                _line = Raycasting.GetTilesOnALine(_map, _targetTile, _stopTile, _allowDiagonals, _favorVertical, false, true, false);
-            }
-            foreach (Tile tile in _line)
-            {
-                tile.TileMode = TileMode.LINE;
-            }
-        }
+        
         private void GetLineOfSight()
         {
             bool isLosClear;
@@ -336,17 +310,17 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
             {
                 if (_angleDirectionMode)
                 {
-                    _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _directionAngle, _maxDistance, _allowDiagonals, _favorVertical, false, true);
+                    _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _maxDistance, _directionAngle, _allowDiagonals, _favorVertical, false);
                 }
                 else
                 {
                     Vector2 dir = new Vector2(_stopTile.X, _stopTile.Y) - new Vector2(_targetTile.X, _targetTile.Y);
-                    _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, dir, _maxDistance, _allowDiagonals, _favorVertical, false, true);
+                    _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _maxDistance, dir, _allowDiagonals, _favorVertical, false);
                 }
             }
             else
             {
-                _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _stopTile, _allowDiagonals, _favorVertical, false, true);
+                _line = Raycasting.GetLineOfSight(_map, out isLosClear, _targetTile, _stopTile, _allowDiagonals, _favorVertical, false);
             }
             foreach (Tile tile in _line)
             {
@@ -362,12 +336,12 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
             {
                 if (_angleDirectionMode)
                 {
-                    _line = Raycasting.GetConeOfVision(_map, out isCovClear, _targetTile, _openingAngle, _directionAngle, (int)_maxDistance, false);
+                    _line = Raycasting.GetConeOfVision(_map, out isCovClear, _targetTile, (int)_maxDistance, _openingAngle, _directionAngle, false);
                 }
                 else
                 {
                     Vector2 dir = new Vector2(_stopTile.X, _stopTile.Y) - new Vector2(_targetTile.X, _targetTile.Y);
-                    _line = Raycasting.GetConeOfVision(_map, out isCovClear, _targetTile, _openingAngle, dir, (int)_maxDistance, false);
+                    _line = Raycasting.GetConeOfVision(_map, out isCovClear, _targetTile, (int)_maxDistance, _openingAngle, dir, false);
                 }
             }
             else

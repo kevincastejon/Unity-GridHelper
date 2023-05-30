@@ -1,4 +1,1 @@
-add GetConeOfSight Raycasting method
-add PathGrid object that holds ALL to ALL paths for the entire grid
-add "direct" Pathfinding strategies without PathMap (A* and BFS with early exit)
-add Raycasting strategies (Interpolation, Orthogonal ,SuperCovering)
+reimplement 3D API

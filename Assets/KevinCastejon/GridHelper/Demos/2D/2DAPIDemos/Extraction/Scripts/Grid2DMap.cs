@@ -15,6 +15,7 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
         EXTRACT_RECTANGLE,
         EXTRACT_RECTANGLE_OUTLINE,
         EXTRACT_CONE,
+        EXTRACT_LINE,
         NEIGHBOR,
         NEIGHBORS_ORTHO,
         NEIGHBORS_DIAGONALS,
@@ -27,10 +28,13 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
         [SerializeField] private Image _rectangleLED;
         [SerializeField] private Image _rectangleOutlineLED;
         [SerializeField] private Image _coneLED;
+        [SerializeField] private Image _lineLED;
         [SerializeField] private Image _neiLED;
         [SerializeField] private Image _neiOrthoLED;
         [SerializeField] private Image _neiDiagoLED;
         [SerializeField] private Image _neiAnyLED;
+        private bool _allowDiagonals = true;
+        private bool _favorVertical = false;
         private int _radius = 5;
         private float _direction = 0f;
         private float _angle = 90f;
@@ -95,6 +99,33 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
             set
             {
                 _angle = value;
+                Extract();
+            }
+        }
+
+        public bool AllowDiagonals
+        {
+            get
+            {
+                return _allowDiagonals;
+            }
+
+            set
+            {
+                _allowDiagonals = value;
+                Extract();
+            }
+        }
+        public bool FavorVertical
+        {
+            get
+            {
+                return _favorVertical;
+            }
+
+            set
+            {
+                _favorVertical = value;
                 Extract();
             }
         }
@@ -189,6 +220,9 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                 case DemoType.EXTRACT_CONE:
                     _coneLED.color = Extraction.IsTileInACone(_map, _hoveredTile, _targetTile, _radius, _angle, _direction) ? Color.green : Color.red;
                     break;
+                case DemoType.EXTRACT_LINE:
+                    _lineLED.color = Extraction.IsTileOnALine(_hoveredTile, _targetTile, _radius, _direction) ? Color.green : Color.red;
+                    break;
                 case DemoType.NEIGHBOR:
                     _neiLED.color = Extraction.IsTileNeighbor(_targetTile, _hoveredTile, _direction) ? Color.green : Color.red;
                     break;
@@ -223,6 +257,9 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                     break;
                 case DemoType.EXTRACT_CONE:
                     _coneLED.color = Color.red;
+                    break;
+                case DemoType.EXTRACT_LINE:
+                    _lineLED.color = Color.red;
                     break;
                 case DemoType.NEIGHBOR:
                     _neiLED.color = Color.red;
@@ -260,6 +297,9 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                     break;
                 case DemoType.EXTRACT_CONE:
                     ExtractCone();
+                    break;
+                case DemoType.EXTRACT_LINE:
+                    ExtractLine();
                     break;
                 case DemoType.NEIGHBOR:
                     ExtractNeighbor();
@@ -313,6 +353,14 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
         private void ExtractCone()
         {
             _extractedTiles = Extraction.GetTilesInACone(_map, _targetTile, _radius, _angle, _direction, false, false);
+            foreach (Tile tile in _extractedTiles)
+            {
+                tile.TileMode = TileMode.EXTRACTED;
+            }
+        }
+        private void ExtractLine()
+        {
+            _extractedTiles = Extraction.GetTilesOnALine(_map, _targetTile, _radius, _direction, _allowDiagonals, _favorVertical, false);
             foreach (Tile tile in _extractedTiles)
             {
                 tile.TileMode = TileMode.EXTRACTED;
