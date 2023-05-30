@@ -1,4 +1,4 @@
-# <u>**GridHelper**</u>
+# **<u>GridHelper</u>**
 
 This package offers utilitary API to help with operations on **2D and 3D grids** such as tile **extraction**, **raycasting**, and **pathfinding**.
 
