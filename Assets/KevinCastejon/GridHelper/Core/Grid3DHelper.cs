@@ -3,6 +3,9 @@ using System.Linq;
 using UnityEngine;
 /// <summary>
 /// Helper static classes for 3D grid operations
+/// 
+/// <u>**! 3D API IS STILL EXPERIMENTAL !**</u>
+/// 
 /// </summary>
 namespace KevinCastejon.GridHelper3D
 {

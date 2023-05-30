@@ -2,6 +2,8 @@
 
 This package offers utilitary API to help with operations on **2D and 3D grids** such as tile **extraction**, **raycasting**, and **pathfinding**.
 
+<u>**! 3D API IS STILL EXPERIMENTAL !**</u>
+
 Comes with several demo examples.
 
 [See online documentation](https://kevincastejon.github.io/Unity-GridHelper/)
