@@ -2,7 +2,7 @@
 
 This package offers utilitary API to help with operations on **2D and 3D grids** such as tile **extraction**, **raycasting**, and **pathfinding**.
 
-<u>**! 3D API IS STILL EXPERIMENTAL !**</u>
+**<u>! 3D API IS STILL EXPERIMENTAL !</u>**
 
 Comes with several demo examples.
 
@@ -52,7 +52,7 @@ This is called the **Major Order**, you can specify it on the last parameter of 
 
 ---
 ---
-## - <u>**Extraction**</u>
+## - **<u>Extraction</u>**
 ---
 Allows you to extract tiles on a grid.<br>
 Provides shape extraction (rectangles, circles, cones and lines) and neighbors extraction with a lot of parameters.
@@ -134,7 +134,7 @@ bool isTileNeighbor = Extraction.IsTileAnyNeighbor(tile, neighbor);
 ```
 
 ---
-## - <u>**Raycasting**</u>
+## - **<u>Raycasting</u>**
 ---
 Allows you to cast lines of sight and cones of vision on a grid
 
@@ -167,7 +167,7 @@ bool isConeClear = Raycasting.IsConeOfVisionClear(grid, startTile, destinationTi
 ```
 
 ---
-## - <u>**Pathfinding**</u>
+## - **<u>Pathfinding</u>**
 ---
 Allows you to calculate paths between tiles.<br>
 This API offers several way of doing pathfinding.<br>
@@ -193,7 +193,7 @@ You can also calculate the path between a start tile and the closest of several 
 
 ---
 
-### <u>**PathMap**</u>
+### **<u>PathMap</u>**
 
 You can generate a **PathMap** object that holds pre-calculated paths data.<br>
 This way of doing pathfinding is useful for some usages (like Tower Defenses and more) because it calculates once all the paths between one tile, called the "**target**", and all the accessible tiles from it. (The **PathMap** generation uses **Dijkstra** algorithm).
@@ -285,7 +285,7 @@ float cost = pathMap.GetDistanceToTargetFromTile(tile);
 ```
 
 ---
-### <u>**PathGrid**</u>
+### **<u>PathGrid</u>**
 You can generate a **PathGrid** object that holds pre-calculated paths data.<br>
 This way of doing pathfinding is useful for some usages because it calculates once all the paths between each tile on the entire grid. (The **PathGrid** generation uses **Dijkstra** algorithm on each tile of the grid).
 
