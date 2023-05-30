@@ -1908,7 +1908,7 @@ namespace KevinCastejon.GridHelper
     /// - **PathMap** - Will calculate and hold all the paths **to a specific tile from every accessible tiles**
     /// - **PathGrid** - Will calculate and hold all the paths **between each tiles on the entire grid**
     /// 
-    /// *Note that, obviously, any path calculation is valid as long as the walkable states of the tiles remain unchanged*
+    /// *Note that, obviously, any path calculation is valid as long as the walkable state of the tiles remain unchanged*
     /// </summary>
     public class Pathfinding
     {
