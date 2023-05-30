@@ -39,12 +39,14 @@ using KevinCastejon.GridHelper3D;
 ---
 ---
 ## **MajorOrder**
+
 When working with two-dimensional arrays there is two ways of storing tiles, first rows then lines or the opposite.<br>
 This is called the **Major Order**, you can specify it on the last parameter of each method that uses a grid.<br>
 **DEFAULT :** Refers to the global setting **DefaultMajorOrder** value<br>
 **ROW_MAJOR_ORDER :** YX. First index is rows, second is columns<br>
 **COLUMN_MAJOR_ORDER :** XY. First index is columns, second is rows<br>
 ![MajorOrderSchema](Assets/KevinCastejon/GridHelper/Documentation/MajorOrderSchema.png)
+
 ---
 ---
 ## - <u>**Extraction**</u>
