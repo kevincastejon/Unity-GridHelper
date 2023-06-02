@@ -203,7 +203,7 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
 
         private void ShowLED()
         {
-            switch (_demoType)
+            switch (_demoType) 
             {
                 case DemoType.EXTRACT_CIRCLE:
                     _circleLED.color = Extraction.IsTileInACircle(_map, _hoveredTile, _targetTile, _radius) ? Color.green : Color.red;
@@ -221,7 +221,7 @@ namespace Grid2DHelper.APIDemo.ExtractionDemo
                     _coneLED.color = Extraction.IsTileInACone(_map, _hoveredTile, _targetTile, _radius, _angle, _direction) ? Color.green : Color.red;
                     break;
                 case DemoType.EXTRACT_LINE:
-                    _lineLED.color = Extraction.IsTileOnALine(_hoveredTile, _targetTile, _radius, _direction) ? Color.green : Color.red;
+                    _lineLED.color = Extraction.IsTileOnALine(_map, _hoveredTile, _targetTile, _radius, _direction, _allowDiagonals, _favorVertical) ? Color.green : Color.red;
                     break;
                 case DemoType.NEIGHBOR:
                     _neiLED.color = Extraction.IsTileNeighbor(_targetTile, _hoveredTile, _direction) ? Color.green : Color.red;

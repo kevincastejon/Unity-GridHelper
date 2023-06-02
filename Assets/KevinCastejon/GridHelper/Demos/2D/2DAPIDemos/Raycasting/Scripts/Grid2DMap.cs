@@ -301,6 +301,7 @@ namespace Grid2DHelper.APIDemo.RaycastingDemo
             }
             _line = new Tile[0];
             _losClearLED.color = Color.red;
+            _covClearLED.color = Color.red;
         }
         
         private void GetLineOfSight()

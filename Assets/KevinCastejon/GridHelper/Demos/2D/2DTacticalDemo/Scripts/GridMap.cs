@@ -168,7 +168,7 @@ namespace TacticalDemo
                     Tile[] lineOfSight = Raycasting.GetLineOfSight(_map, out bool isLineClear, CurrentCharacterTile, _hoveredTile, true, false, false);
                     _lineRenderer.startColor = isLineClear ? Color.green : Color.red;
                     _lineRenderer.endColor = isLineClear ? Color.green : Color.red;
-                    _lineRenderer.SetPositions(new Vector3[] { new Vector3(_currentCharacter.transform.position.x, 0.05f, _currentCharacter.transform.position.z), new Vector3(lineOfSight[lineOfSight.Length - 1].transform.position.x, 0.05f, lineOfSight[lineOfSight.Length - 1].transform.position.z) });
+                    _lineRenderer.SetPositions(new Vector3[] { new Vector3(_currentCharacter.transform.position.x, 0.05f, _currentCharacter.transform.position.z), new Vector3(_hoveredTile.transform.position.x, 0.05f, _hoveredTile.transform.position.z) });
                 }
                 else
                 {
