@@ -579,6 +579,8 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInARectangle<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            rectangleSize.x = rectangleSize.x < 1 ? 1 : rectangleSize.x;
+            rectangleSize.y = rectangleSize.y < 1 ? 1 : rectangleSize.y;
             return ExtractRectangle(map, center, rectangleSize, includeCenter, includeWalls, majorOrder);
         }
         /// <summary>
@@ -594,6 +596,8 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnARectangleOutline<T>(T[,] map, T center, Vector2Int rectangleSize, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            rectangleSize.x = rectangleSize.x < 1 ? 1 : rectangleSize.x;
+            rectangleSize.y = rectangleSize.y < 1 ? 1 : rectangleSize.y;
             return ExtractRectangleOutline(map, center, rectangleSize, includeWalls, majorOrder);
         }
 
@@ -611,6 +615,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesInACircle<T>(T[,] map, T center, int radius, bool includeCenter = true, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            radius = radius < 1 ? 1 : radius;
             return ExtractCircleArcFilled(map, center, radius, includeCenter, includeWalls, majorOrder, 360f, Vector2.right);
         }
         /// <summary>
@@ -626,6 +631,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static T[] GetTilesOnACircleOutline<T>(T[,] map, T center, int radius, bool includeWalls = true, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            radius = radius < 1 ? 1 : radius;
             return ExtractCircleArcOutline(map, center, radius, includeWalls, majorOrder, 360f, Vector2.right);
         }
 
@@ -1073,6 +1079,11 @@ namespace KevinCastejon.GridHelper
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, float directionAngle, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             return IsOnCircleArcFilled(map, tile, center, length, openingAngle, Quaternion.AngleAxis(directionAngle, Vector3.back) * Vector2.right, majorOrder);
         }
@@ -1090,6 +1101,13 @@ namespace KevinCastejon.GridHelper
         /// <returns>A boolean value</returns>
         public static bool IsTileInACone<T>(T[,] map, T tile, T center, int length, float openingAngle, Vector2 direction, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
+            if (length > magnitude || Mathf.Approximately(length, 0f))
+            {
+                length = Mathf.CeilToInt(magnitude);
+            }
+            direction.Normalize();
+            direction = direction == Vector2.zero ? Vector2.right : direction;
             openingAngle = Mathf.Clamp(openingAngle, 1f, 360f);
             return IsOnCircleArcFilled(map, tile, center, length, openingAngle, direction, majorOrder);
         }
@@ -1098,11 +1116,15 @@ namespace KevinCastejon.GridHelper
         /// Is a tile on a line
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+        /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="tile">A tile</param>
         /// <param name="start">The start tile of the line</param>
         /// <param name="destinationTile">The destination tile of the line</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, T destinationTile, bool allowDiagonals=true, bool favorVertical=false, MajorOrder majorOrder=MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, T destinationTile, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             Vector2Int endPosition = new Vector2Int(destinationTile.X, destinationTile.Y);
             return IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, majorOrder);
@@ -1115,8 +1137,11 @@ namespace KevinCastejon.GridHelper
         /// <param name="start">The start tile of the line</param>
         /// <param name="length">The length of the line</param>
         /// <param name="directionAngle">The cone direction angle in degrees. 0 represents a direction pointing to the right in 2D coordinates</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, float directionAngle, bool allowDiagonals=true, bool favorVertical=false, MajorOrder majorOrder=MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, float directionAngle, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1134,8 +1159,11 @@ namespace KevinCastejon.GridHelper
         /// <param name="start">The center tile of the rectangle</param>
         /// <param name="length">The length of the line</param>
         /// <param name="direction">The Vector2 representing the cone direction. Note that an 'empty' Vector2 (Vector2.zero) will be treated as Vector2.right</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, Vector2 direction, bool allowDiagonals=true, bool favorVertical=false, MajorOrder majorOrder=MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T tile, T start, int length, Vector2 direction, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             float magnitude = new Vector2Int(map.GetLength(0), map.GetLength(1)).magnitude;
             if (length > magnitude || Mathf.Approximately(length, 0f))
@@ -1152,8 +1180,11 @@ namespace KevinCastejon.GridHelper
         /// <param name="tile">A tile</param>
         /// <param name="start">The start tile of the line</param>
         /// <param name="endPosition">The line destination virtual coordinates (do not need to be into grid range)</param>
+        /// <param name="allowDiagonals">Allows the diagonals or not. Default is true</param>
+        /// <param name="favorVertical">If diagonals are disabled then favor vertical when a diagonal should have been used. False will favor horizontal and is the default value.</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOnALine<T>(T[,] map, T start, T tile, Vector2Int endPosition, bool allowDiagonals=true, bool favorVertical=false, MajorOrder majorOrder=MajorOrder.DEFAULT) where T : ITile
+        public static bool IsTileOnALine<T>(T[,] map, T start, T tile, Vector2Int endPosition, bool allowDiagonals = true, bool favorVertical = false, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             return Raycasting.IsTileOnALine(map, start, tile, endPosition, allowDiagonals, favorVertical, false, majorOrder);
         }
@@ -1162,60 +1193,60 @@ namespace KevinCastejon.GridHelper
         /// Is a tile the neighbour of another tile with the given direction.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="tile">A tile</param>
         /// <param name="neighbour">The tile to check as a neighbour</param>
+        /// <param name="center">A tile</param>
         /// <param name="neighbourDirectionAngle">The cone direction angle in degrees  [0-360]. 0 represents a direction pointing to the right in 2D coordinates</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileNeighbor<T>(T tile, T neighbour, float neighbourDirectionAngle) where T : ITile
+        public static bool IsTileNeighbor<T>(T neighbour, T center, float neighbourDirectionAngle) where T : ITile
         {
-            return IsTileNeighbor(tile, neighbour, Vector2Int.RoundToInt(Quaternion.AngleAxis(neighbourDirectionAngle, Vector3.back) * Vector2.right));
+            return IsTileNeighbor(neighbour, center, Vector2Int.RoundToInt(Quaternion.AngleAxis(neighbourDirectionAngle, Vector3.back) * Vector2.right));
         }
         /// <summary>
         /// Is a tile the neighbour of another tile with the given direction.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="tile">A tile</param>
         /// <param name="neighbour">The tile to check as a neighbour</param>
+        /// <param name="center">A tile</param>
         /// <param name="neighbourDirection">The position of the expected neighbour from the tile</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileNeighbor<T>(T tile, T neighbour, Vector2Int neighbourDirection) where T : ITile
+        public static bool IsTileNeighbor<T>(T neighbour, T center, Vector2Int neighbourDirection) where T : ITile
         {
-            neighbourDirection.x = Mathf.Clamp(neighbourDirection.x, -1, 1);
-            neighbourDirection.y = Mathf.Clamp(neighbourDirection.y, -1, 1);
-            return neighbour.X == tile.X + neighbourDirection.x && neighbour.Y == tile.Y + neighbourDirection.y;
+            int x = neighbourDirection.x > 0 ? center.X + 1 : (neighbourDirection.x < 0 ? center.X - 1 : center.X);
+            int y = neighbourDirection.y > 0 ? center.Y + 1 : (neighbourDirection.y < 0 ? center.Y - 1 : center.Y);
+            return neighbour.X == x && neighbour.Y == y;
         }
         /// <summary>
         /// Is a tile an orthogonal neighbour of another tile.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="tile">A tile</param>
         /// <param name="neighbour">The tile to check as a neighbour</param>
+        /// <param name="center">A tile</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileOrthogonalNeighbor<T>(T tile, T neighbour) where T : ITile
+        public static bool IsTileOrthogonalNeighbor<T>(T neighbour, T center) where T : ITile
         {
-            return (tile.X == neighbour.X && (tile.Y == neighbour.Y + 1 || tile.Y == neighbour.Y - 1)) || tile.Y == neighbour.Y && (tile.X == neighbour.X + 1 || tile.X == neighbour.X - 1);
+            return (center.X == neighbour.X && (center.Y == neighbour.Y + 1 || center.Y == neighbour.Y - 1)) || center.Y == neighbour.Y && (center.X == neighbour.X + 1 || center.X == neighbour.X - 1);
         }
         /// <summary>
         /// Is a tile an diagonal neighbour of another tile.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="tile">A tile</param>
         /// <param name="neighbour">The tile to check as a neighbour</param>
+        /// <param name="center">A tile</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileDiagonalNeighbor<T>(T tile, T neighbour) where T : ITile
+        public static bool IsTileDiagonalNeighbor<T>(T neighbour, T center) where T : ITile
         {
-            return Mathf.Abs(neighbour.X - tile.X) == 1 && Mathf.Abs(neighbour.Y - tile.Y) == 1;
+            return Mathf.Abs(neighbour.X - center.X) == 1 && Mathf.Abs(neighbour.Y - center.Y) == 1;
         }
         /// <summary>
         /// Is a tile any neighbour of another tile.
         /// </summary>
         /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-        /// <param name="tile">A tile</param>
         /// <param name="neighbour">The tile to check as a neighbour</param>
+        /// <param name="center">A tile</param>
         /// <returns>A boolean value</returns>
-        public static bool IsTileAnyNeighbor<T>(T tile, T neighbour) where T : ITile
+        public static bool IsTileAnyNeighbor<T>(T neighbour, T center) where T : ITile
         {
-            return IsTileOrthogonalNeighbor(tile, neighbour) || IsTileDiagonalNeighbor(tile, neighbour);
+            return IsTileOrthogonalNeighbor(center, neighbour) || IsTileDiagonalNeighbor(center, neighbour);
         }
     }
     /// <summary>
@@ -2207,7 +2238,7 @@ namespace KevinCastejon.GridHelper
             {
                 if (targetTile == null || !targetTile.IsWalkable)
                 {
-                    throw new System.Exception("Do not try to generate a PathMap with an unwalkable (or null) tile as the target");
+                    throw new Exception("Do not try to generate a PathMap with an unwalkable (or null) tile as the target");
                 }
                 Node<T> targetNode = new(targetTile);
                 Dictionary<T, Node<T>> accessibleTilesDico = new() { { targetTile, targetNode } };
@@ -2268,7 +2299,7 @@ namespace KevinCastejon.GridHelper
         {
             if (targetTile == null || !targetTile.IsWalkable)
             {
-                throw new System.Exception("Do not try to generate a PathMap with an unwalkable (or null) tile as the target");
+                throw new Exception("Do not try to generate a PathMap with an unwalkable (or null) tile as the target");
             }
             Node<T> targetNode = new(targetTile);
             Dictionary<T, Node<T>> accessibleTilesDico = new() { { targetTile, targetNode } };
@@ -2377,60 +2408,71 @@ namespace KevinCastejon.GridHelper
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static async Task<T[]> CalculatePathAsync<T>(T[,] map, T startTile, T[] destinationTiles, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static Task<T[]> CalculatePathAsync<T>(T[,] map, T startTile, T[] destinationTiles, bool includeStart = true, bool includeDestination = true, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken ct = default) where T : ITile
         {
-            if (startTile == null || !startTile.IsWalkable || destinationTiles == null || destinationTiles.Count(x => !x.IsWalkable) > 0)
+            Task<T[]> task = Task.Run(() =>
             {
-                throw new System.Exception("Do not try to generate a path with an unwalkable (or null) tile as the start or destination");
-            }
-            Node<T> targetNode = new(startTile);
-            Dictionary<T, Node<T>> accessibleTilesDico = new() { { startTile, targetNode } };
-            List<T> accessibleTiles = new() { startTile };
-            PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
-            frontier.Enqueue(targetNode, 0);
-            targetNode.NextNode = targetNode;
-            targetNode.DistanceToTarget = 0f;
-            while (frontier.Count > 0)
-            {
-                Node<T> current = frontier.Dequeue();
-                List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, pathfindingPolicy, majorOrder);
-                foreach (T neiTile in neighbourgs)
+                if (startTile == null || !startTile.IsWalkable || destinationTiles == null || destinationTiles.Count(x => !x.IsWalkable) > 0)
                 {
-                    Node<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node<T>(neiTile);
-                    bool isDiagonal = current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
-                    float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? pathfindingPolicy.DiagonalsWeight : 1f);
-                    if (nei.NextNode == null || newDistance < nei.DistanceToTarget)
+                    throw new Exception("Do not try to generate a path with an unwalkable (or null) tile as the start or destination");
+                }
+                Node<T> targetNode = new(startTile);
+                Dictionary<T, Node<T>> accessibleTilesDico = new() { { startTile, targetNode } };
+                List<T> accessibleTiles = new() { startTile };
+                PriorityQueueUnityPort.PriorityQueue<Node<T>, float> frontier = new();
+                frontier.Enqueue(targetNode, 0);
+                targetNode.NextNode = targetNode;
+                targetNode.DistanceToTarget = 0f;
+                int totalCount = map.GetLength(0) * map.GetLength(1);
+                while (frontier.Count > 0)
+                {
+                    Node<T> current = frontier.Dequeue();
+                    List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, pathfindingPolicy, majorOrder);
+                    foreach (T neiTile in neighbourgs)
                     {
-                        if (!accessibleTilesDico.ContainsKey(nei.Tile))
+                        if (ct != default && ct.IsCancellationRequested)
                         {
-                            accessibleTilesDico.Add(nei.Tile, nei);
-                            accessibleTiles.Add(nei.Tile);
-
-                            if (destinationTiles.Contains(nei.Tile))
-                            {
-                                nei.NextNode = current;
-                                nei.NextDirection = new Vector2Int(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0));
-                                nei.DistanceToTarget = newDistance;
-                                Node<T> pathNode = nei;
-                                List<T> path = new();
-                                while (pathNode != targetNode)
-                                {
-                                    path.Add(pathNode.Tile);
-                                    pathNode = pathNode.NextNode;
-                                }
-                                return path.ToArray();
-                            }
+                            ct.ThrowIfCancellationRequested();
                         }
-                        frontier.Enqueue(nei, newDistance);
-                        nei.NextNode = current;
-                        nei.NextDirection = new Vector2Int(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0));
-                        nei.DistanceToTarget = newDistance;
+                        Node<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node<T>(neiTile);
+                        bool isDiagonal = current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
+                        float newDistance = current.DistanceToTarget + nei.Tile.Weight * (isDiagonal ? pathfindingPolicy.DiagonalsWeight : 1f);
+                        if (nei.NextNode == null || newDistance < nei.DistanceToTarget)
+                        {
+                            if (!accessibleTilesDico.ContainsKey(nei.Tile))
+                            {
+                                accessibleTilesDico.Add(nei.Tile, nei);
+                                accessibleTiles.Add(nei.Tile);
+                                float progressRatio = (float)accessibleTiles.Count / totalCount;
+                                progress?.Report(progressRatio);
+                                if (destinationTiles.Contains(nei.Tile))
+                                {
+                                    nei.NextNode = current;
+                                    nei.NextDirection = new Vector2Int(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0));
+                                    nei.DistanceToTarget = newDistance;
+                                    Node<T> pathNode = nei;
+                                    List<T> path = new();
+                                    while (pathNode != targetNode)
+                                    {
+                                        if ((includeStart || !GridUtils.TileEquals(pathNode.Tile, startTile)) && (includeDestination || !destinationTiles.Contains(pathNode.Tile)))
+                                        {
+                                            path.Add(pathNode.Tile);
+                                        }
+                                        pathNode = pathNode.NextNode;
+                                    }
+                                    return path.ToArray();
+                                }
+                            }
+                            frontier.Enqueue(nei, newDistance);
+                            nei.NextNode = current;
+                            nei.NextDirection = new Vector2Int(nei.NextNode.Tile.X > nei.Tile.X ? 1 : (nei.NextNode.Tile.X < nei.Tile.X ? -1 : 0), nei.NextNode.Tile.Y > nei.Tile.Y ? 1 : (nei.NextNode.Tile.Y < nei.Tile.Y ? -1 : 0));
+                            nei.DistanceToTarget = newDistance;
+                        }
                     }
                 }
-                // Ajouter une petite pause pour permettre à d'autres tâches d'être exécutées
-                await Task.Yield();
-            }
-            return new T[0];
+                return new T[0];
+            });
+            return task;
         }
         /// <summary>
         /// Calculates a path between a start tile and the closest of many destination tiles. If there is no path from the start tile to each destination tile then an empty array is returned.
@@ -2442,11 +2484,11 @@ namespace KevinCastejon.GridHelper
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] CalculatePath<T>(T[,] map, T startTile, T[] destinationTiles, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] CalculatePath<T>(T[,] map, T startTile, T[] destinationTiles, bool includeStart = true, bool includeDestination = true, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             if (startTile == null || !startTile.IsWalkable || destinationTiles == null || destinationTiles.Count(x => !x.IsWalkable) > 0)
             {
-                throw new System.Exception("Do not try to generate a path with an unwalkable (or null) tile as the start or destination");
+                throw new Exception("Do not try to generate a path with an unwalkable (or null) tile as the start or destination");
             }
             Node<T> targetNode = new(startTile);
             Dictionary<T, Node<T>> accessibleTilesDico = new() { { startTile, targetNode } };
@@ -2480,7 +2522,10 @@ namespace KevinCastejon.GridHelper
                                 List<T> path = new();
                                 while (pathNode != targetNode)
                                 {
-                                    path.Add(pathNode.Tile);
+                                    if ((includeStart || !GridUtils.TileEquals(pathNode.Tile, startTile)) && (includeDestination || !destinationTiles.Contains(pathNode.Tile)))
+                                    {
+                                        path.Add(pathNode.Tile);
+                                    }
                                     pathNode = pathNode.NextNode;
                                 }
                                 return path.ToArray();
@@ -2505,9 +2550,9 @@ namespace KevinCastejon.GridHelper
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static async Task<T[]> CalculatePathAsync<T>(T[,] map, T startTile, T destinationTile, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static Task<T[]> CalculatePathAsync<T>(T[,] map, T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken ct = default) where T : ITile
         {
-            return await CalculatePathAsync(map, startTile, new T[] { destinationTile }, pathfindingPolicy, majorOrder);
+            return CalculatePathAsync(map, startTile, new T[] { destinationTile }, includeStart, includeDestination, pathfindingPolicy, majorOrder);
         }
         /// <summary>
         /// Calculates a path between a start tile and a destination tile. If there is no path between the start and destination then an empty array is returned
@@ -2519,9 +2564,9 @@ namespace KevinCastejon.GridHelper
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
         /// <returns>An array of tiles</returns>
-        public static T[] CalculatePath<T>(T[,] map, T startTile, T destinationTile, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
+        public static T[] CalculatePath<T>(T[,] map, T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            return CalculatePath(map, startTile, new T[] { destinationTile }, pathfindingPolicy, majorOrder);
+            return CalculatePath(map, startTile, new T[] { destinationTile }, includeStart, includeDestination, pathfindingPolicy, majorOrder);
         }
 
     }
@@ -2574,10 +2619,24 @@ namespace KevinCastejon.GridHelper
         {
             if (!startTile.IsWalkable || !destinationTile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, startTile.X, startTile.Y, MajorOrder);
             return pathMap.IsTileAccessible(destinationTile);
+        }
+        /// <summary>
+        /// Get all the accessible tiles from a specific tile
+        /// </summary>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetAccessibleTilesFromTile(T tile, bool includeTarget = true)
+        {
+            if (!tile.IsWalkable)
+            {
+                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
+            }
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, tile.X, tile.Y, MajorOrder);
+            return pathMap.GetAccessibleTiles(includeTarget);
         }
         /// <summary>
         /// Get the next tile on the path between a start tile and a destination tile
@@ -2589,7 +2648,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!startTile.IsWalkable || !destinationTile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
             return pathMap.GetNextTileFromTile(startTile);
@@ -2604,7 +2663,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!startTile.IsWalkable || !destinationTile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
             return pathMap.GetNextTileDirectionFromTile(startTile);
@@ -2619,7 +2678,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!startTile.IsWalkable || !destinationTile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, startTile.X, startTile.Y, MajorOrder);
             return pathMap.GetDistanceToTargetFromTile(destinationTile);
@@ -2629,19 +2688,21 @@ namespace KevinCastejon.GridHelper
         /// </summary>
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <param name="includeDestination">Include the target tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
-        public T[] GetPath(T startTile, T destinationTile)
+        public T[] GetPath(T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true)
         {
             if (!startTile.IsWalkable || !destinationTile.IsWalkable)
             {
-                throw new System.Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
             if (!pathMap.IsTileAccessible(startTile))
             {
                 return new T[0];
             }
-            return pathMap.GetPathToTarget(startTile);
+            return pathMap.GetPathToTarget(startTile, includeStart, includeDestination);
         }
     }
     /// <summary>
@@ -2699,7 +2760,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!IsTileAccessible(tile))
             {
-                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
+                throw new Exception("Do not call PathMap method with an inaccessible tile");
             }
             return _dico[tile].NextNode.Tile;
         }
@@ -2712,7 +2773,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!IsTileAccessible(tile))
             {
-                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
+                throw new Exception("Do not call PathMap method with an inaccessible tile");
             }
             return _dico[tile].NextDirection;
         }
@@ -2725,7 +2786,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!IsTileAccessible(tile))
             {
-                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
+                throw new Exception("Do not call PathMap method with an inaccessible tile");
             }
             return _dico[tile].DistanceToTarget;
         }
@@ -2753,7 +2814,7 @@ namespace KevinCastejon.GridHelper
         {
             if (!IsTileAccessible(startTile))
             {
-                throw new System.Exception("Do not call PathMap method with an inaccessible tile");
+                throw new Exception("Do not call PathMap method with an inaccessible tile");
             }
             Node<T> node = includeStart ? _dico[startTile] : _dico[startTile].NextNode;
             if (!includeTarget && GridUtils.TileEquals(node.Tile, _target))

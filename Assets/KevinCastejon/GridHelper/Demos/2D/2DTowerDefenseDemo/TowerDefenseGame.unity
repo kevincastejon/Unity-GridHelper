@@ -1238,7 +1238,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1364,7 +1364,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1532,7 +1532,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1616,7 +1616,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1784,7 +1784,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2078,7 +2078,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2246,7 +2246,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2330,7 +2330,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2540,7 +2540,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2582,7 +2582,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2792,7 +2792,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2834,7 +2834,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3170,7 +3170,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3422,7 +3422,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3548,7 +3548,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3800,7 +3800,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4052,7 +4052,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4136,7 +4136,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4220,7 +4220,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4598,7 +4598,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4640,7 +4640,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4682,7 +4682,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4724,7 +4724,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4934,7 +4934,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5018,7 +5018,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5396,7 +5396,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5690,7 +5690,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -5858,7 +5858,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6152,7 +6152,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6194,7 +6194,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6530,7 +6530,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -49534,7 +49534,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
+  - {fileID: 2100000, guid: ac928d029803dbe4d84ce0d3f0f9d05a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -49588,7 +49588,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439067361180
 BoxCollider:
@@ -49650,7 +49650,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439136414058
 BoxCollider:
@@ -49743,7 +49743,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439180765857
 BoxCollider:
@@ -49867,7 +49867,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439216591180
 BoxCollider:
@@ -50146,7 +50146,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439398795601
 BoxCollider:
@@ -50177,7 +50177,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439406158941
 BoxCollider:
@@ -50487,7 +50487,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439503068438
 BoxCollider:
@@ -50549,7 +50549,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439517866777
 BoxCollider:
@@ -50704,7 +50704,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439587066980
 BoxCollider:
@@ -50735,7 +50735,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439590814359
 BoxCollider:
@@ -50921,7 +50921,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439760537321
 BoxCollider:
@@ -51045,7 +51045,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439858232072
 BoxCollider:
@@ -51200,7 +51200,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660439935228980
 BoxCollider:
@@ -51262,7 +51262,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440013526258
 BoxCollider:
@@ -51355,7 +51355,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440038583838
 BoxCollider:
@@ -51479,7 +51479,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440153620111
 BoxCollider:
@@ -51727,7 +51727,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440243460239
 BoxCollider:
@@ -51913,7 +51913,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440312122836
 BoxCollider:
@@ -52130,7 +52130,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440353295404
 BoxCollider:
@@ -52161,7 +52161,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440424722408
 BoxCollider:
@@ -52316,7 +52316,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440561044601
 BoxCollider:
@@ -52347,7 +52347,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440573960700
 BoxCollider:
@@ -52626,7 +52626,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440647745781
 BoxCollider:
@@ -52719,7 +52719,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440711482403
 BoxCollider:
@@ -52750,7 +52750,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440731490195
 BoxCollider:
@@ -52781,7 +52781,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440737326030
 BoxCollider:
@@ -52936,7 +52936,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440798805742
 BoxCollider:
@@ -53184,7 +53184,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440956862818
 BoxCollider:
@@ -53308,7 +53308,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660440991333793
 BoxCollider:
@@ -53370,7 +53370,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660441026530296
 BoxCollider:
@@ -53432,7 +53432,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660441057791196
 BoxCollider:
@@ -53587,7 +53587,7 @@ MonoBehaviour:
   _wallMat: {fileID: 2100000, guid: d3a063d7ced786d44a3a13e26540ed06, type: 2}
   _hoverMat: {fileID: 2100000, guid: 3064efe6ec465c74f83af7f2cf42ed85, type: 2}
   _goalMat: {fileID: 2100000, guid: d174dcfceadefe34685070829ad6a7d8, type: 2}
-  _isWalkable: 0
+  _isWalkable: 1
   _isGoal: 0
 --- !u!65 &8667660441167878997
 BoxCollider:

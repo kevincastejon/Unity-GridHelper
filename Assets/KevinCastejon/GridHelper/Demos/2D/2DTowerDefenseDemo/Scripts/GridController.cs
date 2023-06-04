@@ -44,7 +44,7 @@ namespace TD_Demo
         {
             // Detecting click on tile
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity) && Input.GetMouseButton(0))
+            if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity) && Input.GetMouseButtonDown(0))
             {
                 // Retrieving the Floor component
                 Floor hitFloor = hit.collider.GetComponent<Floor>();
