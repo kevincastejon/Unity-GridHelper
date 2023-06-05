@@ -2231,8 +2231,10 @@ namespace KevinCastejon.GridHelper
         /// <param name="maxDistance">Optional parameter limiting the maximum movement distance from the target tile. 0 means no limit and is the default value</param>
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
-        /// <returns></returns>
-        public static Task<PathMap<T>> GeneratePathMapAsync<T>(T[,] map, T targetTile, float maxDistance = 0f, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken ct = default) where T : ITile
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
+        /// <returns>A PathMap object</returns>
+        public static Task<PathMap<T>> GeneratePathMapAsync<T>(T[,] map, T targetTile, float maxDistance = 0f, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
             Task<PathMap<T>> task = Task.Run(() =>
             {
@@ -2254,9 +2256,9 @@ namespace KevinCastejon.GridHelper
                     List<T> neighbourgs = GetTileNeighbours(map, current.Tile.X, current.Tile.Y, pathfindingPolicy, majorOrder);
                     foreach (T neiTile in neighbourgs)
                     {
-                        if (ct != default && ct.IsCancellationRequested)
+                        if (cancelToken != default && cancelToken.IsCancellationRequested)
                         {
-                            ct.ThrowIfCancellationRequested();
+                            cancelToken.ThrowIfCancellationRequested();
                         }
                         Node<T> nei = accessibleTilesDico.ContainsKey(neiTile) ? accessibleTilesDico[neiTile] : new Node<T>(neiTile);
                         bool isDiagonal = current.Tile.X != nei.Tile.X && current.Tile.Y != nei.Tile.Y;
@@ -2294,7 +2296,7 @@ namespace KevinCastejon.GridHelper
         /// <param name="maxDistance">Optional parameter limiting the maximum movement distance from the target tile. 0 means no limit and is the default value</param>
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
-        /// <returns></returns>
+        /// <returns>A PathMap object</returns>
         public static PathMap<T> GeneratePathMap<T>(T[,] map, T targetTile, float maxDistance = 0f, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
             if (targetTile == null || !targetTile.IsWalkable)
@@ -2344,8 +2346,10 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
-        /// <returns></returns>
-        public static Task<PathGrid<T>> GeneratePathGridAsync<T>(T[,] map, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken ct = default) where T : ITile
+        /// <param name="progress">An optional IProgress object to get the generation progression</param>
+        /// <param name="cancelToken">An optional CancellationToken object to cancel the generation</param>
+        /// <returns>A PathGrid object</returns>
+        public static Task<PathGrid<T>> GeneratePathGridAsync<T>(T[,] map, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken cancelToken = default) where T : ITile
         {
             Task<PathGrid<T>> task = Task.Run(() =>
             {
@@ -2358,9 +2362,9 @@ namespace KevinCastejon.GridHelper
                 {
                     for (int j = 0; j < maxJ; j++)
                     {
-                        if (ct != default && ct.IsCancellationRequested)
+                        if (cancelToken != default && cancelToken.IsCancellationRequested)
                         {
-                            ct.ThrowIfCancellationRequested();
+                            cancelToken.ThrowIfCancellationRequested();
                         }
                         treatedCount++;
                         if (map[i, j].IsWalkable)
@@ -2382,17 +2386,20 @@ namespace KevinCastejon.GridHelper
         /// <param name="map">A two-dimensional array of tiles</param>
         /// <param name="pathfindingPolicy">The PathfindingPolicy object to use</param>
         /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
-        /// <returns></returns>
+        /// <returns>A PathGrid object</returns>
         public static PathGrid<T> GeneratePathGrid<T>(T[,] map, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
-            PathMap<T>[,] grid = new PathMap<T>[map.GetLength(0), map.GetLength(1)];
-            for (int i = 0; i < map.GetLength(0); i++)
+            int maxI = map.GetLength(0);
+            int maxJ = map.GetLength(1);
+            PathMap<T>[,] grid = new PathMap<T>[maxI, maxJ];
+            for (int i = 0; i < maxI; i++)
             {
-                for (int j = 0; j < map.GetLength(1); j++)
+                for (int j = 0; j < maxJ; j++)
                 {
-                    if (map[i, j].IsWalkable)
+                    T tile = map[i, j];
+                    if (tile.IsWalkable)
                     {
-                        grid[i, j] = GeneratePathMap(map, map[i, j], 0f, pathfindingPolicy, majorOrder);
+                        GeneratePathMap(map, map[i, j], 0f, pathfindingPolicy, majorOrder);
                     }
                 }
             }
@@ -2410,8 +2417,10 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static Task<T[]> CalculatePathAsync<T>(T[,] map, T startTile, T[] destinationTiles, bool includeStart = true, bool includeDestination = true, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken ct = default) where T : ITile
         {
+            Debug.Log("CALCULATE");
             Task<T[]> task = Task.Run(() =>
             {
+                Debug.Log("TASK 1");
                 if (startTile == null || !startTile.IsWalkable || destinationTiles == null || destinationTiles.Count(x => !x.IsWalkable) > 0)
                 {
                     throw new Exception("Do not try to generate a path with an unwalkable (or null) tile as the start or destination");
@@ -2625,8 +2634,9 @@ namespace KevinCastejon.GridHelper
             return pathMap.IsTileAccessible(destinationTile);
         }
         /// <summary>
-        /// Get all the accessible tiles from a specific tile
+        /// Get all the accessible tiles from a target tile
         /// </summary>
+        /// <param name="tile">The target tile</param>
         /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
         /// <returns>An array of tiles</returns>
         public T[] GetAccessibleTilesFromTile(T tile, bool includeTarget = true)

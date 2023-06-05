@@ -7830,10 +7830,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 527430796, guid: a56c4f1b517170d4393a31a6377355a3, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8708287786045736254, guid: a56c4f1b517170d4393a31a6377355a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 527430799}
   m_SourcePrefab: {fileID: 100100000, guid: a56c4f1b517170d4393a31a6377355a3, type: 3}
 --- !u!4 &527430794 stripped
 Transform:
@@ -7845,17 +7849,20 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8708287786045736254, guid: a56c4f1b517170d4393a31a6377355a3, type: 3}
   m_PrefabInstance: {fileID: 527430793}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &527430796 stripped
+--- !u!114 &527430799
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 527430796, guid: a56c4f1b517170d4393a31a6377355a3, type: 3}
-  m_PrefabInstance: {fileID: 527430793}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 527430795}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13200406d1761cf40b9181112f498cae, type: 3}
+  m_Script: {fileID: 11500000, guid: f7779257db911084b8ae373cdf7d456c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _selectionOutline: {fileID: 0}
+  _clampedSelectionOutline: {fileID: 128928211}
 --- !u!1 &529643112
 GameObject:
   m_ObjectHideFlags: 0
@@ -7909,7 +7916,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 529643112}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2116298c4bbeac4c9791ca04546dda8, type: 3}
+  m_Script: {fileID: 11500000, guid: b3c41944954b1a24998ee23e9e81dc40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _circleLED: {fileID: 1153364452}
@@ -7937,7 +7944,7 @@ MonoBehaviour:
   _direction: 0
   _angle: 90
   _size: {x: 5, y: 5}
-  _grid: {fileID: 1101448437}
+  _grid: {fileID: 1101448440}
 --- !u!1 &530513377
 GameObject:
   m_ObjectHideFlags: 0
@@ -10734,10 +10741,14 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 755378095, guid: 58510383eaf49e24486a99fc85228f8f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8708287786045736254, guid: 58510383eaf49e24486a99fc85228f8f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 755378098}
   m_SourcePrefab: {fileID: 100100000, guid: 58510383eaf49e24486a99fc85228f8f, type: 3}
 --- !u!4 &755378093 stripped
 Transform:
@@ -10749,17 +10760,20 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8708287786045736254, guid: 58510383eaf49e24486a99fc85228f8f, type: 3}
   m_PrefabInstance: {fileID: 755378092}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &755378095 stripped
+--- !u!114 &755378098
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 755378095, guid: 58510383eaf49e24486a99fc85228f8f, type: 3}
-  m_PrefabInstance: {fileID: 755378092}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 755378094}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13200406d1761cf40b9181112f498cae, type: 3}
+  m_Script: {fileID: 11500000, guid: f7779257db911084b8ae373cdf7d456c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _selectionOutline: {fileID: 0}
+  _clampedSelectionOutline: {fileID: 128928211}
 --- !u!1 &756725618
 GameObject:
   m_ObjectHideFlags: 0
@@ -11542,13 +11556,7 @@ MonoBehaviour:
     m_Options:
     - m_Text: Direct Pathfinding
       m_Image: {fileID: 0}
-    - m_Text: Direct Pathfinding Async
-      m_Image: {fileID: 0}
     - m_Text: PathMap
-      m_Image: {fileID: 0}
-    - m_Text: PathMap Async
-      m_Image: {fileID: 0}
-    - m_Text: PathGrid Async
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -13267,7 +13275,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1008349439}
-  - component: {fileID: 1008349440}
+  - component: {fileID: 1008349441}
   m_Layer: 5
   m_Name: Raycasting
   m_TagString: Untagged
@@ -13302,7 +13310,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 1}
---- !u!114 &1008349440
+--- !u!114 &1008349441
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -13311,7 +13319,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1008349438}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da31b42a204578b4fb593a7da8441f13, type: 3}
+  m_Script: {fileID: 11500000, guid: a5db6e8d246f7f5429bfa302c62ebcd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _lineClearLED: {fileID: 2033090478}
@@ -13327,7 +13335,7 @@ MonoBehaviour:
   _length: 10
   _direction: 0
   _angle: 90
-  _grid: {fileID: 755378095}
+  _grid: {fileID: 755378098}
 --- !u!1 &1011475183
 GameObject:
   m_ObjectHideFlags: 0
@@ -14097,17 +14105,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8708287786045736253, guid: 18c7ccb7a7653074b8bfa56b49e90ae9, type: 3}
   m_PrefabInstance: {fileID: 8708287784961950159}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1101448437 stripped
+--- !u!114 &1101448440
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1101448437, guid: 18c7ccb7a7653074b8bfa56b49e90ae9, type: 3}
-  m_PrefabInstance: {fileID: 8708287784961950159}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1101448433}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13200406d1761cf40b9181112f498cae, type: 3}
+  m_Script: {fileID: 11500000, guid: f7779257db911084b8ae373cdf7d456c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _selectionOutline: {fileID: 0}
+  _clampedSelectionOutline: {fileID: 128928211}
 --- !u!1 &1120970663
 GameObject:
   m_ObjectHideFlags: 0
@@ -17599,7 +17610,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1443069819}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c632803491d593b4694ad686a8fbdfd2, type: 3}
+  m_Script: {fileID: 11500000, guid: caf002ea9943f5346bf2968b7213b496, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _progressWindow: {fileID: 1561027653}
@@ -17615,7 +17626,7 @@ MonoBehaviour:
   _diagonalsWeight: 1.414214
   _movementsPolicy: 0
   _maxDistance: 10
-  _grid: {fileID: 527430796}
+  _grid: {fileID: 527430799}
 --- !u!1 &1446463184
 GameObject:
   m_ObjectHideFlags: 0
@@ -25220,8 +25231,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: Extraction
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1101448437, guid: 18c7ccb7a7653074b8bfa56b49e90ae9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8708287786045736254, guid: 18c7ccb7a7653074b8bfa56b49e90ae9, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1101448440}
   m_SourcePrefab: {fileID: 100100000, guid: 18c7ccb7a7653074b8bfa56b49e90ae9, type: 3}

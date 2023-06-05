@@ -15,6 +15,10 @@ Comes with several demo examples.
 **[Complete API Documentation](https://kevincastejon.fr/demos/Documentations/Unity-GridHelper/)**
 
 ---
+### Online Demos
+[2D API Playground](https://kevincastejon.fr/demos/GridHelper-2DAPIPlayground/)
+
+---
 # **Usages**
 
 All you need to use this API is a two-dimensional array (three-dimensional for 3D API) of tiles.

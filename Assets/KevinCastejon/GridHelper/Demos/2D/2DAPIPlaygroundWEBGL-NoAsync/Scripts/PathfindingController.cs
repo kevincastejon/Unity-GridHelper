@@ -5,17 +5,14 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Grid2DHelper.APIDemo.Playground
+namespace Grid2DHelper.APIDemo.Playground_WEBGL_NoAsync
 {
     public class PathfindingController : MonoBehaviour
     {
         public enum DemoType
         {
             DIRECT_PATHFINDING,
-            DIRECT_PATHFINDING_ASYNC,
             PATHMAP,
-            PATHMAP_ASYNC,
-            PATHGRID_ASYNC,
         }
         [SerializeField] private TextMeshProUGUI _progressWindow;
         [SerializeField] private TMP_Dropdown _demoTypeDropDown;
@@ -32,13 +29,11 @@ namespace Grid2DHelper.APIDemo.Playground
         [SerializeField] private float _maxDistance;
         [SerializeField] private GridController _grid;
         private PathMap<Tile> _pathMap;
-        private PathGrid<Tile> _pathGrid;
         private DemoType _demoType;
         private Tile _targetTile;
         private Tile _startTile;
         private bool _walling;
         private bool _startWalkableValue;
-        private System.Threading.CancellationTokenSource _cts = new();
 
         private void SetCurrentDemoType(DemoType value)
         {
@@ -54,22 +49,9 @@ namespace Grid2DHelper.APIDemo.Playground
                     _grid.Refresh(null, new Tile[0]);
                     DirectPathfind();
                     break;
-                case DemoType.DIRECT_PATHFINDING_ASYNC:
-                    _maxDistanceSlider.transform.parent.gameObject.SetActive(false);
-                    _grid.Refresh(null, new Tile[0]);
-                    DirectPathfindAsync();
-                    break;
                 case DemoType.PATHMAP:
                     _maxDistanceSlider.transform.parent.gameObject.SetActive(true);
                     GeneratePathMap();
-                    break;
-                case DemoType.PATHMAP_ASYNC:
-                    GeneratePathMapAsync();
-                    _maxDistanceSlider.transform.parent.gameObject.SetActive(true);
-                    break;
-                case DemoType.PATHGRID_ASYNC:
-                    GeneratePathGridAsync();
-                    _maxDistanceSlider.transform.parent.gameObject.SetActive(false);
                     break;
                 default:
                     break;
@@ -189,15 +171,8 @@ namespace Grid2DHelper.APIDemo.Playground
                 case DemoType.DIRECT_PATHFINDING:
                     DirectPathfind();
                     break;
-                case DemoType.DIRECT_PATHFINDING_ASYNC:
-                    DirectPathfindAsync();
-                    break;
                 case DemoType.PATHMAP:
-                case DemoType.PATHMAP_ASYNC:
                     GetPathFromPathMap();
-                    break;
-                case DemoType.PATHGRID_ASYNC:
-                    GetPathFromPathGrid();
                     break;
                 default:
                     break;
@@ -210,17 +185,8 @@ namespace Grid2DHelper.APIDemo.Playground
                 case DemoType.DIRECT_PATHFINDING:
                     DirectPathfind();
                     break;
-                case DemoType.DIRECT_PATHFINDING_ASYNC:
-                    DirectPathfindAsync();
-                    break;
                 case DemoType.PATHMAP:
                     GeneratePathMap();
-                    break;
-                case DemoType.PATHMAP_ASYNC:
-                    GeneratePathMapAsync();
-                    break;
-                case DemoType.PATHGRID_ASYNC:
-                    GetPathFromPathGrid();
                     break;
                 default:
                     break;
@@ -233,17 +199,8 @@ namespace Grid2DHelper.APIDemo.Playground
                 case DemoType.DIRECT_PATHFINDING:
                     DirectPathfind();
                     break;
-                case DemoType.DIRECT_PATHFINDING_ASYNC:
-                    DirectPathfindAsync();
-                    break;
                 case DemoType.PATHMAP:
                     GeneratePathMap();
-                    break;
-                case DemoType.PATHMAP_ASYNC:
-                    GeneratePathMapAsync();
-                    break;
-                case DemoType.PATHGRID_ASYNC:
-                    GeneratePathGridAsync();
                     break;
                 default:
                     break;
@@ -253,68 +210,14 @@ namespace Grid2DHelper.APIDemo.Playground
         {
             _grid.Refresh(_targetTile, null, Pathfinding.CalculatePath(_grid.Map, _targetTile, _startTile, false, false, new PathfindingPolicy(_diagonalsPolicy, _diagonalsWeight, _movementsPolicy)), _startTile);
         }
-        private async void DirectPathfindAsync()
-        {
-            _grid.MouseEnabled = false;
-            _progressWindow.transform.parent.gameObject.SetActive(true);
-            System.Progress<float> progressIndicator = new System.Progress<float>((progress) =>
-            {
-                _progressWindow.text = "Calculating path\n" + (progress * 100).ToString("F0") + "%";
-            });
-            try
-            {
-                _grid.Refresh(_targetTile, null, await Pathfinding.CalculatePathAsync(_grid.Map, _targetTile, _startTile, false, false, new PathfindingPolicy(_diagonalsPolicy, _diagonalsWeight, _movementsPolicy), MajorOrder.DEFAULT, progressIndicator, _cts.Token), _startTile);
-            }
-            catch (System.Exception e)
-            {
-                Debug.Log(e);
-                return;
-            }
-            _progressWindow.transform.parent.gameObject.SetActive(false);
-            _grid.MouseEnabled = true;
-        }
         private void GeneratePathMap()
         {
             _pathMap = Pathfinding.GeneratePathMap(_grid.Map, _targetTile, _maxDistance, new PathfindingPolicy(_diagonalsPolicy, _diagonalsWeight, _movementsPolicy));
             _grid.Refresh(_targetTile, _pathMap.GetAccessibleTiles(false), _pathMap.IsTileAccessible(_startTile) ? _pathMap.GetPathToTarget(_startTile, false, false) : new Tile[0], _startTile);
-        }
-        private async void GeneratePathMapAsync()
-        {
-            _grid.MouseEnabled = false;
-            _progressWindow.transform.parent.gameObject.SetActive(true);
-            System.Progress<float> progressIndicator = new System.Progress<float>((progress) =>
-            {
-                _progressWindow.text = "Generating PathMap\n" + (progress * 100).ToString("F0") + "%";
-            });
-            _pathMap = await Pathfinding.GeneratePathMapAsync(_grid.Map, _targetTile, _maxDistance, new PathfindingPolicy(_diagonalsPolicy, _diagonalsWeight, _movementsPolicy), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
-            _grid.Refresh(_targetTile, _pathMap.GetAccessibleTiles(false), _pathMap.IsTileAccessible(_startTile) ? _pathMap.GetPathToTarget(_startTile, false, false) : new Tile[0], _startTile);
-            _progressWindow.transform.parent.gameObject.SetActive(false);
-            _grid.MouseEnabled = true;
-        }
+        }        
         private void GetPathFromPathMap()
         {
             _grid.Refresh(null, null, _pathMap.IsTileAccessible(_startTile) ? _pathMap.GetPathToTarget(_startTile, false, false) : new Tile[0], _startTile);
-        }
-        private async void GeneratePathGridAsync()
-        {
-            _grid.MouseEnabled = false;
-            _progressWindow.transform.parent.gameObject.SetActive(true);
-            System.Progress<float> progressIndicator = new System.Progress<float>((progress) =>
-            {
-                _progressWindow.text = "Generating PathGrid\n" + (progress * 100).ToString("F0") + "%";
-            });
-            _pathGrid = await Pathfinding.GeneratePathGridAsync(_grid.Map, new PathfindingPolicy(_diagonalsPolicy, _diagonalsWeight, _movementsPolicy), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
-            _grid.Refresh(_targetTile, new Tile[0], _pathGrid.GetPath(_startTile, _targetTile, false, false), _startTile);
-            _progressWindow.transform.parent.gameObject.SetActive(false);
-            _grid.MouseEnabled = true;
-        }
-        private void GetPathFromPathGrid()
-        {
-            _grid.Refresh(_targetTile, null, _pathGrid.GetPath(_startTile, _targetTile, false, false), _startTile);
-        }
-        private void OnApplicationQuit()
-        {
-            _cts.Cancel();
-        }
+        }      
     }
 }
