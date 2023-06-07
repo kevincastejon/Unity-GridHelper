@@ -62,6 +62,7 @@ namespace KevinCastejon.GridHelper
         WALL_BELOW = 1,
         WALL_ASIDE = 2,
         WALL_ABOVE = 4,
+        WALL_CONTACT = 7,
     }
     /// <summary>
     /// Settings related to allowed movements.
@@ -2303,6 +2304,10 @@ namespace KevinCastejon.GridHelper
             {
                 throw new Exception("Do not try to generate a PathMap with an unwalkable (or null) tile as the target");
             }
+            if (!CheckMP(pathfindingPolicy.MovementsPolicy, map, targetTile, majorOrder))
+            {
+                return new PathMap<T>(new Dictionary<T, Node<T>>(), new List<T>(), targetTile, maxDistance, majorOrder);
+            }
             Node<T> targetNode = new(targetTile);
             Dictionary<T, Node<T>> accessibleTilesDico = new() { { targetTile, targetNode } };
             List<T> accessibleTiles = new() { targetTile };
@@ -2626,12 +2631,12 @@ namespace KevinCastejon.GridHelper
         /// <returns>A boolean value</returns>
         public bool IsPath(T startTile, T destinationTile)
         {
-            if (!startTile.IsWalkable || !destinationTile.IsWalkable)
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
-                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
             }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, startTile.X, startTile.Y, MajorOrder);
-            return pathMap.IsTileAccessible(destinationTile);
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
+            return pathMap.IsTileAccessible(startTile);
         }
         /// <summary>
         /// Get all the accessible tiles from a target tile
@@ -2641,9 +2646,9 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public T[] GetAccessibleTilesFromTile(T tile, bool includeTarget = true)
         {
-            if (!tile.IsWalkable)
+            if (tile==null||!tile.IsWalkable)
             {
-                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, tile.X, tile.Y, MajorOrder);
             return pathMap.GetAccessibleTiles(includeTarget);
@@ -2654,14 +2659,20 @@ namespace KevinCastejon.GridHelper
         /// <param name="startTile">The start tile</param>
         /// <param name="destinationTile">The destination tile</param>
         /// <returns>A tile object</returns>
-        public T GetNextTileFromTile(T startTile, T destinationTile)
+        public bool GetNextTileFromTile(T startTile, T destinationTile, out T nextTile)
         {
-            if (!startTile.IsWalkable || !destinationTile.IsWalkable)
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
-                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
-            return pathMap.GetNextTileFromTile(startTile);
+            if (!pathMap.IsTileAccessible(startTile))
+            {
+                nextTile = default;
+                return false;
+            }
+            nextTile = pathMap.GetNextTileFromTile(startTile);
+            return true;
         }
         /// <summary>
         /// Get the next tile on the path between a start tile and a destination tile
@@ -2671,9 +2682,9 @@ namespace KevinCastejon.GridHelper
         /// <returns>A Vector2Int direction</returns>
         public Vector2Int GetNextTileDirectionFromTile(T startTile, T destinationTile)
         {
-            if (!startTile.IsWalkable || !destinationTile.IsWalkable)
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
-                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
             return pathMap.GetNextTileDirectionFromTile(startTile);
@@ -2686,12 +2697,12 @@ namespace KevinCastejon.GridHelper
         /// <returns>The distance to the target</returns>
         public float GetDistanceBetweenTiles(T startTile, T destinationTile)
         {
-            if (!startTile.IsWalkable || !destinationTile.IsWalkable)
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
-                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
             }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, startTile.X, startTile.Y, MajorOrder);
-            return pathMap.GetDistanceToTargetFromTile(destinationTile);
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
+            return pathMap.GetDistanceToTargetFromTile(startTile);
         }
         /// <summary>
         /// Get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.
@@ -2703,9 +2714,9 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public T[] GetPath(T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true)
         {
-            if (!startTile.IsWalkable || !destinationTile.IsWalkable)
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
             {
-                throw new Exception("Do not call PathGrid methods with non-walkable tiles");
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
             }
             PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
             if (!pathMap.IsTileAccessible(startTile))

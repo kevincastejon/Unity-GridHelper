@@ -154,7 +154,7 @@ namespace Grid2DHelper.Demos.RealtimeIso
         }
         public Vector2Int GetNextPositionToPlayer(Vector2Int currentPosition)
         {
-            Tile nextTile = _pathGrid.GetNextTileFromTile(_map[currentPosition.y, currentPosition.x], GetPlayerTile());
+            _pathGrid.GetNextTileFromTile(_map[currentPosition.y, currentPosition.x], GetPlayerTile(),out Tile nextTile);
             return new Vector2Int(nextTile.X, nextTile.Y);
         }
     }
