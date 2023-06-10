@@ -20,7 +20,7 @@ Comes with several demo examples.
 
 [2D Side View](https://kevincastejon.fr/demos/GridHelper-2DSideView/)
 
-[2D Side View](https://kevincastejon.fr/demos/GridHelper-2DTowerDefense/)
+[2D Tower Defense](https://kevincastejon.fr/demos/GridHelper-2DTowerDefense/)
 
 ---
 # **Usages**
