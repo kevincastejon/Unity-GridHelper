@@ -2372,9 +2372,10 @@ namespace KevinCastejon.GridHelper
                             cancelToken.ThrowIfCancellationRequested();
                         }
                         treatedCount++;
-                        if (map[i, j].IsWalkable)
+                        T tile = map[i, j];
+                        if (tile.IsWalkable)
                         {
-                            grid[i, j] = GeneratePathMap(map, map[i, j], 0f, pathfindingPolicy, majorOrder);
+                            grid[i, j] = GeneratePathMap(map, tile, 0f, pathfindingPolicy, majorOrder);
                             float progressRatio = (float)treatedCount / totalCount;
                             progress?.Report(progressRatio);
                         }
@@ -2394,9 +2395,9 @@ namespace KevinCastejon.GridHelper
         /// <returns>A PathGrid object</returns>
         public static PathGrid<T> GeneratePathGrid<T>(T[,] map, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT) where T : ITile
         {
+            PathMap<T>[,] grid = new PathMap<T>[map.GetLength(0), map.GetLength(1)];
             int maxI = map.GetLength(0);
             int maxJ = map.GetLength(1);
-            PathMap<T>[,] grid = new PathMap<T>[maxI, maxJ];
             for (int i = 0; i < maxI; i++)
             {
                 for (int j = 0; j < maxJ; j++)
@@ -2404,7 +2405,7 @@ namespace KevinCastejon.GridHelper
                     T tile = map[i, j];
                     if (tile.IsWalkable)
                     {
-                        GeneratePathMap(map, map[i, j], 0f, pathfindingPolicy, majorOrder);
+                        grid[i, j] = GeneratePathMap(map, tile, 0f, pathfindingPolicy, majorOrder);
                     }
                 }
             }
