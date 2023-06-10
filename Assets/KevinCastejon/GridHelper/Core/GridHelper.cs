@@ -62,7 +62,6 @@ namespace KevinCastejon.GridHelper
         WALL_BELOW = 1,
         WALL_ASIDE = 2,
         WALL_ABOVE = 4,
-        WALL_CONTACT = 7,
     }
     /// <summary>
     /// Settings related to allowed movements.
@@ -84,7 +83,7 @@ namespace KevinCastejon.GridHelper
         {
             _diagonalsPolicy = diagonalsPolicy;
             _diagonalsWeight = diagonalsWeight;
-            _movementsPolicy = movementPolicy;
+            _movementsPolicy = ((int)movementPolicy) == -1 ? (MovementsPolicy)7 : movementPolicy;
         }
         /// <summary>
         /// The DiagonalsPolicy
@@ -2646,7 +2645,7 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public T[] GetAccessibleTilesFromTile(T tile, bool includeTarget = true)
         {
-            if (tile==null||!tile.IsWalkable)
+            if (tile == null || !tile.IsWalkable)
             {
                 throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
             }
