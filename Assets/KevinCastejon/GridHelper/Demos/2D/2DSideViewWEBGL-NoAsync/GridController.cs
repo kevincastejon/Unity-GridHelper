@@ -45,9 +45,9 @@ namespace Grid2DHelper.Demos.SideViewWEBGL_NoAsync
         }
         private void Start()
         {
-            PathGrid<Tile> butterFlyGrid = Pathfinding.GeneratePathGrid(_map, new PathfindingPolicy(DiagonalsPolicy.ALL_DIAGONALS, 1.41421354f, MovementsPolicy.FLY));
-            PathGrid<Tile> spiderGrid = Pathfinding.GeneratePathGrid(_map, new PathfindingPolicy(DiagonalsPolicy.ALL_DIAGONALS, 1.41421354f, MovementsPolicy.WALL_CONTACT));
-            PathGrid<Tile> dogGrid = Pathfinding.GeneratePathGrid(_map, new PathfindingPolicy(DiagonalsPolicy.DIAGONAL_1FREE, 1.41421354f, MovementsPolicy.WALL_BELOW));
+            PathGrid<Tile> butterFlyGrid = Pathfinding.GeneratePathGrid(_map, new PathfindingPolicy(DiagonalsPolicy.ALL_DIAGONALS, 1.41421354f, _butterflyPolicy));
+            PathGrid<Tile> spiderGrid = Pathfinding.GeneratePathGrid(_map, new PathfindingPolicy(DiagonalsPolicy.DIAGONAL_1FREE, 1.41421354f, _spiderPolicy));
+            PathGrid<Tile> dogGrid = Pathfinding.GeneratePathGrid(_map, new PathfindingPolicy(DiagonalsPolicy.DIAGONAL_1FREE, 1.41421354f, _dogPolicy));
 
             if (_butterfly)
             {
