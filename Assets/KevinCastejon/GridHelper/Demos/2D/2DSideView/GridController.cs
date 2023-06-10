@@ -74,9 +74,9 @@ namespace Grid2DHelper.Demos.SideView
                 "Spider PathGrid" + (spiderProgress * 100).ToString("F0") + "%\n" +
                 "Dog PathGrid" + (dogProgress * 100).ToString("F0") + "%\n";
             });
-            PathGrid<Tile> butterFlyGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(DiagonalsPolicy.ALL_DIAGONALS, 1.41421354f, MovementsPolicy.FLY), MajorOrder.DEFAULT, butterflyProgressIndicator, _cts.Token);
-            PathGrid<Tile> spiderGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(DiagonalsPolicy.ALL_DIAGONALS, 1.41421354f, MovementsPolicy.WALL_CONTACT), MajorOrder.DEFAULT, spiderProgressIndicator, _cts.Token);
-            PathGrid<Tile> dogGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(DiagonalsPolicy.DIAGONAL_1FREE, 1.41421354f, MovementsPolicy.WALL_BELOW), MajorOrder.DEFAULT, dogProgressIndicator, _cts.Token);
+            PathGrid<Tile> butterFlyGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(DiagonalsPolicy.ALL_DIAGONALS, 1.41421354f, _butterflyPolicy), MajorOrder.DEFAULT, butterflyProgressIndicator, _cts.Token);
+            PathGrid<Tile> spiderGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(DiagonalsPolicy.ALL_DIAGONALS, 1.41421354f, _spiderPolicy), MajorOrder.DEFAULT, spiderProgressIndicator, _cts.Token);
+            PathGrid<Tile> dogGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(DiagonalsPolicy.DIAGONAL_1FREE, 1.41421354f, _dogPolicy), MajorOrder.DEFAULT, dogProgressIndicator, _cts.Token);
 
             _generatingPanel.transform.parent.gameObject.SetActive(false);
             if (_butterfly)
