@@ -22,6 +22,8 @@ Comes with several demo examples.
 
 [2D Tower Defense](https://kevincastejon.fr/demos/GridHelper-2DTowerDefense/)
 
+[2D Weighted Tiles](https://kevincastejon.fr/demos/GridHelper-2DWeightedTiles/)
+
 ---
 # **Usages**
 

@@ -198,7 +198,7 @@ namespace WeightedTilesDemo
             {
                 for (int j = 0; j < _map.GetLength(1); j++)
                 {
-                    _map[i, j].ShowDirection(-_globalPathMap.GetNextTileDirectionFromTile(_map[i, j]));
+                    _map[i, j].ShowDirection(_globalPathMap.GetNextTileDirectionFromTile(_map[i, j]));
                 }
             }
         }
