@@ -27,7 +27,7 @@ Comes with several demo examples.
 [2D Side View](https://kevincastejon.fr/demos/GridHelper-2DSideView/)
 
 ---
-# **Usages**
+# **Usage**
 
 All you need to use this API is a two-dimensional array (three-dimensional for 3D API) of tiles.
 
