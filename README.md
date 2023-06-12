@@ -18,11 +18,13 @@ Comes with several demo examples.
 ### Online Demos
 [2D API Playground](https://kevincastejon.fr/demos/GridHelper-2DAPIPlayground/)
 
-[2D Side View](https://kevincastejon.fr/demos/GridHelper-2DSideView/)
-
 [2D Tower Defense](https://kevincastejon.fr/demos/GridHelper-2DTowerDefense/)
 
 [2D Weighted Tiles](https://kevincastejon.fr/demos/GridHelper-2DWeightedTiles/)
+
+[2D Tactical](https://kevincastejon.fr/demos/GridHelper-2DTactical/)
+
+[2D Side View](https://kevincastejon.fr/demos/GridHelper-2DSideView/)
 
 ---
 # **Usages**
