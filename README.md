@@ -212,7 +212,7 @@ This way of doing pathfinding is useful for some usages (like Tower Defenses and
 
 To generate the **PathMap** object, use the **GeneratePathMap** method that needs the *grid* and the *target* tile from which to calculate the paths, as parameters.
 
-You can use an optional *maxDistance* parameter that limits the paths calculation to an amount of distance (movement 'cost' taking into account the tiles weights). Default is 0 and means no distance limit (paths to all accessible tiles, means with a clear path, from the target will be calculated).
+You can use an optional *maxDistance* parameter that limits the paths calculation to an amount of distance (movement 'cost' taking into account the tiles weights). Default is 0 and means no distance limit (paths to all tiles accessible from the target will be calculated).
 
 You can specify a *pathfindingPolicy* parameter that holds parameters relating to diagonals and allowed movements. (see **PathfindingPolicy**)<br>
 
