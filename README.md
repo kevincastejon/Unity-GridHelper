@@ -368,8 +368,8 @@ You can set the **DiagonalsPolicy** that represents the diagonals permissiveness
 pathfindingPolicy.DiagonalsPolicy = DiagonalsPolicy.ALL_DIAGONALS;
 ```
   - **NONE** : no diagonal movement allowed
-  - **DIAGONAL_2FREE** : only diagonal movements, with two walkable facing neighbours common to the start and destination tiles, are allowed
-  - **DIAGONAL_1FREE** : only diagonal movements, with one walkable facing neighbour common to the start and destination tiles, are allowed
+  - **DIAGONAL_2FREE** : only diagonal movements with **two** walkable orthogonal neighbours from both the start and destination tiles are allowed
+  - **DIAGONAL_1FREE** : only diagonal movements with **one** walkable orthogonal neighbours from both the start and destination tiles are allowed
   - **ALL_DIAGONALS** : all diagonal movements allowed
 
 ![DiagonalsPolicySchema](Assets/KevinCastejon/GridHelper/Documentation/DiagonalsPolicySchema.png)
