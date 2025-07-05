@@ -362,7 +362,7 @@ float cost = pathMap.GetDistanceBetweenTiles(startTile, destinationTile);
 
 The **PathfindingPolicy** object holds settings relating to diagonals and allowed movements.
 
-You can set the **DiagonalsPolicy** that represents the diagonals permissiveness. When going diagonally from a tile A to tile B in 2D grid, there are two more tile involved, the ones that are both facing neighbours of the A and B tiles. You can allow diagonals movement depending on the walkable status of these tiles.
+You can set the **DiagonalsPolicy** that represents the diagonals permissiveness. When going diagonally from a tile A to tile B in 2D grid, there are two more tile involved, the ones that are orthogonal neighbours of both the A and B tiles. You can allow diagonals movement depending on the walkable status of these tiles.
 - **DiagonalsPolicy**
 ```cs
 pathfindingPolicy.DiagonalsPolicy = DiagonalsPolicy.ALL_DIAGONALS;
