@@ -27,13 +27,13 @@ namespace Grid2DHelper.Demos.RealtimeIso
         public Tile[,] Map { get => _map; }
         private void Awake()
         {
-            _player = FindObjectOfType<PlayerController>(true);
+            _player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
             _map = new Tile[_mapHeight, _mapWidth];
             _camera = Camera.main;
         }
         private async void Start()
         {
-            Tile[] tiles = FindObjectsOfType<Tile>();
+            Tile[] tiles = FindObjectsByType<Tile>(FindObjectsSortMode.None);
             foreach (Tile tile in tiles)
             {
                 tile.X = Mathf.RoundToInt(tile.transform.position.x);

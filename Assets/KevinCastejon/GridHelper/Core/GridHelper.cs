@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 /// <summary>
 /// Utilitary API to help with operations on 2D grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
@@ -131,6 +132,27 @@ namespace KevinCastejon.GridHelper
         {
             get;
         }
+    }
+    public interface IBakedTile
+    {
+        public bool IsWalkable { get; set; }
+        public float Weight { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public Vector2Int NextNodeCoord { get; set; }
+        public Vector2Int NextDirection { get; set; }
+        public float DistanceToTarget { get; set; }
+    }
+    public interface IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
+    {
+        public List<TIBakedTile> AccessibleTiles { get; set; }
+        public TIBakedTile Target { get; set; }
+        public float MaxDistance { get; set; }
+        public MajorOrder MajorOrder { get; set; }
+    }
+    public interface IBakedPathGrid<TIBakedPathMap, TIBakedTile> where TIBakedPathMap : IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
+    {
+        public List<TIBakedPathMap> Grid { get; set; }
     }
     /// <summary>
     /// Defines globals settings of the API
@@ -2582,10 +2604,14 @@ namespace KevinCastejon.GridHelper
         {
             return CalculatePath(map, startTile, new T[] { destinationTile }, includeStart, includeDestination, pathfindingPolicy, majorOrder);
         }
-
     }
     internal class Node<T> where T : ITile
     {
+
+        private T _tile;
+        private Node<T> _next;
+        private Vector2Int _nextDirection;
+        private float _distanceToTarget;
         internal Node(T tile)
         {
             _tile = tile;
@@ -2593,17 +2619,30 @@ namespace KevinCastejon.GridHelper
             Weight = tile == null ? 1f : Mathf.Max(tile.Weight, 1f);
         }
 
-        private T _tile;
-        private Node<T> _next;
-        private Vector2Int _nextDirection;
-        private float _distanceToTarget;
-
         internal T Tile { get => _tile; set => _tile = value; }
         internal Node<T> NextNode { get => _next; set => _next = value; }
         internal Vector2Int NextDirection { get => _nextDirection; set => _nextDirection = value; }
         internal float DistanceToTarget { get => _distanceToTarget; set => _distanceToTarget = value; }
         internal bool IsWalkable { get; set; }
         internal float Weight { get; set; }
+
+        internal TIBakedTile ToBakedTile<TIBakedTile>() where TIBakedTile : IBakedTile
+        {
+            TIBakedTile tile = default;
+            tile.IsWalkable = IsWalkable;
+            tile.Weight = Weight;
+            tile.X = Tile.X;
+            tile.Y = Tile.Y;
+            tile.NextNodeCoord = new(NextNode.Tile.X, NextNode.Tile.Y);
+            tile.NextDirection = NextNode.NextDirection;
+            tile.DistanceToTarget = NextNode.DistanceToTarget;
+            return tile;
+        }
+        //internal static Node<T> FromBakedTile<TIBakedTile>(TIBakedTile bakedTile) where TIBakedTile : IBakedTile
+        //{
+        //    Node<T> node = default;
+        //    node.Tile = bakedTile.
+        //}
     }
     /// <summary>
     /// An object containing all the pre-calculated paths data between each tiles into the grid.
@@ -2724,6 +2763,19 @@ namespace KevinCastejon.GridHelper
                 return new T[0];
             }
             return pathMap.GetPathToTarget(startTile, includeStart, includeDestination);
+        }
+        public TIBakedPathGrid ToBakedPathGrid<TIBakedPathGrid, TIBakedPathMap, TIBakedTile>() where TIBakedPathGrid : IBakedPathGrid<TIBakedPathMap, TIBakedTile> where TIBakedPathMap : IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
+        {
+            TIBakedPathGrid grid = default;
+            grid.Grid = new();
+            for (int i = 0; i < _grid.GetLength(0); i++)
+            {
+                for (int j = 0; j < _grid.GetLength(1); j++)
+                {
+                    grid.Grid.Add(_grid[i, j].ToBakedPathMap<TIBakedPathMap, TIBakedTile>());
+                }
+            }
+            return grid;
         }
     }
     /// <summary>
@@ -2863,6 +2915,15 @@ namespace KevinCastejon.GridHelper
         public T[] GetPathFromTarget(T destinationTile, bool includeDestination = true, bool includeTarget = true)
         {
             return GetPathToTarget(destinationTile, includeDestination, includeTarget).Reverse().ToArray();
+        }
+        public TIBakedPathMap ToBakedPathMap<TIBakedPathMap, TIBakedTile>() where TIBakedPathMap : IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
+        {
+            TIBakedPathMap tile = default;
+            tile.AccessibleTiles = _dico.Select(x => x.Value.ToBakedTile<TIBakedTile>()).ToList();
+            tile.Target = _dico[Target].ToBakedTile<TIBakedTile>();
+            tile.MaxDistance = MaxDistance;
+            tile.MajorOrder = MajorOrder;
+            return tile;
         }
     }
     /// <summary>

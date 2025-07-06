@@ -31,7 +31,7 @@ namespace Grid2DHelper.Demos.SideView
             {
                 transform.right = Vector2.left;
             }
-            if (_rigidbody.velocity.y < 0.1f)
+            if (_rigidbody.linearVelocity.y < 0.1f)
             {
                 RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position, Vector2.down, 0.2f);
                 if (hits.Length == 2)
@@ -48,7 +48,7 @@ namespace Grid2DHelper.Demos.SideView
         }
         private void FixedUpdate()
         {
-            _rigidbody.velocity = new Vector2(_direction * _speed, _rigidbody.velocity.y);
+            _rigidbody.linearVelocity = new Vector2(_direction * _speed, _rigidbody.linearVelocity.y);
         }
     }
 }
