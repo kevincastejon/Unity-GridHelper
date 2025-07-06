@@ -133,8 +133,36 @@ namespace KevinCastejon.GridHelper
             get;
         }
     }
-    public interface IBakedTile
+    [Serializable]
+    public class SerializedTile
     {
+        public SerializedTile()
+        {
+        }
+
+        public SerializedTile(bool isWalkable, float weight, int x, int y, Vector2Int nextNodeCoord, Vector2Int nextDirection, float distanceToTarget)
+        {
+            IsWalkable = isWalkable;
+            Weight = weight;
+            X = x;
+            Y = y;
+            NextNodeCoord = nextNodeCoord;
+            NextDirection = nextDirection;
+            DistanceToTarget = distanceToTarget;
+        }
+        //internal static SerializedTile FromNode<T>(Node<T> tile) where T : ITile
+        //{
+        //    SerializedTile bakedTile= new();
+        //    bakedTile.IsWalkable = tile.IsWalkable;
+        //    bakedTile.Weight = tile.Weight;
+        //    bakedTile.X = tile.Tile.X;
+        //    bakedTile.Y = tile.Tile.Y;
+        //    bakedTile.NextNodeCoord = new(tile.NextNode.Tile.X, tile.NextNode.Tile.Y);
+        //    bakedTile.NextDirection = tile.NextDirection;
+        //    bakedTile.DistanceToTarget = tile.DistanceToTarget;
+        //    return bakedTile;
+        //}
+
         public bool IsWalkable { get; set; }
         public float Weight { get; set; }
         public int X { get; set; }
@@ -143,16 +171,38 @@ namespace KevinCastejon.GridHelper
         public Vector2Int NextDirection { get; set; }
         public float DistanceToTarget { get; set; }
     }
-    public interface IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
+    [Serializable]
+    public class SerializedPathMap
     {
-        public List<TIBakedTile> AccessibleTiles { get; set; }
-        public TIBakedTile Target { get; set; }
+        public SerializedPathMap()
+        {
+        }
+
+        public SerializedPathMap(List<SerializedTile> accessibleTiles, SerializedTile target, float maxDistance, MajorOrder majorOrder)
+        {
+            AccessibleTiles = accessibleTiles;
+            Target = target;
+            MaxDistance = maxDistance;
+            MajorOrder = majorOrder;
+        }
+
+        public List<SerializedTile> AccessibleTiles { get; set; }
+        public SerializedTile Target { get; set; }
         public float MaxDistance { get; set; }
         public MajorOrder MajorOrder { get; set; }
     }
-    public interface IBakedPathGrid<TIBakedPathMap, TIBakedTile> where TIBakedPathMap : IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
+    [Serializable]
+    public class SerializedPathGrid
     {
-        public List<TIBakedPathMap> Grid { get; set; }
+        public List<SerializedPathMap> Grid { get; set; }
+        public SerializedPathGrid()
+        {
+        }
+        public SerializedPathGrid(List<SerializedPathMap> grid)
+        {
+            Grid = grid;
+        }
+
     }
     /// <summary>
     /// Defines globals settings of the API
@@ -2626,157 +2676,23 @@ namespace KevinCastejon.GridHelper
         internal bool IsWalkable { get; set; }
         internal float Weight { get; set; }
 
-        internal TIBakedTile ToBakedTile<TIBakedTile>() where TIBakedTile : IBakedTile
+        internal SerializedTile ToSerializedTile()
         {
-            TIBakedTile tile = default;
-            tile.IsWalkable = IsWalkable;
-            tile.Weight = Weight;
-            tile.X = Tile.X;
-            tile.Y = Tile.Y;
-            tile.NextNodeCoord = new(NextNode.Tile.X, NextNode.Tile.Y);
-            tile.NextDirection = NextNode.NextDirection;
-            tile.DistanceToTarget = NextNode.DistanceToTarget;
-            return tile;
+            SerializedTile bakedTile = new SerializedTile();
+            bakedTile.IsWalkable = IsWalkable;
+            bakedTile.Weight = Weight;
+            bakedTile.X = Tile.X;
+            bakedTile.Y = Tile.Y;
+            bakedTile.NextNodeCoord = new(NextNode.Tile.X, NextNode.Tile.Y);
+            bakedTile.NextDirection = NextNode.NextDirection;
+            bakedTile.DistanceToTarget = NextNode.DistanceToTarget;
+            return bakedTile;
         }
-        //internal static Node<T> FromBakedTile<TIBakedTile>(TIBakedTile bakedTile) where TIBakedTile : IBakedTile
+        //internal static Node<T> FromSerializedTile(SerializedTile bakedTile)
         //{
-        //    Node<T> node = default;
+        //    Node<T> node = new();
         //    node.Tile = bakedTile.
         //}
-    }
-    /// <summary>
-    /// An object containing all the pre-calculated paths data between each tiles into the grid.
-    /// </summary>
-    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
-    public class PathGrid<T> where T : ITile
-    {
-        private readonly PathMap<T>[,] _grid;
-
-        internal PathGrid(PathMap<T>[,] grid)
-        {
-            _grid = grid;
-        }
-
-        /// <summary>
-        /// The MajorOrder parameter value that has been used to generate this PathGrid
-        /// </summary>
-        public MajorOrder MajorOrder { get; }
-
-        /// <summary>
-        /// Is there a path between a start tile and a destination tile
-        /// </summary>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>A boolean value</returns>
-        public bool IsPath(T startTile, T destinationTile)
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
-            }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
-            return pathMap.IsTileAccessible(startTile);
-        }
-        /// <summary>
-        /// Get all the accessible tiles from a target tile
-        /// </summary>
-        /// <param name="tile">The target tile</param>
-        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetAccessibleTilesFromTile(T tile, bool includeTarget = true)
-        {
-            if (tile == null || !tile.IsWalkable)
-            {
-                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
-            }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, tile.X, tile.Y, MajorOrder);
-            return pathMap.GetAccessibleTiles(includeTarget);
-        }
-        /// <summary>
-        /// Get the next tile on the path between a start tile and a destination tile
-        /// </summary>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>A tile object</returns>
-        public bool GetNextTileFromTile(T startTile, T destinationTile, out T nextTile)
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
-            }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
-            if (!pathMap.IsTileAccessible(startTile))
-            {
-                nextTile = default;
-                return false;
-            }
-            nextTile = pathMap.GetNextTileFromTile(startTile);
-            return true;
-        }
-        /// <summary>
-        /// Get the next tile on the path between a start tile and a destination tile
-        /// </summary>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>A Vector2Int direction</returns>
-        public Vector2Int GetNextTileDirectionFromTile(T startTile, T destinationTile)
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
-            }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
-            return pathMap.GetNextTileDirectionFromTile(startTile);
-        }
-        /// <summary>
-        /// Get the distance (movement cost) from a start tile to a destination tile.
-        /// </summary>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <returns>The distance to the target</returns>
-        public float GetDistanceBetweenTiles(T startTile, T destinationTile)
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
-            }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
-            return pathMap.GetDistanceToTargetFromTile(startTile);
-        }
-        /// <summary>
-        /// Get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.
-        /// </summary>
-        /// <param name="startTile">The start tile</param>
-        /// <param name="destinationTile">The destination tile</param>
-        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
-        /// <param name="includeDestination">Include the target tile into the resulting array or not</param>
-        /// <returns>An array of tiles</returns>
-        public T[] GetPath(T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true)
-        {
-            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
-            {
-                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
-            }
-            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
-            if (!pathMap.IsTileAccessible(startTile))
-            {
-                return new T[0];
-            }
-            return pathMap.GetPathToTarget(startTile, includeStart, includeDestination);
-        }
-        public TIBakedPathGrid ToBakedPathGrid<TIBakedPathGrid, TIBakedPathMap, TIBakedTile>() where TIBakedPathGrid : IBakedPathGrid<TIBakedPathMap, TIBakedTile> where TIBakedPathMap : IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
-        {
-            TIBakedPathGrid grid = default;
-            grid.Grid = new();
-            for (int i = 0; i < _grid.GetLength(0); i++)
-            {
-                for (int j = 0; j < _grid.GetLength(1); j++)
-                {
-                    grid.Grid.Add(_grid[i, j].ToBakedPathMap<TIBakedPathMap, TIBakedTile>());
-                }
-            }
-            return grid;
-        }
     }
     /// <summary>
     /// An object containing all the pre-calculated paths data between a target tile and all the accessible tiles from this target.
@@ -2916,15 +2832,166 @@ namespace KevinCastejon.GridHelper
         {
             return GetPathToTarget(destinationTile, includeDestination, includeTarget).Reverse().ToArray();
         }
-        public TIBakedPathMap ToBakedPathMap<TIBakedPathMap, TIBakedTile>() where TIBakedPathMap : IBakedPathMap<TIBakedTile> where TIBakedTile : IBakedTile
+        public SerializedPathMap ToSerializedPathMap()
         {
-            TIBakedPathMap tile = default;
-            tile.AccessibleTiles = _dico.Select(x => x.Value.ToBakedTile<TIBakedTile>()).ToList();
-            tile.Target = _dico[Target].ToBakedTile<TIBakedTile>();
-            tile.MaxDistance = MaxDistance;
-            tile.MajorOrder = MajorOrder;
-            return tile;
+            SerializedPathMap bakedPathMap = new();
+            bakedPathMap.AccessibleTiles = _dico.Select(x => x.Value.ToSerializedTile()).ToList();
+            bakedPathMap.Target = _dico[Target].ToSerializedTile();
+            bakedPathMap.MaxDistance = MaxDistance;
+            bakedPathMap.MajorOrder = MajorOrder;
+            return bakedPathMap;
         }
+    }
+    /// <summary>
+    /// An object containing all the pre-calculated paths data between each tiles into the grid.
+    /// </summary>
+    /// <typeparam name="T">The user-defined type representing a tile (needs to implement the ITile interface)</typeparam>
+    public class PathGrid<T> where T : ITile
+    {
+        private readonly PathMap<T>[,] _grid;
+
+        internal PathGrid(PathMap<T>[,] grid)
+        {
+            _grid = grid;
+        }
+
+        /// <summary>
+        /// The MajorOrder parameter value that has been used to generate this PathGrid
+        /// </summary>
+        public MajorOrder MajorOrder { get; }
+
+        /// <summary>
+        /// Is there a path between a start tile and a destination tile
+        /// </summary>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>A boolean value</returns>
+        public bool IsPath(T startTile, T destinationTile)
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
+            }
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
+            return pathMap.IsTileAccessible(startTile);
+        }
+        /// <summary>
+        /// Get all the accessible tiles from a target tile
+        /// </summary>
+        /// <param name="tile">The target tile</param>
+        /// <param name="includeTarget">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetAccessibleTilesFromTile(T tile, bool includeTarget = true)
+        {
+            if (tile == null || !tile.IsWalkable)
+            {
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
+            }
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, tile.X, tile.Y, MajorOrder);
+            return pathMap.GetAccessibleTiles(includeTarget);
+        }
+        /// <summary>
+        /// Get the next tile on the path between a start tile and a destination tile
+        /// </summary>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>A tile object</returns>
+        public bool GetNextTileFromTile(T startTile, T destinationTile, out T nextTile)
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
+            }
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
+            if (!pathMap.IsTileAccessible(startTile))
+            {
+                nextTile = default;
+                return false;
+            }
+            nextTile = pathMap.GetNextTileFromTile(startTile);
+            return true;
+        }
+        /// <summary>
+        /// Get the next tile on the path between a start tile and a destination tile
+        /// </summary>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>A Vector2Int direction</returns>
+        public Vector2Int GetNextTileDirectionFromTile(T startTile, T destinationTile)
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
+            }
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
+            return pathMap.GetNextTileDirectionFromTile(startTile);
+        }
+        /// <summary>
+        /// Get the distance (movement cost) from a start tile to a destination tile.
+        /// </summary>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <returns>The distance to the target</returns>
+        public float GetDistanceBetweenTiles(T startTile, T destinationTile)
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
+            }
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
+            return pathMap.GetDistanceToTargetFromTile(startTile);
+        }
+        /// <summary>
+        /// Get all the tiles on the path from a start tile to a destination tile. If there is no path between the two tiles then an empty array will be returned.
+        /// </summary>
+        /// <param name="startTile">The start tile</param>
+        /// <param name="destinationTile">The destination tile</param>
+        /// <param name="includeStart">Include the start tile into the resulting array or not. Default is true</param>
+        /// <param name="includeDestination">Include the target tile into the resulting array or not</param>
+        /// <returns>An array of tiles</returns>
+        public T[] GetPath(T startTile, T destinationTile, bool includeStart = true, bool includeDestination = true)
+        {
+            if (startTile == null || !startTile.IsWalkable || destinationTile == null || !destinationTile.IsWalkable)
+            {
+                throw new Exception("Do not call PathGrid methods with non-walkable (or null) tiles");
+            }
+            PathMap<T> pathMap = GridUtils.GetTile(_grid, destinationTile.X, destinationTile.Y, MajorOrder);
+            if (!pathMap.IsTileAccessible(startTile))
+            {
+                return new T[0];
+            }
+            return pathMap.GetPathToTarget(startTile, includeStart, includeDestination);
+        }
+        public SerializedPathGrid ToSerializedPathGrid()
+        {
+            SerializedPathGrid grid = new();
+            grid.Grid = new();
+            for (int i = 0; i < _grid.GetLength(0); i++)
+            {
+                for (int j = 0; j < _grid.GetLength(1); j++)
+                {
+                    grid.Grid.Add(_grid[i, j].ToSerializedPathMap());
+                }
+            }
+            return grid;
+        }
+        //public static PathGrid<T> FromSerializedPathGrid(SerializedPathGrid serializedPathGrid)
+        //{
+        //    int maxX = 0;
+        //    int maxY = 0;
+
+        //    foreach (var item in serializedPathGrid.Grid)
+        //    {
+        //        if (item.Target.X > maxX) maxX = item.Target.X;
+        //        if (item.Target.Y > maxY) maxY = item.Target.Y;
+        //    }
+        //    PathMap<T>[,] grid = new PathMap<T>[maxX,maxY];
+        //    foreach (SerializedPathMap serializedPathMap in serializedPathGrid.Grid)
+        //    {
+        //        grid[serializedPathMap.Target.X, serializedPathMap.Target.Y] = serializedPathMap.Target;
+        //    }
+        //    return new PathGrid();
+        //}
     }
     /// <summary>
     /// Some utilitary methods
