@@ -1,3 +1,4 @@
+using Grid2DHelper.Demos.RealtimeIsoBakedGridMap;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -8,6 +9,7 @@ namespace GridHelperDemoMisc
     public class DemoGridGeneratorEditor : Editor
     {
         private SerializedProperty _tilePrefab;
+        private SerializedProperty _textureSource;
         private SerializedProperty _3D;
         private SerializedProperty _width;
         private SerializedProperty _height;
@@ -19,6 +21,7 @@ namespace GridHelperDemoMisc
         private void OnEnable()
         {
             _tilePrefab = serializedObject.FindProperty("_tilePrefab");
+            _textureSource = serializedObject.FindProperty("_textureSource");
             _3D = serializedObject.FindProperty("_3D");
             _width = serializedObject.FindProperty("_width");
             _height = serializedObject.FindProperty("_height");
@@ -31,18 +34,45 @@ namespace GridHelperDemoMisc
             serializedObject.Update();
 
             EditorGUILayout.PropertyField(_tilePrefab);
-            EditorGUILayout.PropertyField(_3D);
-            EditorGUILayout.PropertyField(_width);
-            EditorGUILayout.PropertyField(_height);
-            if (_3D.boolValue)
+            EditorGUILayout.PropertyField(_textureSource);
+            if (_textureSource.objectReferenceValue)
             {
-                EditorGUILayout.PropertyField(_depth);
+                Texture2D texture = (Texture2D)_textureSource.objectReferenceValue;
+                _3D.boolValue = false;
+                _width.intValue = texture.width;
+                _height.intValue = texture.height; 
+                EditorGUI.BeginDisabledGroup(true);
+                EditorGUILayout.PropertyField(_3D);
+                EditorGUILayout.PropertyField(_width);
+                EditorGUILayout.PropertyField(_height);
+                EditorGUI.EndDisabledGroup();
+            }
+            else
+            {
+                EditorGUILayout.PropertyField(_3D);
+                EditorGUILayout.PropertyField(_width);
+                EditorGUILayout.PropertyField(_height);
+                if (_3D.boolValue)
+                {
+                    EditorGUILayout.PropertyField(_depth);
+                }
             }
             EditorGUI.BeginDisabledGroup(_tilePrefab.objectReferenceValue == null);
             if (GUILayout.Button("Generate"))
             {
                 Undo.IncrementCurrentGroup();
-                Undo.SetCurrentGroupName("Generated tiles");
+                Undo.SetCurrentGroupName("Destroy existing tiles");
+                foreach (Transform child in _object.transform)
+                {
+                    Undo.DestroyObjectImmediate(child.gameObject);
+                }
+                Texture2D texture = null;
+                if (_textureSource.objectReferenceValue)
+                {
+                    texture = (Texture2D)_textureSource.objectReferenceValue;
+                }
+                Undo.IncrementCurrentGroup();
+                Undo.SetCurrentGroupName("Generate tiles");
                 var undoGroupIndex = Undo.GetCurrentGroup();
                 for (int y = 0; y < _height.intValue; y++)
                 {
@@ -58,6 +88,10 @@ namespace GridHelperDemoMisc
                             tile.name = "Tile (" + x + ")";
                             tile.transform.parent = line.transform;
                             tile.transform.localPosition = new Vector3(x, 0f, 0f);
+                            if (texture != null)
+                            {
+                                tile.GetComponent<Tile>().IsWalkable = !Mathf.Approximately(texture.GetPixel(x, y).r, 0f);
+                            }
                             Undo.RegisterCreatedObjectUndo(tile, "");
                             continue;
                         }

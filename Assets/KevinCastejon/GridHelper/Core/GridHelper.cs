@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 /// <summary>
 /// Utilitary API to help with operations on 2D grids such as tile extraction, raycasting, and pathfinding.
 /// </summary>
@@ -136,10 +135,17 @@ namespace KevinCastejon.GridHelper
     [Serializable]
     public class SerializedTile
     {
+        public bool IsWalkable { get; set; }
+        public float Weight { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public Vector2Int NextNodeCoord { get; set; }
+        public Vector2Int NextDirection { get; set; }
+        public float DistanceToTarget { get; set; }
+
         public SerializedTile()
         {
         }
-
         public SerializedTile(bool isWalkable, float weight, int x, int y, Vector2Int nextNodeCoord, Vector2Int nextDirection, float distanceToTarget)
         {
             IsWalkable = isWalkable;
@@ -150,34 +156,18 @@ namespace KevinCastejon.GridHelper
             NextDirection = nextDirection;
             DistanceToTarget = distanceToTarget;
         }
-        //internal static SerializedTile FromNode<T>(Node<T> tile) where T : ITile
-        //{
-        //    SerializedTile bakedTile= new();
-        //    bakedTile.IsWalkable = tile.IsWalkable;
-        //    bakedTile.Weight = tile.Weight;
-        //    bakedTile.X = tile.Tile.X;
-        //    bakedTile.Y = tile.Tile.Y;
-        //    bakedTile.NextNodeCoord = new(tile.NextNode.Tile.X, tile.NextNode.Tile.Y);
-        //    bakedTile.NextDirection = tile.NextDirection;
-        //    bakedTile.DistanceToTarget = tile.DistanceToTarget;
-        //    return bakedTile;
-        //}
-
-        public bool IsWalkable { get; set; }
-        public float Weight { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
-        public Vector2Int NextNodeCoord { get; set; }
-        public Vector2Int NextDirection { get; set; }
-        public float DistanceToTarget { get; set; }
     }
     [Serializable]
     public class SerializedPathMap
     {
+        public List<SerializedTile> AccessibleTiles { get; set; }
+        public SerializedTile Target { get; set; }
+        public float MaxDistance { get; set; }
+        public MajorOrder MajorOrder { get; set; }
+
         public SerializedPathMap()
         {
         }
-
         public SerializedPathMap(List<SerializedTile> accessibleTiles, SerializedTile target, float maxDistance, MajorOrder majorOrder)
         {
             AccessibleTiles = accessibleTiles;
@@ -185,16 +175,12 @@ namespace KevinCastejon.GridHelper
             MaxDistance = maxDistance;
             MajorOrder = majorOrder;
         }
-
-        public List<SerializedTile> AccessibleTiles { get; set; }
-        public SerializedTile Target { get; set; }
-        public float MaxDistance { get; set; }
-        public MajorOrder MajorOrder { get; set; }
     }
     [Serializable]
     public class SerializedPathGrid
     {
         public List<SerializedPathMap> Grid { get; set; }
+
         public SerializedPathGrid()
         {
         }
@@ -202,7 +188,6 @@ namespace KevinCastejon.GridHelper
         {
             Grid = grid;
         }
-
     }
     /// <summary>
     /// Defines globals settings of the API
@@ -2657,17 +2642,10 @@ namespace KevinCastejon.GridHelper
     }
     internal class Node<T> where T : ITile
     {
-
         private T _tile;
         private Node<T> _next;
         private Vector2Int _nextDirection;
         private float _distanceToTarget;
-        internal Node(T tile)
-        {
-            _tile = tile;
-            IsWalkable = tile != null && tile.IsWalkable;
-            Weight = tile == null ? 1f : Mathf.Max(tile.Weight, 1f);
-        }
 
         internal T Tile { get => _tile; set => _tile = value; }
         internal Node<T> NextNode { get => _next; set => _next = value; }
@@ -2675,6 +2653,13 @@ namespace KevinCastejon.GridHelper
         internal float DistanceToTarget { get => _distanceToTarget; set => _distanceToTarget = value; }
         internal bool IsWalkable { get; set; }
         internal float Weight { get; set; }
+
+        internal Node(T tile)
+        {
+            _tile = tile;
+            IsWalkable = tile != null && tile.IsWalkable;
+            Weight = tile == null ? 1f : Mathf.Max(tile.Weight, 1f);
+        }
 
         internal SerializedTile ToSerializedTile()
         {
@@ -2688,11 +2673,6 @@ namespace KevinCastejon.GridHelper
             bakedTile.DistanceToTarget = NextNode.DistanceToTarget;
             return bakedTile;
         }
-        //internal static Node<T> FromSerializedTile(SerializedTile bakedTile)
-        //{
-        //    Node<T> node = new();
-        //    node.Tile = bakedTile.
-        //}
     }
     /// <summary>
     /// An object containing all the pre-calculated paths data between a target tile and all the accessible tiles from this target.
@@ -2841,6 +2821,26 @@ namespace KevinCastejon.GridHelper
             bakedPathMap.MajorOrder = MajorOrder;
             return bakedPathMap;
         }
+        public static PathMap<T> FromSerializedPathMap(ref T[,] grid, SerializedPathMap serializedPathMap)
+        {
+            Dictionary<T, Node<T>> accessiblesTilesDico = new();
+            List<T> accessiblesTiles = new();
+            foreach (SerializedTile serializedTile in serializedPathMap.AccessibleTiles)
+            {
+                T tile = GridUtils.GetTile(grid, serializedTile.X, serializedTile.Y, serializedPathMap.MajorOrder);
+                Node<T> node = new(tile);
+                node.NextDirection = serializedTile.NextDirection;
+                node.DistanceToTarget = serializedTile.DistanceToTarget;
+                accessiblesTiles.Add(tile);
+                accessiblesTilesDico.Add(tile, node);
+            }
+            foreach (T tile in accessiblesTiles)
+            {
+                Node<T> node = accessiblesTilesDico[tile];
+                node.NextNode = accessiblesTilesDico[GridUtils.GetTile(grid, tile.X + node.NextDirection.x, tile.Y + node.NextDirection.y, serializedPathMap.MajorOrder)];
+            }
+            return new PathMap<T>(accessiblesTilesDico, accessiblesTiles, GridUtils.GetTile(grid, serializedPathMap.Target.X, serializedPathMap.Target.Y, serializedPathMap.MajorOrder), serializedPathMap.MaxDistance, serializedPathMap.MajorOrder);
+        }
     }
     /// <summary>
     /// An object containing all the pre-calculated paths data between each tiles into the grid.
@@ -2975,23 +2975,23 @@ namespace KevinCastejon.GridHelper
             }
             return grid;
         }
-        //public static PathGrid<T> FromSerializedPathGrid(SerializedPathGrid serializedPathGrid)
-        //{
-        //    int maxX = 0;
-        //    int maxY = 0;
+        public static PathGrid<T> FromSerializedPathGrid(ref T[,] grid, SerializedPathGrid serializedPathGrid)
+        {
+            //int maxX = 0;
+            //int maxY = 0;
 
-        //    foreach (var item in serializedPathGrid.Grid)
-        //    {
-        //        if (item.Target.X > maxX) maxX = item.Target.X;
-        //        if (item.Target.Y > maxY) maxY = item.Target.Y;
-        //    }
-        //    PathMap<T>[,] grid = new PathMap<T>[maxX,maxY];
-        //    foreach (SerializedPathMap serializedPathMap in serializedPathGrid.Grid)
-        //    {
-        //        grid[serializedPathMap.Target.X, serializedPathMap.Target.Y] = serializedPathMap.Target;
-        //    }
-        //    return new PathGrid();
-        //}
+            //foreach (var item in serializedPathGrid.Grid)
+            //{
+            //    if (item.Target.X > maxX) maxX = item.Target.X;
+            //    if (item.Target.Y > maxY) maxY = item.Target.Y;
+            //}
+            PathMap<T>[,] pathMapGrid = new PathMap<T>[grid.GetLength(0), grid.GetLength(1)];
+            foreach (SerializedPathMap serializedPathMap in serializedPathGrid.Grid)
+            {
+                pathMapGrid[serializedPathMap.Target.X, serializedPathMap.Target.Y] = PathMap<T>.FromSerializedPathMap(ref grid, serializedPathMap);
+            }
+            return new PathGrid<T>(pathMapGrid);
+        }
     }
     /// <summary>
     /// Some utilitary methods

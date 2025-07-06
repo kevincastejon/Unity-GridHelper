@@ -2,19 +2,17 @@ using KevinCastejon.GridHelper;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
 {
     public class GridMap : MonoBehaviour
     {
-        [SerializeField] private TextMeshProUGUI _text;
-        [SerializeField] private int _mapWidth;
-        [SerializeField] private int _mapHeight;
+        [SerializeField][HideInInspector] private float _pathGridGenerationProgress;
         [SerializeField] private Mob _mobPrefab;
         [SerializeField] private float _spawnDelay;
         [SerializeField] private Transform _mobs;
+        [SerializeField] private ScriptablePathGrid _scriptablePathGrid;
         private float _nextSpawnTime;
         private Tile[,] _map;
         private Tile[] _highlightedTiles = new Tile[0];
@@ -28,35 +26,66 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         private void Awake()
         {
             _player = FindAnyObjectByType<PlayerController>(FindObjectsInactive.Include);
-            _map = new Tile[_mapHeight, _mapWidth];
             _camera = Camera.main;
         }
-        private async void Start()
+        private void Start()
+        {
+            RegisterTiles();
+            _pathGrid = PathGrid<Tile>.FromSerializedPathGrid(ref _map, _scriptablePathGrid.PathGrid);
+            _player.gameObject.SetActive(true);
+            OnPlayerTileChange();
+        }
+        public void RegisterTiles()
         {
             Tile[] tiles = FindObjectsByType<Tile>(FindObjectsSortMode.None);
+            int maxX = 0;
+            int maxY = 0;
             foreach (Tile tile in tiles)
             {
                 tile.X = Mathf.RoundToInt(tile.transform.position.x);
                 tile.Y = Mathf.RoundToInt(tile.transform.position.z);
+                if (tile.X > maxX)
+                {
+                    maxX = tile.X;
+                }
+                if (tile.Y > maxY)
+                {
+                    maxY = tile.Y;
+                }
+            }
+            _map = new Tile[maxY, maxX];
+            foreach (Tile tile in tiles)
+            {
                 _map[tile.Y, tile.X] = tile;
+            }
+        }
+        public async void GeneratePathGrid()
+        {
+            if (_scriptablePathGrid == null)
+            {
+                Debug.LogError("ScriptablePathGrid is not assigned. Generation aborted.");
+                return;
             }
             System.Progress<float> progressIndicator = new System.Progress<float>((progress) =>
             {
-                _text.text = "Calculating all paths between each tiles on the map\n" + (progress * 100).ToString("F0") + "%";
+                _pathGridGenerationProgress = progress;
             });
             try
             {
-                _pathGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
-                Destroy(_text.transform.parent.parent.gameObject);
-                _player.gameObject.SetActive(true);
-                OnPlayerTileChange();
+                PathGrid<Tile> pathGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
+                _scriptablePathGrid.PathGrid = pathGrid.ToSerializedPathGrid();
+                Debug.Log("PathGrid generation is done");
             }
             catch (System.Exception)
             {
                 Debug.Log("PathGrid generation was cancelled");
             }
         }
-
+        public void CancelPathGridGeneration()
+        {
+            _cts.Cancel();
+            _cts = new CancellationTokenSource();
+        }
         private void SpawnMob()
         {
             bool done = false;
@@ -154,7 +183,7 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         }
         public Vector2Int GetNextPositionToPlayer(Vector2Int currentPosition)
         {
-            _pathGrid.GetNextTileFromTile(_map[currentPosition.y, currentPosition.x], GetPlayerTile(),out Tile nextTile);
+            _pathGrid.GetNextTileFromTile(_map[currentPosition.y, currentPosition.x], GetPlayerTile(), out Tile nextTile);
             return new Vector2Int(nextTile.X, nextTile.Y);
         }
     }

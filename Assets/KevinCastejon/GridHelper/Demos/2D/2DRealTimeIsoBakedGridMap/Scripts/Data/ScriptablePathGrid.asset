@@ -10,16 +10,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2daa1017b118b624abd4d5ebac668465, type: 3}
-  m_Name: BakedPathMap
+  m_Name: ScriptablePathGrid
   m_EditorClassIdentifier: 
-  _accessibleTiles: []
-  _target:
-    _isWalkable: 0
-    _weight: 0
-    _x: 0
-    _y: 0
-    _nextNodeCoord: {x: 0, y: 0}
-    _nextDirection: {x: 0, y: 0}
-    _distanceToTarget: 0
-  _maxDistance: 0
-  _majorOrder: 0
