@@ -135,13 +135,28 @@ namespace KevinCastejon.GridHelper
     [Serializable]
     public class SerializedTile
     {
-        public bool IsWalkable { get; set; }
-        public float Weight { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
-        public Vector2Int NextNodeCoord { get; set; }
-        public Vector2Int NextDirection { get; set; }
-        public float DistanceToTarget { get; set; }
+        [SerializeField]
+        private bool _isWalkable;
+        [SerializeField]
+        private float _weight;
+        [SerializeField]
+        private int _x;
+        [SerializeField]
+        private int _y;
+        [SerializeField]
+        private Vector2Int _nextNodeCoord;
+        [SerializeField]
+        private Vector2Int _nextDirection;
+        [SerializeField]
+        private float _distanceToTarget;
+
+        public bool IsWalkable { get => _isWalkable; set => _isWalkable = value; }
+        public float Weight { get => _weight; set => _weight = value; }
+        public int X { get => _x; set => _x = value; }
+        public int Y { get => _y; set => _y = value; }
+        public Vector2Int NextNodeCoord { get => _nextNodeCoord; set => _nextNodeCoord = value; }
+        public Vector2Int NextDirection { get => _nextDirection; set => _nextDirection = value; }
+        public float DistanceToTarget { get => _distanceToTarget; set => _distanceToTarget = value; }
 
         public SerializedTile()
         {
@@ -160,10 +175,19 @@ namespace KevinCastejon.GridHelper
     [Serializable]
     public class SerializedPathMap
     {
-        public List<SerializedTile> AccessibleTiles { get; set; }
-        public SerializedTile Target { get; set; }
-        public float MaxDistance { get; set; }
-        public MajorOrder MajorOrder { get; set; }
+        [SerializeField]
+        private List<SerializedTile> _accessibleTiles;
+        [SerializeField]
+        private SerializedTile _target;
+        [SerializeField]
+        private float _maxDistance;
+        [SerializeField]
+        private MajorOrder _majorOrder;
+
+        public List<SerializedTile> AccessibleTiles { get => _accessibleTiles; set => _accessibleTiles = value; }
+        public SerializedTile Target { get => _target; set => _target = value; }
+        public float MaxDistance { get => _maxDistance; set => _maxDistance = value; }
+        public MajorOrder MajorOrder { get => _majorOrder; set => _majorOrder = value; }
 
         public SerializedPathMap()
         {
@@ -175,11 +199,14 @@ namespace KevinCastejon.GridHelper
             MaxDistance = maxDistance;
             MajorOrder = majorOrder;
         }
+
     }
     [Serializable]
     public class SerializedPathGrid
     {
-        public List<SerializedPathMap> Grid { get; set; }
+        [SerializeField]
+        private List<SerializedPathMap> _grid;
+        public List<SerializedPathMap> Grid { get => _grid; set => _grid = value; }
 
         public SerializedPathGrid()
         {
@@ -188,6 +215,7 @@ namespace KevinCastejon.GridHelper
         {
             Grid = grid;
         }
+
     }
     /// <summary>
     /// Defines globals settings of the API
@@ -2832,14 +2860,20 @@ namespace KevinCastejon.GridHelper
                 node.NextDirection = serializedTile.NextDirection;
                 node.DistanceToTarget = serializedTile.DistanceToTarget;
                 accessiblesTiles.Add(tile);
+                Debug.Log("Add "+tile);
                 accessiblesTilesDico.Add(tile, node);
             }
+            T targetTile = GridUtils.GetTile(grid, serializedPathMap.Target.X, serializedPathMap.Target.Y, serializedPathMap.MajorOrder);
             foreach (T tile in accessiblesTiles)
             {
                 Node<T> node = accessiblesTilesDico[tile];
-                node.NextNode = accessiblesTilesDico[GridUtils.GetTile(grid, tile.X + node.NextDirection.x, tile.Y + node.NextDirection.y, serializedPathMap.MajorOrder)];
+                T nextTile = GridUtils.GetTile(grid, tile.X + node.NextDirection.x, tile.Y + node.NextDirection.y, serializedPathMap.MajorOrder);
+                //if (!GridUtils.TileEquals<T>(nextTile, GridUtils.GetTile(grid, serializedPathMap.Target.X, serializedPathMap.Target.Y, serializedPathMap.MajorOrder)))
+                //{
+                    node.NextNode = accessiblesTilesDico[nextTile];
+                //}
             }
-            return new PathMap<T>(accessiblesTilesDico, accessiblesTiles, GridUtils.GetTile(grid, serializedPathMap.Target.X, serializedPathMap.Target.Y, serializedPathMap.MajorOrder), serializedPathMap.MaxDistance, serializedPathMap.MajorOrder);
+            return new PathMap<T>(accessiblesTilesDico, accessiblesTiles, targetTile, serializedPathMap.MaxDistance, serializedPathMap.MajorOrder);
         }
     }
     /// <summary>
@@ -2970,7 +3004,10 @@ namespace KevinCastejon.GridHelper
             {
                 for (int j = 0; j < _grid.GetLength(1); j++)
                 {
-                    grid.Grid.Add(_grid[i, j].ToSerializedPathMap());
+                    if (_grid[i, j] != null)
+                    {
+                        grid.Grid.Add(_grid[i, j].ToSerializedPathMap());
+                    }
                 }
             }
             return grid;

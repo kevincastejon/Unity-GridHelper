@@ -38,6 +38,7 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         public void RegisterTiles()
         {
             Tile[] tiles = FindObjectsByType<Tile>(FindObjectsSortMode.None);
+            Debug.Log(tiles.Length);
             int maxX = 0;
             int maxY = 0;
             foreach (Tile tile in tiles)
@@ -53,7 +54,8 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
                     maxY = tile.Y;
                 }
             }
-            _map = new Tile[maxY, maxX];
+            _map = new Tile[maxY+1, maxX+1];
+
             foreach (Tile tile in tiles)
             {
                 _map[tile.Y, tile.X] = tile;
@@ -70,16 +72,17 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
             {
                 _pathGridGenerationProgress = progress;
             });
-            try
-            {
+            //try
+            //{
                 PathGrid<Tile> pathGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
                 _scriptablePathGrid.PathGrid = pathGrid.ToSerializedPathGrid();
                 Debug.Log("PathGrid generation is done");
-            }
-            catch (System.Exception)
-            {
-                Debug.Log("PathGrid generation was cancelled");
-            }
+            //}
+            //catch (System.Exception e)
+            //{
+            //    Debug.LogException(e);
+            //    Debug.Log("PathGrid generation was cancelled");
+            //}
         }
         public void CancelPathGridGeneration()
         {
@@ -179,6 +182,7 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         }
         private void OnApplicationQuit()
         {
+            Debug.Log("OnApplicationQuit");
             _cts.Cancel();
         }
         public Vector2Int GetNextPositionToPlayer(Vector2Int currentPosition)

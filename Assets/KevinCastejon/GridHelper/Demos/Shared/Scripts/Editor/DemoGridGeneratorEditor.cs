@@ -61,10 +61,17 @@ namespace GridHelperDemoMisc
             if (GUILayout.Button("Generate"))
             {
                 Undo.IncrementCurrentGroup();
-                Undo.SetCurrentGroupName("Destroy existing tiles");
+                Undo.SetCurrentGroupName("Destroy existing tiles"); 
+                GameObject[] goToDestroys = new GameObject[_object.transform.childCount];
+                int i = 0;
                 foreach (Transform child in _object.transform)
                 {
-                    Undo.DestroyObjectImmediate(child.gameObject);
+                    goToDestroys[i] = child.gameObject;
+                    i++;
+                }
+                foreach (GameObject goToDestroy in goToDestroys)
+                {
+                    Undo.DestroyObjectImmediate(goToDestroy);
                 }
                 Texture2D texture = null;
                 if (_textureSource.objectReferenceValue)
@@ -105,6 +112,10 @@ namespace GridHelperDemoMisc
                             tile.name = "Tile (" + z + ")";
                             tile.transform.parent = col.transform;
                             tile.transform.localPosition = new Vector3(0f, 0f, z);
+                            if (texture != null)
+                            {
+                                tile.GetComponent<Tile>().IsWalkable = !Mathf.Approximately(texture.GetPixel(x, y).r, 0f);
+                            }
                             Undo.RegisterCreatedObjectUndo(tile, "");
                         }
                     }
