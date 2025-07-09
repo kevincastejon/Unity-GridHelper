@@ -2,6 +2,7 @@ using KevinCastejon.GridHelper;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
 {
     public class Tile : MonoBehaviour, ITile
@@ -11,6 +12,9 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         [SerializeField] private GameObject _shoot;
         [SerializeField] private GameObject _aim;
         [SerializeField] private bool _isWalkable = true;
+        [SerializeField] private int _x;
+        [SerializeField] private int _y;
+        [SerializeField] private UnityEvent<Tile> _onClick;
         private bool _isHighlighted;
         private bool _isShoot;
         private bool _isAim;
@@ -78,9 +82,10 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         }
 
         public float Weight => 1f;
-        public int X { get; set; }
-        public int Y { get; set; }
 
+        public int X { get => _x; set => _x = value; }
+        public int Y { get => _y; set => _y = value; }
+        public UnityEvent<Tile> OnClick { get => _onClick; }
 
         [ContextMenu("SetWalkable")]
         public void SetWalkable()
@@ -91,6 +96,10 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         public void SetNonWalkable()
         {
             IsWalkable = false;
+        }
+        private void OnMouseDown()
+        {
+            _onClick.Invoke(this);
         }
     }
 }

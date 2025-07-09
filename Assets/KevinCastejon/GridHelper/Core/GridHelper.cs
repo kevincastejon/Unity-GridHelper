@@ -2507,10 +2507,8 @@ namespace KevinCastejon.GridHelper
         /// <returns>An array of tiles</returns>
         public static Task<T[]> CalculatePathAsync<T>(T[,] map, T startTile, T[] destinationTiles, bool includeStart = true, bool includeDestination = true, PathfindingPolicy pathfindingPolicy = default, MajorOrder majorOrder = MajorOrder.DEFAULT, IProgress<float> progress = null, CancellationToken ct = default) where T : ITile
         {
-            Debug.Log("CALCULATE");
             Task<T[]> task = Task.Run(() =>
             {
-                Debug.Log("TASK 1");
                 if (startTile == null || !startTile.IsWalkable || destinationTiles == null || destinationTiles.Count(x => !x.IsWalkable) > 0)
                 {
                     throw new Exception("Do not try to generate a path with an unwalkable (or null) tile as the start or destination");
@@ -2697,8 +2695,8 @@ namespace KevinCastejon.GridHelper
             bakedTile.X = Tile.X;
             bakedTile.Y = Tile.Y;
             bakedTile.NextNodeCoord = new(NextNode.Tile.X, NextNode.Tile.Y);
-            bakedTile.NextDirection = NextNode.NextDirection;
-            bakedTile.DistanceToTarget = NextNode.DistanceToTarget;
+            bakedTile.NextDirection = NextDirection;
+            bakedTile.DistanceToTarget = DistanceToTarget;
             return bakedTile;
         }
     }
@@ -2860,7 +2858,6 @@ namespace KevinCastejon.GridHelper
                 node.NextDirection = serializedTile.NextDirection;
                 node.DistanceToTarget = serializedTile.DistanceToTarget;
                 accessiblesTiles.Add(tile);
-                Debug.Log("Add "+tile);
                 accessiblesTilesDico.Add(tile, node);
             }
             T targetTile = GridUtils.GetTile(grid, serializedPathMap.Target.X, serializedPathMap.Target.Y, serializedPathMap.MajorOrder);
@@ -2868,10 +2865,7 @@ namespace KevinCastejon.GridHelper
             {
                 Node<T> node = accessiblesTilesDico[tile];
                 T nextTile = GridUtils.GetTile(grid, tile.X + node.NextDirection.x, tile.Y + node.NextDirection.y, serializedPathMap.MajorOrder);
-                //if (!GridUtils.TileEquals<T>(nextTile, GridUtils.GetTile(grid, serializedPathMap.Target.X, serializedPathMap.Target.Y, serializedPathMap.MajorOrder)))
-                //{
-                    node.NextNode = accessiblesTilesDico[nextTile];
-                //}
+                node.NextNode = accessiblesTilesDico[nextTile];
             }
             return new PathMap<T>(accessiblesTilesDico, accessiblesTiles, targetTile, serializedPathMap.MaxDistance, serializedPathMap.MajorOrder);
         }
@@ -3014,18 +3008,10 @@ namespace KevinCastejon.GridHelper
         }
         public static PathGrid<T> FromSerializedPathGrid(ref T[,] grid, SerializedPathGrid serializedPathGrid)
         {
-            //int maxX = 0;
-            //int maxY = 0;
-
-            //foreach (var item in serializedPathGrid.Grid)
-            //{
-            //    if (item.Target.X > maxX) maxX = item.Target.X;
-            //    if (item.Target.Y > maxY) maxY = item.Target.Y;
-            //}
             PathMap<T>[,] pathMapGrid = new PathMap<T>[grid.GetLength(0), grid.GetLength(1)];
             foreach (SerializedPathMap serializedPathMap in serializedPathGrid.Grid)
             {
-                pathMapGrid[serializedPathMap.Target.X, serializedPathMap.Target.Y] = PathMap<T>.FromSerializedPathMap(ref grid, serializedPathMap);
+                GridUtils.SetTile(PathMap<T>.FromSerializedPathMap(ref grid, serializedPathMap), pathMapGrid, serializedPathMap.Target.X, serializedPathMap.Target.Y, serializedPathMap.MajorOrder);
             }
             return new PathGrid<T>(pathMapGrid);
         }
@@ -3093,6 +3079,18 @@ namespace KevinCastejon.GridHelper
             else
             {
                 return map[x, y];
+            }
+        }
+        internal static T SetTile<T>(T tile, T[,] map, int x, int y, MajorOrder majorOrder)
+        {
+            ResolveMajorOrder(ref majorOrder);
+            if (majorOrder == MajorOrder.ROW_MAJOR_ORDER)
+            {
+                return map[y, x] = tile;
+            }
+            else
+            {
+                return map[x, y] = tile;
             }
         }
         /// <summary>

@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 805097260506100267}
   - component: {fileID: 8962485462591826242}
+  - component: {fileID: 3848099172619138432}
   m_Layer: 0
   m_Name: Tile
   m_TagString: Untagged
@@ -54,6 +55,29 @@ MonoBehaviour:
   _shoot: {fileID: 1294969811369136971}
   _aim: {fileID: 8876228262449018877}
   _isWalkable: 1
+  _x: 0
+  _y: 0
+--- !u!65 &3848099172619138432
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 805097260506100266}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: -0.5, z: 0}
 --- !u!1 &805097261007582197
 GameObject:
   m_ObjectHideFlags: 0

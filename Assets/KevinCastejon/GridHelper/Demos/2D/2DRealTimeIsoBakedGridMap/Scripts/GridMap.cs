@@ -43,6 +43,7 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
             int maxY = 0;
             foreach (Tile tile in tiles)
             {
+                tile.OnClick.AddListener(OnTileClick);
                 tile.X = Mathf.RoundToInt(tile.transform.position.x);
                 tile.Y = Mathf.RoundToInt(tile.transform.position.z);
                 if (tile.X > maxX)
@@ -54,12 +55,21 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
                     maxY = tile.Y;
                 }
             }
-            _map = new Tile[maxY+1, maxX+1];
+            _map = new Tile[maxY + 1, maxX + 1];
 
             foreach (Tile tile in tiles)
             {
                 _map[tile.Y, tile.X] = tile;
             }
+        }
+
+        private void OnTileClick(Tile tile)
+        {
+            Debug.Log(tile.X + " " + tile.Y);
+        }
+        public void SerializePathGrid()
+        {
+            _scriptablePathGrid.PathGrid = _pathGrid.ToSerializedPathGrid();
         }
         public async void GeneratePathGrid()
         {
@@ -72,17 +82,17 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
             {
                 _pathGridGenerationProgress = progress;
             });
-            //try
-            //{
+            try
+            {
                 PathGrid<Tile> pathGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
                 _scriptablePathGrid.PathGrid = pathGrid.ToSerializedPathGrid();
                 Debug.Log("PathGrid generation is done");
-            //}
-            //catch (System.Exception e)
-            //{
-            //    Debug.LogException(e);
-            //    Debug.Log("PathGrid generation was cancelled");
-            //}
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogException(e);
+                Debug.Log("PathGrid generation was cancelled");
+            }
         }
         public void CancelPathGridGeneration()
         {
