@@ -9,6 +9,7 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
     public class GridMap : MonoBehaviour
     {
         [SerializeField][HideInInspector] private float _pathGridGenerationProgress;
+        [SerializeField][HideInInspector] private bool _isGenerating;
         [SerializeField] private Mob _mobPrefab;
         [SerializeField] private float _spawnDelay;
         [SerializeField] private Transform _mobs;
@@ -20,7 +21,7 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
         private PathGrid<Tile> _pathGrid;
         private PlayerController _player;
         private Camera _camera;
-        private CancellationTokenSource _cts = new CancellationTokenSource();
+        private CancellationTokenSource _cts;
         public PathGrid<Tile> PathGrid { get => _pathGrid; }
         public Tile[,] Map { get => _map; }
         private void Awake()
@@ -43,7 +44,6 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
             int maxY = 0;
             foreach (Tile tile in tiles)
             {
-                tile.OnClick.AddListener(OnTileClick);
                 tile.X = Mathf.RoundToInt(tile.transform.position.x);
                 tile.Y = Mathf.RoundToInt(tile.transform.position.z);
                 if (tile.X > maxX)
@@ -78,26 +78,38 @@ namespace Grid2DHelper.Demos.RealtimeIsoBakedGridMap
                 Debug.LogError("ScriptablePathGrid is not assigned. Generation aborted.");
                 return;
             }
+            if (!_isGenerating)
+            {
+                CancelPathGridGeneration();
+            }
             System.Progress<float> progressIndicator = new System.Progress<float>((progress) =>
             {
                 _pathGridGenerationProgress = progress;
             });
+            _cts = new CancellationTokenSource();
+            _isGenerating = true;
             try
             {
-                PathGrid<Tile> pathGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
-                _scriptablePathGrid.PathGrid = pathGrid.ToSerializedPathGrid();
-                Debug.Log("PathGrid generation is done");
+                _pathGrid = await Pathfinding.GeneratePathGridAsync(_map, new PathfindingPolicy(), MajorOrder.DEFAULT, progressIndicator, _cts.Token);
             }
             catch (System.Exception e)
             {
+                CancelPathGridGeneration();
                 Debug.LogException(e);
                 Debug.Log("PathGrid generation was cancelled");
+                return;
             }
+            _scriptablePathGrid.PathGrid = _pathGrid.ToSerializedPathGrid();
+            _isGenerating = false;
+            Debug.Log("PathGrid generation is done");
         }
         public void CancelPathGridGeneration()
         {
-            _cts.Cancel();
-            _cts = new CancellationTokenSource();
+            if (_cts != null)
+            {
+                _cts.Cancel();
+            }
+            _isGenerating = false;
         }
         private void SpawnMob()
         {

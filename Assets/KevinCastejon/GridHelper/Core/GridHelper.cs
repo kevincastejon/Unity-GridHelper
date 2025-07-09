@@ -3081,16 +3081,25 @@ namespace KevinCastejon.GridHelper
                 return map[x, y];
             }
         }
-        internal static T SetTile<T>(T tile, T[,] map, int x, int y, MajorOrder majorOrder)
+        /// <summary>
+        /// Sets a tile with automatic handling of the majorOrder
+        /// </summary>
+        /// <typeparam name="T">The user-defined type representing a tile (no need to implement the ITile interface)</typeparam>
+        /// <param name="tile">The tile to set into the grid</param>
+        /// <param name="map">A two-dimensional array</param>
+        /// <param name="x">Horizontal coordinate of the tile</param>
+        /// <param name="y">Vertical coordinate of the tile</param>
+        /// <param name="majorOrder">The major order rule to use for the grid indexes. Default is MajorOrder.DEFAULT (see KevinCastejon::GridHelper::MajorOrder)</param>
+        public static void SetTile<T>(T tile, T[,] map, int x, int y, MajorOrder majorOrder)
         {
             ResolveMajorOrder(ref majorOrder);
             if (majorOrder == MajorOrder.ROW_MAJOR_ORDER)
             {
-                return map[y, x] = tile;
+                map[y, x] = tile;
             }
             else
             {
-                return map[x, y] = tile;
+                map[x, y] = tile;
             }
         }
         /// <summary>
